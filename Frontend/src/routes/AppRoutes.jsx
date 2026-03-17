@@ -68,6 +68,12 @@ const RouteLoader = ({ children }) => {
   const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
+    // Scroll to top on forward navigation, restore on back/forward
+    if (performance.navigation.type === 1 || performance.getEntriesByType('navigation')[0]?.type === 'navigate') {
+      window.scrollTo(0, 0);
+    }
+    // Browser handles back/forward scroll restoration automatically
+
     setIsNavigating(true);
 
     const timer = setTimeout(() => {

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import productService from "../../services/product.service";
 import ProductForm from "../../components/admin/ProductForm";
-import { Trash2, Edit3, Eye, Search, Plus, ChevronDown, X } from "lucide-react";
+import { Trash2, Edit3, Eye, Search, ChevronDown, X } from "lucide-react";
 
 export default function ManageProduct() {
   const navigate = useNavigate();
@@ -194,18 +194,18 @@ export default function ManageProduct() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Image</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Name</th>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Category</th>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Price</th>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Stock</th>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Status</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {displayProducts.map((product) => (
-                    <tr key={product._id} className="hover:bg-gray-50 md:flex-row flex-col">
-                      <td colSpan="7" className="md:hidden px-6 py-4">
+                    <tr key={product._id} className="hover:bg-gray-50">
+                      <td colSpan="7" className="sm:hidden px-6 py-4">
                         <div className="flex flex-col space-y-3 p-4 border-t border-gray-100">
                           <div className="text-sm font-medium text-gray-900">{product.title}</div>
                           <div className="flex items-center gap-1 pt-2">
@@ -244,7 +244,7 @@ export default function ManageProduct() {
                           className="h-12 w-12 rounded-lg object-cover"
                         />
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
                         <div className="text-sm font-medium text-gray-900">{product.title}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell">{product.categoryId?.name || 'N/A'}</td>
@@ -271,7 +271,7 @@ export default function ManageProduct() {
                         </span>
                       </td>
 
-                      <td className="px-4 py-4 md:table-cell">
+                      <td className="px-4 py-4 hidden sm:table-cell">
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => window.open(`/product/${product._id}`, '_blank')}
@@ -293,7 +293,7 @@ export default function ManageProduct() {
                             className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 disabled:opacity-50 flex-shrink-0"
                             title="Delete"
                           >
-                            <Trash2 size= {16} />
+                            <Trash2 size={16} />
                             {deletingId === product._id && (
                               <span className="ml-1 animate-spin text-xs">...</span>
                             )}
