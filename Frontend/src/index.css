@@ -1,0 +1,218 @@
+@import "tailwindcss";
+
+/* Custom scrollbar hide utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth scrolling for the entire page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Touch-action utility for better mobile touch handling */
+.touch-pan-y {
+  touch-action: pan-y;
+}
+
+/* ========================================
+   ADD TO CART BUTTON ANIMATIONS
+   ======================================== */
+
+/* Button success state - color transition */
+@keyframes buttonSuccess {
+  0% {
+    background: linear-gradient(to right, #111827, #374151);
+  }
+  100% {
+    background: linear-gradient(to right, #22c55e, #16a34a);
+  }
+}
+
+@keyframes buttonPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+  }
+}
+
+.btn-success {
+  animation: buttonSuccess 0.4s ease forwards, buttonPulse 1s ease-in-out infinite 0.4s;
+}
+
+/* Checkmark bounce animation */
+@keyframes checkmarkBounce {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.checkmark-bounce {
+  animation: checkmarkBounce 0.5s ease forwards;
+}
+
+/* Text fade in */
+@keyframes textFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.text-fade-in {
+  animation: textFadeIn 0.3s ease forwards 0.2s;
+  opacity: 0;
+}
+
+/* ========================================
+   SPARKLE PARTICLE ANIMATIONS - ALL DIRECTIONS
+   ======================================== */
+
+/* Sparkle S1 - Floats UP-LEFT */
+@keyframes sparkleS1 {
+  0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(-30px, -40px) scale(0) rotate(180deg); }
+}
+
+/* Sparkle S2 - Floats UP-RIGHT */
+@keyframes sparkleS2 {
+  0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(30px, -40px) scale(0) rotate(-180deg); }
+}
+
+/* Sparkle S3 - Floats DOWN-LEFT */
+@keyframes sparkleS3 {
+  0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(-30px, 40px) scale(0) rotate(120deg); }
+}
+
+/* Sparkle S4 - Floats DOWN-RIGHT */
+@keyframes sparkleS4 {
+  0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(30px, 40px) scale(0) rotate(-90deg); }
+}
+
+/* Sparkle S5 - Floats UP */
+@keyframes sparkleS5 {
+  0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(0px, -50px) scale(0) rotate(45deg); }
+}
+
+/* Sparkle S6 - Floats DOWN */
+@keyframes sparkleS6 {
+  0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(0px, 50px) scale(0) rotate(-45deg); }
+}
+
+/* Sparkle S7 - Floats LEFT */
+@keyframes sparkleS7 {
+  0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(-45px, 0px) scale(0) rotate(90deg); }
+}
+
+/* Sparkle S8 - Floats RIGHT */
+@keyframes sparkleS8 {
+  0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(45px, 0px) scale(0) rotate(-90deg); }
+}
+
+/* Sparkle S9 - Floats UP-LEFT diagonal */
+@keyframes sparkleS9 {
+  0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(-40px, -25px) scale(0) rotate(200deg); }
+}
+
+/* Sparkle S10 - Floats UP-RIGHT diagonal */
+@keyframes sparkleS10 {
+  0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(40px, -25px) scale(0) rotate(-200deg); }
+}
+
+/* Sparkle S11 - Floats DOWN-LEFT diagonal */
+@keyframes sparkleS11 {
+  0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(-40px, 25px) scale(0) rotate(150deg); }
+}
+
+/* Sparkle S12 - Floats DOWN-RIGHT diagonal */
+@keyframes sparkleS12 {
+  0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(40px, 25px) scale(0) rotate(-150deg); }
+}
+
+/* Sparkle animation classes with staggered delays */
+.sparkle-s1 { animation: sparkleS1 0.6s ease-out forwards; }
+.sparkle-s2 { animation: sparkleS2 0.6s ease-out forwards 0.03s; }
+.sparkle-s3 { animation: sparkleS3 0.6s ease-out forwards 0.06s; }
+.sparkle-s4 { animation: sparkleS4 0.6s ease-out forwards 0.09s; }
+.sparkle-s5 { animation: sparkleS5 0.6s ease-out forwards 0.12s; }
+.sparkle-s6 { animation: sparkleS6 0.6s ease-out forwards 0.15s; }
+.sparkle-s7 { animation: sparkleS7 0.6s ease-out forwards 0.18s; }
+.sparkle-s8 { animation: sparkleS8 0.6s ease-out forwards 0.21s; }
+.sparkle-s9 { animation: sparkleS9 0.6s ease-out forwards 0.24s; }
+.sparkle-s10 { animation: sparkleS10 0.6s ease-out forwards 0.27s; }
+.sparkle-s11 { animation: sparkleS11 0.6s ease-out forwards 0.3s; }
+.sparkle-s12 { animation: sparkleS12 0.6s ease-out forwards 0.33s; }
+
+/* Button loading spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spin 0.8s linear infinite;
+}
+
+/* ========================================
+   MARQUEE RUNNING TEXT ANIMATION
+   ======================================== */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-66.666%);
+  }
+}
+
+@keyframes marquee-fast {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-66.666%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 15s linear infinite;
+}
+
+.animate-marquee-mobile {
+  animation: marquee 8s linear infinite;
+}
+
+.animate-marquee-fast {
+  animation: marquee-fast 8s linear infinite;
+}
