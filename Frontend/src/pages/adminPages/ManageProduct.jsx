@@ -270,35 +270,7 @@ export default function ManageProduct() {
                           {product.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
-                      <td className="px-4 py-4 hidden md:hidden">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => window.open(`/product/${product._id}`, '_blank')}
-                            className="text-indigo-600 hover:text-indigo-900 p-1 rounded hover:bg-indigo-50 flex-shrink-0"
-                            title="View Product"
-                          >
-                            <Eye size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleEdit(product)}
-                            className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 flex-shrink-0"
-                            title="Edit"
-                          >
-                            <Edit3 size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(product._id)}
-                            disabled={deletingId === product._id}
-                            className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 disabled:opacity-50 flex-shrink-0"
-                            title="Delete"
-                          >
-                            <Trash2 size={16} />
-                            {deletingId === product._id && (
-                              <span className="ml-1 animate-spin text-xs">...</span>
-                            )}
-                          </button>
-                        </div>
-                      </td>
+
                       <td className="px-4 py-4 md:table-cell">
                         <div className="flex items-center justify-end gap-1">
                           <button

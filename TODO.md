@@ -1,18 +1,9 @@
-# API URL Fix Task - Progress Tracker
+# Task: Make admin panel manage product section show only name and action columns on mobile view
 
-## Plan Implementation Steps
+## Plan Summary
+- Minor cleanup in ManageProduct.jsx: remove redundant duplicate actions <td> that's always hidden.
 
-### 1. [x] Create TODO.md 
-### 2. [x] Edit Frontend/src/services/api.js - Remove localhost fallback, use BASE_URL
-### 3. [] Test Frontend dev server
-### 4. [] Git commit & push
-### 5. [] Redeploy Netlify & verify Network tab
-
-**Status:** Core fix complete. Test next.
-
-## Quick Commands:
-```
-cd Frontend && npm run dev
-```
-Verify Network tab uses production backend URL. Then git add/commit/push/redeploy.
-
+## Steps
+- [x] Step 1: Edit Frontend/src/pages/adminPages/ManageProduct.jsx to remove duplicate hidden actions td
+- [x] Step 2: Verify responsive behavior (already correct: mobile shows name + actions only via colSpan td and hidden classes)
+- [x] Step 3: Complete task
