@@ -1,16 +1,18 @@
-# API Base URL Update Task - Progress Tracker
+# API URL Fix Task - Progress Tracker
 
-## Completed (4/6)
-- [x] 1. Create TODO.md with steps ✅ **DONE**
-- [x] 2. Update Frontend/src/pages/login.jsx ✅ **DONE**
-- [x] 3. Update Frontend/src/pages/register.jsx ✅ **DONE**
-- [x] 4. Update Frontend/src/components/admin/ProductForm.jsx ✅ **DONE**
-- [x] 5. Add VITE_API_BASE_URL to Frontend/.env (dev fallback) ✅ **DONE**
-- [ ] 6. Test changes
+## Plan Implementation Steps
 
-## Plan Summary
-Replace hardcoded 'http://localhost:5000/api...' with `${import.meta.env.VITE_API_BASE_URL}/api...`
-Files: login.jsx, register.jsx, ProductForm.jsx
-✅ All file updates complete!
+### 1. [x] Create TODO.md 
+### 2. [x] Edit Frontend/src/services/api.js - Remove localhost fallback, use BASE_URL
+### 3. [] Test Frontend dev server
+### 4. [] Git commit & push
+### 5. [] Redeploy Netlify & verify Network tab
 
-**Next step:** Test in dev server
+**Status:** Core fix complete. Test next.
+
+## Quick Commands:
+```
+cd Frontend && npm run dev
+```
+Verify Network tab uses production backend URL. Then git add/commit/push/redeploy.
+
