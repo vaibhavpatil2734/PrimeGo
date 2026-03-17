@@ -21,19 +21,40 @@ const contactInfoRoutes = require("./routes/contactInfo.routes");
 const app = express();
 
 /* ===========================
+   CORS CONFIG (IMPORTANT)
+=========================== */
+
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://made4uu.netlify.app" // your frontend
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // allow requests with no origin (like Postman)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed"));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  })
+);
+
+/* ===========================
    MIDDLEWARE
 =========================== */
 
-// Enable CORS
-app.use(cors());
-
-// Parse JSON body
 app.use(express.json());
-
-// Parse multipart/form-data (for file uploads)
 app.use(express.urlencoded({ extended: true }));
 
-// Security headers (basic)
+// Security headers
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "DENY");
@@ -60,7 +81,6 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/activity-logs", activityLogRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/wishlist", wishlistRoutes);
-
 app.use("/api/contacts", contactRoutes);
 app.use("/api/contact-info", contactInfoRoutes);
 
@@ -69,10 +89,10 @@ app.use("/api/contact-info", contactInfoRoutes);
 =========================== */
 
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error("ERROR:", err.message);
   res.status(500).json({
     success: false,
-    message: "Server Error",
+    message: err.message || "Server Error",
   });
 });
 
@@ -80,29 +100,25 @@ app.use((err, req, res, next) => {
    DATABASE CONNECTION
 =========================== */
 
-
-const MONGO_URI = process.env.MONGO_URI; 
+const MONGO_URI = process.env.MONGO_URI;
 const PORT = process.env.PORT || 5000;
 
-// Start server first
 app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
 
-  // Test Cloudinary connection on startup
-  console.log('Testing Cloudinary connection...');
+  // Test Cloudinary
+  console.log("Testing Cloudinary connection...");
   const cloudinaryTest = await testCloudinaryConnection();
   if (cloudinaryTest.success) {
-    console.log('✅ Cloudinary connection successful!');
+    console.log("✅ Cloudinary connection successful!");
   } else {
-    console.error('❌ Cloudinary connection failed:', cloudinaryTest.error);
+    console.error("❌ Cloudinary connection failed:", cloudinaryTest.error);
   }
 
-  // Connect to MongoDB
+  // Connect MongoDB
   mongoose
     .connect(MONGO_URI)
-    .then(() => {
-      console.log("MongoDB Connected!");
-    })
+    .then(() => console.log("MongoDB Connected!"))
     .catch((error) => {
       console.error("Database connection failed:", error);
       process.exit(1);
