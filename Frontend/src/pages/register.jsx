@@ -41,7 +41,7 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:5000/api/user/register', formData);
+const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/user/register`, formData);
       setSuccess("Account created successfully! Redirecting to login...");
       setTimeout(() => navigate("/login"), 1000); 
     } catch (err) {
@@ -213,7 +213,7 @@ const Register = () => {
             <GoogleLogin
               onSuccess={async (credentialResponse) => {
                   try {
-                    const res = await axios.post('http://localhost:5000/api/user/google-login', { token: credentialResponse.credential });
+const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/user/google-login`, { token: credentialResponse.credential });
                     localStorage.setItem('token', res.data.token);
                     localStorage.setItem('role', res.data.role); 
                     setSuccess("Authentication successful.");

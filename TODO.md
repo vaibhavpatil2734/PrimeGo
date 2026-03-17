@@ -1,27 +1,16 @@
-# Base URL Update Verification
+# API Base URL Update Task - Progress Tracker
 
-## Files Using Base URL (via VITE_API_BASE_URL from .env) = CORRECT
+## Completed (4/6)
+- [x] 1. Create TODO.md with steps ✅ **DONE**
+- [x] 2. Update Frontend/src/pages/login.jsx ✅ **DONE**
+- [x] 3. Update Frontend/src/pages/register.jsx ✅ **DONE**
+- [x] 4. Update Frontend/src/components/admin/ProductForm.jsx ✅ **DONE**
+- [x] 5. Add VITE_API_BASE_URL to Frontend/.env (dev fallback) ✅ **DONE**
+- [ ] 6. Test changes
 
-**Core API Client (used by most services):**
-- Frontend/src/services/api.js = CORRECT (httpClient baseURL: API_BASE_URL = import.meta.env.VITE_API_BASE_URL)
+## Plan Summary
+Replace hardcoded 'http://localhost:5000/api...' with `${import.meta.env.VITE_API_BASE_URL}/api...`
+Files: login.jsx, register.jsx, ProductForm.jsx
+✅ All file updates complete!
 
-**Public API Client:**
-- Frontend/src/services/public.service.js = CORRECT (publicHttpClient baseURL: PUBLIC_API_BASE_URL = import.meta.env.VITE_API_BASE_URL)
-
-**Services using api.js httpClient = CORRECT:**
-- Frontend/src/services/address.service.js
-- Frontend/src/services/admin.service.js  
-- Frontend/src/services/auth.service.js
-- Frontend/src/services/cart.service.js
-- Frontend/src/services/category.service.js
-- Frontend/src/services/order.service.js
-- Frontend/src/services/product.service.js
-- Frontend/src/services/wishlist.service.js
-- Frontend/src/services/contact.service.js
-
-## Completed Steps:
-1. [x] Created Frontend/.env with VITE_API_BASE_URL=https://made4uut1.onrender.com/api ✅
-2. [ ] Run `cd Frontend && npm run dev` to reload env
-3. [x] Verified all files use correct .env base URL ✅
-
-No hardcoded URLs found. All API calls now use production base URL after dev server restart.
+**Next step:** Test in dev server

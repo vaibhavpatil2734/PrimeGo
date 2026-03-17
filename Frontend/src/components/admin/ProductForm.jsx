@@ -4,7 +4,7 @@ import { Loader2, Upload, X, Image as ImageIcon } from "lucide-react";
 import axios from "axios";
 import productService from "../../services/product.service";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api`;
 
 export default function ProductForm({ 
   initialData = {}, 

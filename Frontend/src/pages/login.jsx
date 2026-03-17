@@ -35,7 +35,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:5000/api/user/login', formData);
+const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/user/login`, formData);
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('role', res.data.role); 
       setSuccess("Authentication successful. Redirecting...");
@@ -195,7 +195,7 @@ const Login = () => {
             <GoogleLogin
               onSuccess={async (credentialResponse) => {
                   try {
-                    const res = await axios.post('http://localhost:5000/api/user/google-login', { token: credentialResponse.credential });
+const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/user/google-login`, { token: credentialResponse.credential });
                     localStorage.setItem('token', res.data.token);
                     localStorage.setItem('role', res.data.role); 
                     setSuccess("Authentication successful.");
