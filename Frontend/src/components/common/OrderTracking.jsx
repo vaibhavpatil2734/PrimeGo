@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Truck } from "lucide-react";
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Truck, Check, X, Package } from 'lucide-react';
 
-const OrderTracking = () => {
-  const [scene, setScene] = useState(0);
+const PROGRESS_STEPS = [
+  { key: 'PLACED', label: 'Placed', icon: Package },
+  { key: 'SHIPPED', label: 'Shipped', icon: Truck },
+  { key: 'DELIVERED', label: 'Delivered', icon: Check }
+];
 
-  useEffect(() => {
-    const timers = [
-      setTimeout(() => setScene(1), 2000),
-      setTimeout(() => setScene(2), 4500),
-    ];
-    return () => timers.forEach(clearTimeout);
-  }, []);
+const OrderTracking = ({ status = 'PLACED', size = 'sm' }) => {
+  const upperStatus = status?.toUpperCase() || 'PLACED';
+  const isCancelled = upperStatus === 'CANCELLED';
+  const stepIndex = PROGRESS_STEPS.findIndex(step => step.key === upperStatus);
 
   return (
     <div className="w-full max-w-sm sm:max-w-md mx-auto p-4 sm:p-6 bg-white rounded-2xl shadow-xl">
