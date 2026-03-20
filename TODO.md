@@ -1,18 +1,44 @@
-# Order Tracking Animation Task ✅ COMPLETE
+# MyOrders Page Fix - Implementation Plan
 
-## Steps:
-- [x] Step 1: Create OrderTracking.jsx component in Frontend/src/components/common/
-- [x] Step 2: Update MyOrders.jsx to import and use OrderTracking component (replace status badges)
-- [x] Step 3: Test animations in browser (/profile/orders) - Verified in code review
-- [x] Step 4: Mark complete
+## Status: In Progress ✅
 
-**Changes:**
-- New: Frontend/src/components/common/OrderTracking.jsx (creative progress timeline + shake for cancelled)
-- Updated: MyOrders.jsx (replaced static badge with animated component)
-- Statuses: PLACED/SHIPPED/DELIVERED = green animated steps, CANCELLED = red shake+X
+### Step 1: Create TODO.md [COMPLETED]
+- [x] Created this tracking file
 
-**Demo:** Run `cd Frontend && npm run dev`, login, visit `/profile/orders` to see animations on all orders.
+### Step 2: Implement UI Reliability Improvements in MyOrders.jsx [COMPLETED]
+- [x] Add pull-to-refresh and manual refresh button
+- [x] Add retry on error with refresh
+- [x] Safe property access (?. operators)
+- [x] Add cancel order functionality for eligible orders
+- [x] Optimize with useMemo/useCallback
+- [x] Update file with edit_file
 
-**Note:** Requires lucide-react (likely installed via AdminOrders). If error: `cd Frontend && npm i lucide-react`
+### Step 3: Minor service improvements [COMPLETED]
+- [x] Add auto userId fallback in order.service.js
+- [x] Update file
 
+### Step 4: Test the implementation
+- [ ] Run Frontend dev server
+- [ ] Test with real orders
+- [ ] Verify cancel functionality
+
+### Step 5: Complete task
+- [ ] Use attempt_completion
+
+**Next Action:** Update order.service.js and test
+
+
+### Step 3: Minor service improvements
+- [ ] Add auto userId fallback in order.service.js
+- [ ] Update file
+
+### Step 4: Test the implementation
+- [ ] Run Frontend dev server
+- [ ] Test with real orders
+- [ ] Verify cancel functionality
+
+### Step 5: Complete task
+- [ ] Use attempt_completion
+
+**Next Action:** Update MyOrders.jsx with improvements
 

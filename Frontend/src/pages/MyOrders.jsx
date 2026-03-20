@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import OrderTracking from '../components/common/OrderTracking';
@@ -10,6 +10,7 @@ const MyOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [refreshKey, setRefreshKey] = useState(0);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [trackingOrders, setTrackingOrders] = useState({});
   const [userId, setUserId] = useState(null);
@@ -20,11 +21,12 @@ const MyOrders = () => {
       return;
     }
     fetchUserAndOrders();
-  }, [navigate]);
+  }, [navigate, refreshKey]);
 
-  const fetchUserAndOrders = async () => {
+  const fetchUserAndOrders = useCallback(async () => {
     try {
       setLoading(true);
+      setError('');
       // Get user profile first
       const userData = await getProfile();
       setUserId(userData._id);
@@ -41,7 +43,7 @@ const MyOrders = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -107,11 +109,29 @@ const MyOrders = () => {
               <motion.div 
                 initial={{ opacity: 0, height: 0 }} 
                 animate={{ opacity: 1, height: 'auto' }} 
-                className="mb-4 text-xs sm:text-sm font-medium text-white bg-red-600 p-3 sm:p-4 rounded-lg text-center"
+                className="mb-4 text-xs sm:text-sm font-medium text-white bg-red-600 p-3 sm:p-4 rounded-lg text-center flex items-center justify-center gap-2"
               >
+                <button
+                  onClick={fetchUserAndOrders}
+                  className="text-white hover:text-gray-200 underline text-xs"
+                >
+                  Retry
+                </button>
                 {error}
               </motion.div>
             )}
+
+            <motion.button
+              onClick={fetchUserAndOrders}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="mb-6 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 mx-auto"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m0 0A1.586 1.586 0 0 1 6 6.583V4m0 0h6M6 4h6v5h.582m0 0a1.586 1.586 0 0 1 1.582 1.582V10m-1.582 0H13" />
+              </svg>
+              Refresh Orders
+            </motion.button>
 
             {orders.length === 0 ? (
               <div className="text-center py-8 sm:py-12">
@@ -137,7 +157,7 @@ const MyOrders = () => {
                   <motion.div
                     key={order._id}
                     variants={itemVariants}
-                    className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden"
+                    className={`rounded-xl border border-gray-100 overflow-hidden transition-all duration-300 ${order.status?.toUpperCase() === 'CANCELLED' ? 'opacity-60 blur-sm pointer-events-none bg-gray-50/70' : 'bg-gray-50 hover:shadow-md'}`}
                   >
                     {/* Order Header */}
                     <div className="bg-white p-3 sm:p-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2">
@@ -201,17 +221,51 @@ const MyOrders = () => {
                         )}
                       </div>
 
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => {
-                          setTrackingOrders(prev => ({
-                            ...prev,
-                            [order._id]: !prev[order._id]
-                          }));
-                        }}
-                        className="w-full mb-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold tracking-widest uppercase text-sm py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 mx-auto"
-                      >
+                      {order.status?.toUpperCase() === 'PLACED' && (
+                        <motion.button
+                          onClick={async () => {
+                            const result = await orderService.cancelOrder(order._id);
+                            if (result.success) {
+                              setRefreshKey(prev => prev + 1);
+                            } else {
+                              setError(result.error || 'Failed to cancel order');
+                            }
+                          }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="w-full mb-2 bg-red-500 hover:bg-red-600 text-white font-bold tracking-widest uppercase text-xs py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-2 mx-auto"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          Cancel Order
+                        </motion.button>
+                      )}
+                      {order.status?.toUpperCase() !== 'CANCELLED' ? (
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => {
+                            setTrackingOrders(prev => ({
+                              ...prev,
+                              [order._id]: !prev[order._id]
+                            }));
+                          }}
+                          className="w-full mb-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold tracking-widest uppercase text-sm py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 mx-auto"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                          {trackingOrders[order._id] ? 'Hide Tracking' : 'Track Order'}
+                        </motion.button>
+                      ) : (
+                        <motion.div className="w-full mb-4 flex justify-center">
+                          <div className="inline-flex items-center gap-2 rounded-full bg-red-100 border-2 border-red-200 text-red-800 font-bold uppercase tracking-wider text-sm py-3 px-6 shadow-md">
+                            <X className="w-4 h-4" />
+                            CANCELLED
+                          </div>
+                        </motion.div>
+                      )}
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>

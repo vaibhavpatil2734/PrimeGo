@@ -22,9 +22,16 @@ const orderService = {
     }
   },
 
-  // Get all orders for current user
-  async getUserOrders(userId) {
+// Get all orders for current user (with auto userId)
+  async getUserOrders(userId = null) {
     try {
+      if (!userId) {
+        const currentUserId = await this.getCurrentUserId();
+        if (!currentUserId) {
+          return { success: false, error: 'User not authenticated' };
+        }
+        userId = currentUserId;
+      }
       const response = await httpClient.get(ORDER_ENDPOINTS.getUserOrders(userId));
       return { success: true, data: response.data };
     } catch (error) {
