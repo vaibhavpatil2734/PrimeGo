@@ -160,7 +160,7 @@ const MyOrders = () => {
                   <motion.div
                     key={order._id}
                     variants={itemVariants}
-                    className={`rounded-xl border border-gray-100 overflow-hidden transition-all duration-300 ${order.status?.toUpperCase() === 'CANCELLED' ? 'bg-gray-50/50 border-dashed border-gray-400 border-2' : 'bg-gray-50 hover:shadow-md'}`}
+                    className={`rounded-xl border border-gray-100 overflow-hidden transition-all duration-300 ${order.status?.toUpperCase() === 'CANCELLED' ? 'opacity-60 bg-gray-50/70' : 'bg-gray-50 hover:shadow-md'}`}
                   >
                     {/* Order Header */}
                     <div className="bg-white p-3 sm:p-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2">
