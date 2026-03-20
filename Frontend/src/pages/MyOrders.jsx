@@ -11,6 +11,7 @@ const MyOrders = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [trackingOrders, setTrackingOrders] = useState({});
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
@@ -200,9 +201,35 @@ const MyOrders = () => {
                         )}
                       </div>
 
-                      <div className="flex justify-center mb-6">
-                        <OrderTracking status={order.status} size="md" />
-                      </div>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          setTrackingOrders(prev => ({
+                            ...prev,
+                            [order._id]: !prev[order._id]
+                          }));
+                        }}
+                        className="w-full mb-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold tracking-widest uppercase text-sm py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 mx-auto"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                        {trackingOrders[order._id] ? 'Hide Tracking' : 'Track Order'}
+                      </motion.button>
+
+                      <AnimatePresence>
+                        {trackingOrders[order._id] && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                            exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                            className="flex justify-center mb-6"
+                          >
+                            <OrderTracking status={order.status} size="md" />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                       
                       {/* View Details Button */}
                       <motion.button
