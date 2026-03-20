@@ -155,22 +155,29 @@ const MyOrders = () => {
                 </motion.button>
               </div>
             ) : (
-              <div className="space-y-4 sm:space-y-6">
-                {orders.map((order) => (
+              <div className="space-y-6 sm:space-y-8">
+                {orders.map((order, index) => (
                   <motion.div
                     key={order._id}
                     variants={itemVariants}
-                    className={`rounded-xl border border-gray-100 overflow-hidden transition-all duration-300 ${order.status?.toUpperCase() === 'CANCELLED' ? 'opacity-60 bg-gray-50/70' : 'bg-gray-50 hover:shadow-md'}`}
+                    initial="hidden"
+                    animate="visible"
+                    custom={index}
+                    className={`rounded-2xl p-6 border-2 border-gray-200/50 overflow-hidden transition-all duration-500 hover:shadow-2xl hover:border-gray-300/70 backdrop-blur-sm ${order.status?.toUpperCase() === 'CANCELLED' ? 'opacity-60 bg-gradient-to-br from-gray-50/80 to-gray-100/60 shadow-gray-200/50' : 'bg-gradient-to-br from-white via-blue-50/30 to-indigo-50/50 shadow-lg hover:shadow-xl hover:-translate-y-1'}`}
                   >
                     {/* Order Header */}
-                    <div className="bg-white p-3 sm:p-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2">
-                      <div>
-                        <p className="text-xs font-bold tracking-wider text-gray-400 uppercase">
-                          Order Number
-                        </p>
-                        <p className="text-sm sm:text-base font-semibold text-gray-900">
-                          {order.orderNumber || `#${order._id?.slice(-8).toUpperCase()}`}
-                        </p>
+                    <div className="bg-gradient-to-r from-slate-50 to-gray-50 p-4 sm:p-6 border-b-2 border-gray-200 flex flex-wrap items-center justify-between gap-4 shadow-inner">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center shadow-md">
+                          <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-xs sm:text-sm font-bold tracking-wider text-gray-500 uppercase">
+                            Order # {order.orderNumber || order._id?.slice(-8).toUpperCase()}
+                          </p>
+                        </div>
                       </div>
                       <div className="flex-1 min-w-0 flex justify-between items-end gap-3 sm:gap-4">
                         {/* Date */}
