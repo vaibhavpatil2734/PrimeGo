@@ -160,7 +160,7 @@ const MyOrders = () => {
                   <motion.div
                     key={order._id}
                     variants={itemVariants}
-                    className={`rounded-xl border border-gray-100 overflow-hidden transition-all duration-300 ${order.status?.toUpperCase() === 'CANCELLED' ? 'opacity-60 blur-sm pointer-events-none bg-gray-50/70' : 'bg-gray-50 hover:shadow-md'}`}
+                    className={`rounded-xl border border-gray-100 overflow-hidden transition-all duration-300 ${order.status?.toUpperCase() === 'CANCELLED' ? 'bg-gray-50/50 border-dashed border-gray-400 border-2' : 'bg-gray-50 hover:shadow-md'}`}
                   >
                     {/* Order Header */}
                     <div className="bg-white p-3 sm:p-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2">
@@ -212,7 +212,7 @@ const MyOrders = () => {
 
                     {/* Order Items Preview */}
                     <div className="p-3 sm:p-4">
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                      <div className={`flex flex-wrap items-center ${order.status?.toUpperCase() === 'CANCELLED' ? 'gap-3 border-dashed border-2 border-gray-400 rounded-2xl p-4 bg-gray-50/50' : 'gap-2 sm:gap-4'}`}>
                         {order.items?.slice(0, 3).map((item, index) => (
                           <div key={index} className="flex items-center gap-2 sm:gap-3">
                             <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
@@ -268,12 +268,13 @@ const MyOrders = () => {
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={() => {
+                            if (order.status?.toUpperCase() === 'CANCELLED') return;
                             setTrackingOrders(prev => ({
                               ...prev,
                               [order._id]: !prev[order._id]
                             }));
                           }}
-                          className="w-full mb-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold tracking-widest uppercase text-sm py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 mx-auto"
+                          className="w-full mt-6 mb-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold tracking-widest uppercase text-sm py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 mx-auto"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -290,7 +291,7 @@ const MyOrders = () => {
                       )}
 
                           <AnimatePresence>
-                        {trackingOrders[order._id] && (
+                        {trackingOrders[order._id] && order.status?.toUpperCase() !== 'CANCELLED' && (
                           <>
                             <motion.div
                               initial={{ opacity: 0, height: 0, scale: 0.95 }}
