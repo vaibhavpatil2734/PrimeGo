@@ -293,23 +293,19 @@ const MyOrders = () => {
                           </svg>
                           {trackingOrders[order._id] ? 'Hide Tracking' : 'Track Order'}
                         </motion.button>
-                      ) : null // No separate cancelled tag - only status column shows CANCELLED
+                      ) : null
 
                           <AnimatePresence>
                         {trackingOrders[order._id] && order.status?.toUpperCase() !== 'CANCELLED' && (
-                          <>
-                              <motion.div
-                                id={`tracking-${order._id}`}
-                                initial={{ opacity: 0, height: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, height: 'auto', scale: 1 }}
-                                exit={{ opacity: 0, height: 0, scale: 0.95 }}
-                                className="flex justify-center mb-6 mx-auto max-w-md"
-                              >
-                                <OrderTracking status={order.status} size="md" />
-                              </motion.div>
-
-                            {/* No seen status badge - removed per feedback */}
-                          </>
+                          <motion.div
+                            id={`tracking-${order._id}`}
+                            initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                            exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                            className="flex justify-center mb-6 mx-auto max-w-md"
+                          >
+                            <OrderTracking status={order.status} size="md" />
+                          </motion.div>
                         )}
                       </AnimatePresence>
                       
