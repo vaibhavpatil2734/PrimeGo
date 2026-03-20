@@ -14,13 +14,31 @@ const OrderTracking = ({ status = "PLACED" }) => {
 
   const [scene, setScene] = useState(getInitialScene());
 
-  // Auto-loop through scenes
+  // Status-based looping
   useEffect(() => {
-    const interval = setInterval(() => {
-      setScene((prev) => (prev + 1) % 3);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+    if (upperStatus === 'PLACED') {
+      // Only scene 0 loops
+      const interval = setInterval(() => {
+        setScene(0);
+      }, 3000);
+      return () => clearInterval(interval);
+    } else if (upperStatus === 'SHIPPED') {
+      // Scenes 0-1 loop
+      const scenes = [0, 1];
+      let currentIndex = 0;
+      const interval = setInterval(() => {
+        setScene(scenes[currentIndex]);
+        currentIndex = (currentIndex + 1) % scenes.length;
+      }, 3000);
+      return () => clearInterval(interval);
+    } else if (upperStatus === 'DELIVERED') {
+      // All scenes 0-2 loop (current logic)
+      const interval = setInterval(() => {
+        setScene((prev) => (prev + 1) % 3);
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [upperStatus]);
 
   const getSceneText = () => {
     if (scene === 0) return "Wrapping your order 🎁";
