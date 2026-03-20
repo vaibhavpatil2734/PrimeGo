@@ -172,13 +172,32 @@ const MyOrders = () => {
                           {order.orderNumber || `#${order._id?.slice(-8).toUpperCase()}`}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-xs font-bold tracking-wider text-gray-400 uppercase">
-                          Date
-                        </p>
-                        <p className="text-sm sm:text-base font-semibold text-gray-900">
-                          {formatDate(order.createdAt)}
-                        </p>
+                      <div className="flex-1 min-w-0 flex justify-between items-end gap-3 sm:gap-4">
+                        {/* Date */}
+                        <div className="text-left">
+                          <p className="text-xs font-bold tracking-wider text-gray-400 uppercase">
+                            Date
+                          </p>
+                          <p className="text-sm sm:text-base font-semibold text-gray-900">
+                            {formatDate(order.createdAt)}
+                          </p>
+                        </div>
+                        
+                        {/* Status */}
+                        <div className="text-right min-w-[80px]">
+                          <p className="text-xs font-bold tracking-wider text-gray-400 uppercase mb-1">
+                            Status
+                          </p>
+                          <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide shadow-sm ${
+                            order.status?.toUpperCase() === 'DELIVERED' ? 'bg-green-100 text-green-800 border border-green-200' :
+                            order.status?.toUpperCase() === 'SHIPPED' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
+                            order.status?.toUpperCase() === 'PLACED' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+                            order.status?.toUpperCase() === 'CANCELLED' ? 'bg-red-100 text-red-800 border border-red-200' :
+                            'bg-gray-100 text-gray-800 border border-gray-200'
+                          }`}>
+                            {order.status?.toUpperCase() || 'Unknown'}
+                          </span>
+                        </div>
                       </div>
 
                       <div className="text-right">
