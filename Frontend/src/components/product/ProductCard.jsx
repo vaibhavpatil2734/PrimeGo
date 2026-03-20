@@ -30,7 +30,9 @@ const ProductCard = ({ product }) => {
         )
       : 0;
 
-  const handleCardClick = () => {
+const handleCardClick = () => {
+    // Save scroll position before navigation
+    sessionStorage.setItem('products-scroll', window.scrollY.toString());
     navigate(`/product/${productId}`);
   };
 

@@ -19,10 +19,12 @@ export default function AdminNav() {
     { label: "Create Product", path: "/admin/products/create", icon: <Plus size={16} /> },
     { label: "Manage Products", path: "/admin/products", icon: <Package size={16} /> },
     { label: "Manage Contacts", path: "/admin/contacts", icon: <MessageCircle size={16} /> },
+    { label: "Manage Orders", path: "/admin/orders", icon: <ShoppingCart size={16} /> },
   ];
 
   const isProductsActive = location.pathname.startsWith("/admin/products");
   const isContactsActive = location.pathname === "/admin/contacts";
+
 
   return (
     <div className="bg-white shadow-sm">

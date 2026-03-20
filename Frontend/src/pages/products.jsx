@@ -7,6 +7,22 @@ import { FiSearch } from "react-icons/fi";
 
 const Products = () => {
   const navigate = useNavigate();
+  const productsRef = useRef(null);
+
+  useEffect(() => {
+    // Restore scroll position when coming back from product details
+    const savedScroll = sessionStorage.getItem('products-scroll');
+    if (savedScroll && productsRef.current && performance.navigation.type === 2) {
+      productsRef.current.scrollTop = parseInt(savedScroll, 10);
+      sessionStorage.removeItem('products-scroll');
+    }
+  }, []);
+
+  const saveScrollPosition = () => {
+    if (productsRef.current) {
+      sessionStorage.setItem('products-scroll', productsRef.current.scrollTop);
+    }
+  };
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -370,7 +386,7 @@ const transformProduct = (product) => {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8 lg:gap-10">
+          <div ref={productsRef} className="max-h-[70vh] overflow-y-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8 lg:gap-10 pr-2" onScroll={saveScrollPosition}>
             {filteredProducts.map((product) => (
               <ProductCard
                 key={product.id}
