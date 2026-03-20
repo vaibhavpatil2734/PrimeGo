@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import OrderTracking from '../components/common/OrderTracking';
 import orderService from '../services/order.service';
 import { getProfile, isAuthenticated } from '../services/auth.service';
 
@@ -50,21 +51,7 @@ const MyOrders = () => {
     });
   };
 
-  const getStatusColor = (status) => {
-    const statusColors = {
-      'PLACED': 'bg-yellow-100 text-yellow-800',
-      'PAID': 'bg-blue-100 text-blue-800',
-      'SHIPPED': 'bg-purple-100 text-purple-800',
-      'DELIVERED': 'bg-green-100 text-green-800',
-      'CANCELLED': 'bg-red-100 text-red-800',
-      'pending': 'bg-yellow-100 text-yellow-800',
-      'processing': 'bg-blue-100 text-blue-800',
-      'shipped': 'bg-purple-100 text-purple-800',
-      'delivered': 'bg-green-100 text-green-800',
-      'cancelled': 'bg-red-100 text-red-800',
-    };
-    return statusColors[status?.toUpperCase()] || 'bg-gray-100 text-gray-800';
-  };
+
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -175,9 +162,7 @@ const MyOrders = () => {
                         <p className="text-xs font-bold tracking-wider text-gray-400 uppercase">
                           Status
                         </p>
-                        <span className={`inline-block px-2 sm:px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusColor(order.status)}`}>
-                          {order.status || 'PLACED'}
-                        </span>
+                        <OrderTracking status={order.status} size="sm" />
                       </div>
                       <div className="text-right">
                         <p className="text-xs font-bold tracking-wider text-gray-400 uppercase">
