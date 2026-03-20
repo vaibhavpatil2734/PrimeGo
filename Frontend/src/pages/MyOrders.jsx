@@ -51,8 +51,6 @@ const MyOrders = () => {
     });
   };
 
-
-
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.1 } }
@@ -158,12 +156,7 @@ const MyOrders = () => {
                           {formatDate(order.createdAt)}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-xs font-bold tracking-wider text-gray-400 uppercase">
-                          Status
-                        </p>
-                        <OrderTracking status={order.status} size="sm" />
-                      </div>
+
                       <div className="text-right">
                         <p className="text-xs font-bold tracking-wider text-gray-400 uppercase">
                           Total
@@ -207,6 +200,10 @@ const MyOrders = () => {
                         )}
                       </div>
 
+                      <div className="flex justify-center mb-6">
+                        <OrderTracking status={order.status} size="md" />
+                      </div>
+                      
                       {/* View Details Button */}
                       <motion.button
                         whileHover={{ scale: 1.02 }}
