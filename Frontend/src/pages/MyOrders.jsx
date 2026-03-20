@@ -30,6 +30,9 @@ const MyOrders = () => {
       setError('');
       // Get user profile first
       const userData = await getProfile();
+      if (!userData?._id) {
+        throw new Error('Invalid user data');
+      }
       setUserId(userData._id);
       
       // Then fetch orders for this user
@@ -46,7 +49,7 @@ const MyOrders = () => {
     } finally {
       setLoading(false);
     }
-}, [orderService, getProfile]);
+}, []);
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -271,43 +274,44 @@ const MyOrders = () => {
                         </motion.button>
                       )}
                       {order.status?.toUpperCase() !== 'CANCELLED' ? (
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => {
-                            if (order.status?.toUpperCase() === 'CANCELLED') return;
-                            setTrackingOrders(prev => ({
-                              ...prev,
-                              [order._id]: !prev[order._id]
-                            }));
-                            // Scroll to tracking animation
-                            const trackingElement = document.getElementById(`tracking-${order._id}`);
-                            if (trackingElement) {
-                              trackingElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            }
-                          }}
-                          className="w-full mt-6 mb-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold tracking-widest uppercase text-sm py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 mx-auto"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                          {trackingOrders[order._id] ? 'Hide Tracking' : 'Track Order'}
-                        </motion.button>
-                      ) : null
+                        <>
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => {
+                              setTrackingOrders(prev => ({
+                                ...prev,
+                                [order._id]: !prev[order._id]
+                              }));
+                              // Scroll to tracking animation
+                              const trackingElement = document.getElementById(`tracking-${order._id}`);
+                              if (trackingElement) {
+                                trackingElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                              }
+                            }}
+                            className="w-full mt-6 mb-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold tracking-widest uppercase text-sm py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 mx-auto"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                            {trackingOrders[order._id] ? 'Hide Tracking' : 'Track Order'}
+                          </motion.button>
 
                           <AnimatePresence>
-                        {trackingOrders[order._id] && order.status?.toUpperCase() !== 'CANCELLED' && (
-                          <motion.div
-                            id={`tracking-${order._id}`}
-                            initial={{ opacity: 0, height: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, height: 'auto', scale: 1 }}
-                            exit={{ opacity: 0, height: 0, scale: 0.95 }}
-                            className="flex justify-center mb-6 mx-auto max-w-md"
-                          >
-                            <OrderTracking status={order.status} size="md" />
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                            {trackingOrders[order._id] && (
+                              <motion.div
+                                id={`tracking-${order._id}`}
+                                initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                                exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                                className="flex justify-center mb-6 mx-auto max-w-md"
+                              >
+                                <OrderTracking status={order.status} size="md" />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </>
+                      ) : null}
                       
                       {/* View Details Button */}
 
