@@ -280,6 +280,11 @@ const MyOrders = () => {
                               ...prev,
                               [order._id]: !prev[order._id]
                             }));
+                            // Scroll to tracking animation
+                            const trackingElement = document.getElementById(`tracking-${order._id}`);
+                            if (trackingElement) {
+                              trackingElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
                           }}
                           className="w-full mt-6 mb-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold tracking-widest uppercase text-sm py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 mx-auto"
                         >
@@ -288,56 +293,22 @@ const MyOrders = () => {
                           </svg>
                           {trackingOrders[order._id] ? 'Hide Tracking' : 'Track Order'}
                         </motion.button>
-                      ) : (
-                        <motion.div className="w-full mb-4 flex justify-center">
-                          <div className="inline-flex items-center gap-2 rounded-full bg-red-100 border-2 border-red-200 text-red-800 font-bold uppercase tracking-wider text-sm py-3 px-6 shadow-md">
-                            <X className="w-4 h-4" />
-                            CANCELLED
-                          </div>
-                        </motion.div>
-                      )}
+                      ) : null // No separate cancelled tag - only status column shows CANCELLED
 
                           <AnimatePresence>
                         {trackingOrders[order._id] && order.status?.toUpperCase() !== 'CANCELLED' && (
                           <>
-                            <motion.div
-                              initial={{ opacity: 0, height: 0, scale: 0.95 }}
-                              animate={{ opacity: 1, height: 'auto', scale: 1 }}
-                              exit={{ opacity: 0, height: 0, scale: 0.95 }}
-                              className="flex justify-center mb-6"
-                            >
-                              <OrderTracking status={order.status} size="md" />
-                            </motion.div>
+                              <motion.div
+                                id={`tracking-${order._id}`}
+                                initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                                exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                                className="flex justify-center mb-6 mx-auto max-w-md"
+                              >
+                                <OrderTracking status={order.status} size="md" />
+                              </motion.div>
 
-                            {/* Seen Status Badge */}
-                            <motion.div 
-                              className="flex justify-center mt-4"
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: 0.3 }}
-                            >
-                              {(() => {
-                                const upperStatus = (order.status || '').toUpperCase();
-                                let seenText = upperStatus;
-                                if (upperStatus === 'PLACED') seenText = 'seen 1';
-                                else if (upperStatus === 'SHIPPED') seenText = 'seen 2';
-                                else if (upperStatus === 'DELIVERED') seenText = 'seen 3';
-                                
-                                return (
-                                  <motion.div 
-                                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold uppercase tracking-wider text-sm shadow-md ${
-                                      upperStatus === 'PLACED' ? 'bg-blue-100 border-2 border-blue-200 text-blue-800' :
-                                      upperStatus === 'SHIPPED' ? 'bg-yellow-100 border-2 border-yellow-200 text-yellow-800' :
-                                      upperStatus === 'DELIVERED' ? 'bg-green-100 border-2 border-green-200 text-green-800' :
-                                      'bg-gray-100 border-2 border-gray-200 text-gray-800'
-                                    }`}
-                                    whileHover={{ scale: 1.05 }}
-                                  >
-                                    {seenText}
-                                  </motion.div>
-                                );
-                              })()}
-                            </motion.div>
+                            {/* No seen status badge - removed per feedback */}
                           </>
                         )}
                       </AnimatePresence>
