@@ -14,6 +14,14 @@ const OrderTracking = ({ status = "PLACED" }) => {
 
   const [scene, setScene] = useState(getInitialScene());
 
+  // Auto-loop through scenes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setScene((prev) => (prev + 1) % 3);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
   const getSceneText = () => {
     if (scene === 0) return "Wrapping your order 🎁";
     if (scene === 1) return "Out for delivery 🚚";
