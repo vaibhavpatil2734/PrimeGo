@@ -15,9 +15,9 @@ const OrderTracking = ({ status = "PLACED" }) => {
   const [scene, setScene] = useState(getInitialScene());
 
   const getSceneText = () => {
-    if (scene === 0) return "Wrapping your order 🎁 - seen 1";
-    if (scene === 1) return "Out for delivery 🚚 - seen 2";
-    if (scene === 2) return "Delivered successfully 🎉 - seen 3";
+    if (scene === 0) return "Wrapping your order 🎁";
+    if (scene === 1) return "Out for delivery 🚚";
+    if (scene === 2) return "Delivered successfully 🎉";
     return "Order Processing";
   };
 

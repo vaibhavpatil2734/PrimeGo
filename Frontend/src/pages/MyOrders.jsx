@@ -13,7 +13,7 @@ const MyOrders = () => {
   const [error, setError] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [trackingOrders, setTrackingOrders] = useState({});
+  const [activeTrackingOrder, setActiveTrackingOrder] = useState(null);
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
@@ -127,17 +127,7 @@ const MyOrders = () => {
               </motion.div>
             )}
 
-            <motion.button
-              onClick={fetchUserAndOrders}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="mb-6 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 mx-auto"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m0 0A1.586 1.586 0 0 1 6 6.583V4m0 0h6M6 4h6v5h.582m0 0a1.586 1.586 0 0 1 1.582 1.582V10m-1.582 0H13" />
-              </svg>
-              Refresh Orders
-            </motion.button>
+
 
             {orders.length === 0 ? (
               <div className="text-center py-8 sm:py-12">
