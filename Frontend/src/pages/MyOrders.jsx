@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import OrderTracking from '../components/common/OrderTracking';
@@ -39,11 +40,13 @@ const MyOrders = () => {
         setError(result.error || 'Failed to load orders');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load orders');
+      console.error('MyOrders fetch error:', err);
+      const errorMsg = err.response?.status === 401 ? 'Please login again' : (err.response?.data?.message || 'Failed to load orders');
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
-  }, []);
+}, [orderService, getProfile]);
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -224,7 +227,7 @@ const MyOrders = () => {
                       {order.status?.toUpperCase() === 'PLACED' && (
                         <motion.button
                           onClick={async () => {
-                            const result = await orderService.cancelOrder(order._id);
+                            const result = await orderService.cancelOrder(order._id, 'Cancelled from MyOrders page');
                             if (result.success) {
                               setRefreshKey(prev => prev + 1);
                             } else {
@@ -266,26 +269,54 @@ const MyOrders = () => {
                           </div>
                         </motion.div>
                       )}
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                        {trackingOrders[order._id] ? 'Hide Tracking' : 'Track Order'}
-                      </motion.button>
 
-                      <AnimatePresence>
+                          <AnimatePresence>
                         {trackingOrders[order._id] && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, height: 'auto', scale: 1 }}
-                            exit={{ opacity: 0, height: 0, scale: 0.95 }}
-                            className="flex justify-center mb-6"
-                          >
-                            <OrderTracking status={order.status} size="md" />
-                          </motion.div>
+                          <>
+                            <motion.div
+                              initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                              exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                              className="flex justify-center mb-6"
+                            >
+                              <OrderTracking status={order.status} size="md" />
+                            </motion.div>
+
+                            {/* Seen Status Badge */}
+                            <motion.div 
+                              className="flex justify-center mt-4"
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.3 }}
+                            >
+                              {(() => {
+                                const upperStatus = (order.status || '').toUpperCase();
+                                let seenText = upperStatus;
+                                if (upperStatus === 'PLACED') seenText = 'seen 1';
+                                else if (upperStatus === 'SHIPPED') seenText = 'seen 2';
+                                else if (upperStatus === 'DELIVERED') seenText = 'seen 3';
+                                
+                                return (
+                                  <motion.div 
+                                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold uppercase tracking-wider text-sm shadow-md ${
+                                      upperStatus === 'PLACED' ? 'bg-blue-100 border-2 border-blue-200 text-blue-800' :
+                                      upperStatus === 'SHIPPED' ? 'bg-yellow-100 border-2 border-yellow-200 text-yellow-800' :
+                                      upperStatus === 'DELIVERED' ? 'bg-green-100 border-2 border-green-200 text-green-800' :
+                                      'bg-gray-100 border-2 border-gray-200 text-gray-800'
+                                    }`}
+                                    whileHover={{ scale: 1.05 }}
+                                  >
+                                    {seenText}
+                                  </motion.div>
+                                );
+                              })()}
+                            </motion.div>
+                          </>
                         )}
                       </AnimatePresence>
                       
                       {/* View Details Button */}
+
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
