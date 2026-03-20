@@ -13,7 +13,7 @@ const MyOrders = () => {
   const [error, setError] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [activeTrackingOrder, setActiveTrackingOrder] = useState(null);
+  const [trackingOrders, setTrackingOrders] = useState({});
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
