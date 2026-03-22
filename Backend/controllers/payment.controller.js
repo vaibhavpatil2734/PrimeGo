@@ -2,6 +2,13 @@ const { razorpay } = require('../config/razorpay');
 const crypto = require('crypto');
 
 const createRazorpayOrder = async (req, res) => {
+  console.log("🟢 Step A: create-order API hit");
+  console.log("Amount:", req.body.amount);
+  console.log("KEY:", process.env.RAZORPAY_KEY_ID ? 'LOADED' : 'MISSING');
+  if (!process.env.RAZORPAY_KEY_ID) {
+    console.error("🔴 RAZORPAY_KEY_ID ENV missing!");
+    return res.status(500).json({ error: "Payment config missing" });
+  }
   try {
     const { amount } = req.body;
 
@@ -19,6 +26,7 @@ const createRazorpayOrder = async (req, res) => {
     };
 
     const order = await razorpay.orders.create(options);
+    console.log("🟢 Step B: Razorpay order created", order);
     res.status(200).json(order);
   } catch (err) {
     console.error('Razorpay order creation error:', err);
@@ -27,6 +35,8 @@ const createRazorpayOrder = async (req, res) => {
 };
 
 const verifyPayment = (req, res) => {
+  console.log("🟢 Step C: Verify API hit", req.body);
+
   try {
     const {
       razorpay_order_id,
@@ -37,12 +47,18 @@ const verifyPayment = (req, res) => {
     const sign = razorpay_order_id + '|' + razorpay_payment_id;
     const expectedSign = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(sign.toString())
+      .update(sign)
       .digest('hex');
 
+    console.log("Generated:", expectedSign);
+    console.log("Received:", razorpay_signature);
+    console.log("SECRET:", process.env.RAZORPAY_KEY_SECRET ? 'LOADED' : 'MISSING');
+
     if (expectedSign === razorpay_signature) {
+      console.log("🟢 Step D: Payment verified");
       res.json({ success: true });
     } else {
+      console.log("🔴 Step D FAILED: Signature mismatch");
       res.status(400).json({ success: false, message: 'Invalid signature' });
     }
   } catch (err) {

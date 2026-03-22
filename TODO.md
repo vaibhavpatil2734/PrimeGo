@@ -1,11 +1,15 @@
-# Razorpay Payment Integration TODO
+# Payment Flow Debug & Fix - TODO Steps
 
-- [x] 1. Backend - Create payment.controller.js ✅
-- [x] 2. Backend - Create payment.routes.js ✅  
-- [x] 3. Backend - Update server.js (add payment routes) ✅
-- [x] 4. Frontend - Update index.html (add Razorpay script) ✅
-- [x] 5. Frontend - Update order.service.js (add payment methods) ✅
-- [x] 6. Frontend - Refactor checkout.jsx (implement payment flow) ✅
-- [ ] 7. Test backend endpoints (create-order, verify)  
-- [ ] 8. Test full flow (Razorpay → verify → placeOrder)
-- [ ] 9. Backend restart & Frontend dev server test
+## Approved Plan Steps (Step-by-step execution):
+
+1. [✅] **Create TODO.md** - Track progress
+2. [✅] Add extensive console.log/alerts to Frontend/src/pages/checkout.jsx (Syntax fixed)
+3. [✅] Add backend logs, ENV checks, signature fix to Backend/controllers/payment.controller.js 
+4. [ ] Test: Backend restart (`cd Backend && npm start`), Frontend dev server, test checkout
+5. [ ] Analyze console/terminal logs to find exact failure
+6. [ ] Fix remaining issues based on logs
+7. [ ] Remove debug code, attempt_completion
+
+**Next:** Test the flow and share console/backend logs
+
+**Progress:** 3/7 complete
