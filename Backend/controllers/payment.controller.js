@@ -4,7 +4,9 @@ const crypto = require('crypto');
 const createRazorpayOrder = async (req, res) => {
   console.log("🟢 Step A: create-order API hit");
   console.log("Amount:", req.body.amount);
-  console.log("KEY:", process.env.RAZORPAY_KEY_ID ? 'LOADED' : 'MISSING');
+  console.log("DEBUG KEY:", process.env.RAZORPAY_KEY_ID);
+  console.log("DEBUG SECRET:", process.env.RAZORPAY_KEY_SECRET);
+  console.log("DEBUG BODY:", req.body);
   if (!process.env.RAZORPAY_KEY_ID) {
     console.error("🔴 RAZORPAY_KEY_ID ENV missing!");
     return res.status(500).json({ error: "Payment config missing" });

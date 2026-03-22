@@ -121,6 +121,7 @@ const Checkout = () => {
     setError("");
 
     try {
+      console.log("DEBUG REQ BODY:", { amount: total });
       console.log("🟢 Step 2: Calling create-order API | Amount:", total);
       const result = await orderService.createPaymentOrder(total);
       console.log("🟢 Step 2: create-order response:", result);
