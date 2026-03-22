@@ -17,6 +17,7 @@ const adminRoutes = require("./routes/admin.routes");
 const wishlistRoutes = require("./routes/wishlist.routes");
 const contactRoutes = require("./routes/contact.routes");
 const contactInfoRoutes = require("./routes/contactInfo.routes");
+const paymentRoutes = require("./routes/payment.routes");
 
 const app = express();
 
@@ -83,6 +84,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/contacts", contactRoutes);
 app.use("/api/contact-info", contactInfoRoutes);
+app.use("/api/payment", paymentRoutes);
 
 /* ===========================
    ERROR HANDLER

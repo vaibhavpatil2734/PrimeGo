@@ -139,14 +139,30 @@ const orderService = {
     };
   },
 
-  // Create Razorpay order (for payment integration)
-  async createRazorpayOrder(amount) {
-    // This would typically call your backend to create a Razorpay order
-    // For now, we'll simulate the Razorpay integration
-    return {
-      amount: amount * 100, // Razorpay expects amount in paise
-      currency: 'INR',
-    };
+  // Create Razorpay payment order
+  async createPaymentOrder(amount) {
+    try {
+      const response = await httpClient.post('/api/payment/create-order', { amount });
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Failed to create payment order',
+      };
+    }
+  },
+
+  // Verify Razorpay payment
+  async verifyPayment(response) {
+    try {
+      const res = await httpClient.post('/api/payment/verify', response);
+      return { success: true, data: res.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Payment verification failed',
+      };
+    }
   }
 };
 

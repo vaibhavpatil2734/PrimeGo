@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../components/CartContext";
@@ -6,6 +6,8 @@ import { getAddresses } from "../services/address.service";
 import { getProfile } from "../services/auth.service";
 import orderService from "../services/order.service";
 import AddressManager from "../components/AddressManager";
+
+const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_test_key_here';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -21,6 +23,7 @@ const Checkout = () => {
   const [showAddressManager, setShowAddressManager] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
+  const [isRzpLoaded, setIsRzpLoaded] = useState(false);
 
   // Order summary calculations
   const taxRate = 0.1;
@@ -39,16 +42,13 @@ const Checkout = () => {
           return;
         }
 
-        // Get user profile
         const userData = await getProfile();
         setUser(userData);
         setUserId(userData._id);
 
-        // Get addresses
         const addressData = await getAddresses(userData._id);
         setAddresses(addressData);
 
-        // Auto-select default address
         const defaultAddr = addressData.find(addr => addr.isDefault);
         if (defaultAddr) {
           setSelectedAddress(defaultAddr);
@@ -67,6 +67,18 @@ const Checkout = () => {
 
     fetchData();
   }, [navigate]);
+
+  // Check if Razorpay script is loaded
+  useEffect(() => {
+    const checkRzp = () => {
+      if (window.Razorpay) {
+        setIsRzpLoaded(true);
+      } else {
+        setTimeout(checkRzp, 100);
+      }
+    };
+    checkRzp();
+  }, []);
 
   // Handle address selection
   const handleSelectAddress = (address) => {
@@ -95,7 +107,81 @@ const Checkout = () => {
     }
   };
 
-  // Handle order placement
+  // Handle Razorpay payment flow
+  const handlePayment = async () => {
+    if (!selectedAddress) {
+      setError("Please select a shipping address");
+      return;
+    }
+
+    setProcessing(true);
+    setError("");
+
+    try {
+      const result = await orderService.createPaymentOrder(total);
+      if (result.success) {
+        showRazorpay(result.data);
+      } else {
+        setError(result.error || "Failed to initiate payment");
+      }
+    } catch (err) {
+      setError("Payment initiation failed");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  // Show Razorpay checkout
+  const showRazorpay = useCallback((order) => {
+    if (!window.Razorpay || !isRzpLoaded) {
+      setError("Payment gateway not loaded. Please refresh.");
+      return;
+    }
+
+    const options = {
+      key: RAZORPAY_KEY_ID,
+      amount: order.amount,
+      currency: order.currency || "INR",
+      name: "Made4UU",
+      description: "Secure payment for your order",
+      order_id: order.id,
+      image: window.location.origin + "/made4uu-icon.svg",
+      handler: async function (response) {
+        setProcessing(true);
+        try {
+          const verifyResult = await orderService.verifyPayment(response);
+          if (verifyResult.success && verifyResult.data.success) {
+            // Payment verified, now place order
+            await handlePlaceOrder();
+          } else {
+            setError("Payment verification failed. Please contact support.");
+          }
+        } catch (err) {
+          setError("Payment processing failed");
+        } finally {
+          setProcessing(false);
+        }
+      },
+      prefill: {
+        name: user?.name || "",
+        email: user?.email || "",
+        contact: selectedAddress?.phone || ""
+      },
+      theme: {
+        color: "#000000"
+      },
+      modal: {
+        ondismiss: function() {
+          setError("Payment cancelled");
+        }
+      }
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  }, [isRzpLoaded, user, selectedAddress, total]);
+
+  // Handle COD or Razorpay verified order placement
   const handlePlaceOrder = async () => {
     if (!selectedAddress) {
       setError("Please select a shipping address");
@@ -111,7 +197,6 @@ const Checkout = () => {
     setError("");
 
     try {
-      // Prepare order items
       const items = cart.map(item => ({
         productId: item.productId,
         title: item.name,
@@ -119,22 +204,14 @@ const Checkout = () => {
         quantity: item.quantity
       }));
 
-      // Create order data based on payment method
       const orderData = {
         userId,
         items,
         shippingAddressId: selectedAddress._id,
-        payment: paymentMethod === "cash_on_delivery" 
-          ? {
-              provider: "cash_on_delivery",
-              transactionId: null,
-              status: "PENDING"
-            }
-          : {
-              provider: "razorpay",
-              transactionId: "TXN" + Date.now(),
-              status: "PAID"
-            }
+        payment: {
+          provider: paymentMethod,
+          status: paymentMethod === 'cash_on_delivery' ? 'PENDING' : 'PAID'
+        }
       };
 
       const result = await orderService.createOrder(orderData);
@@ -142,6 +219,7 @@ const Checkout = () => {
       if (result.success) {
         setOrderSuccess(result.data);
         await clearCart();
+        setPaymentMethod('razorpay'); // reset to default
       } else {
         setError(result.error || "Failed to place order");
       }
@@ -414,8 +492,8 @@ const Checkout = () => {
 
               {/* Place Order Button */}
               <button
-                onClick={handlePlaceOrder}
-                disabled={processing || !selectedAddress}
+                onClick={paymentMethod === 'razorpay' ? handlePayment : handlePlaceOrder}
+                disabled={processing || !selectedAddress || (paymentMethod === 'razorpay' && !isRzpLoaded)}
                 className="w-full bg-gradient-to-r from-gray-900 to-gray-700 text-white py-4 rounded-xl font-bold text-lg hover:from-gray-800 hover:to-gray-600 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {processing ? (
