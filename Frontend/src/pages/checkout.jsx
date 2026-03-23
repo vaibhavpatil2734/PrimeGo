@@ -7,6 +7,13 @@ import { getProfile } from "../services/auth.service";
 import orderService from "../services/order.service";
 import AddressManager from "../components/AddressManager";
 
+const transformCartItem = (item) => ({
+  ...item,
+  price: item.price || 0,
+  oldPrice: item.oldPrice || item.price || 0,
+  discountPercent: item.discountPercent || 0,
+});
+
 const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_test_key_here';
 
 const Checkout = () => {

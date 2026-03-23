@@ -26,8 +26,13 @@ const createOrder = async (req, res) => {
           message: `Insufficient stock for ${item.title}. Available: ${product.stock}` 
         });
       }
-      item.price = product.price; // ensure price is current
-      subtotal += item.price * item.quantity;
+      const finalPrice =
+        product.discountPrice && product.discountPrice > 0
+          ? product.discountPrice
+          : product.price;
+
+      item.price = finalPrice;
+      subtotal += finalPrice * item.quantity;
     }
 
     const tax = Number((subtotal * 0.1).toFixed(2)); // example: 10% tax

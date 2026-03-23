@@ -6,6 +6,13 @@ import OrderTracking from "../components/common/OrderTracking";
 import orderService from "../services/order.service";
 import { getProfile, isAuthenticated } from "../services/auth.service";
 
+const getFinalItemPrice = (item) => {
+  const product = item.productId;
+  return product?.discountPrice && product.discountPrice > 0
+    ? product.discountPrice
+    : item.price || product?.price || 0;
+};
+
 const MyOrders = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
@@ -258,7 +265,7 @@ const MyOrders = () => {
                           Total
                         </p>
                         <p className="text-sm sm:text-base font-bold text-gray-900">
-                          ₹{order.totalAmount?.toFixed(2) || "0.00"}
+                          ₹{order.items?.reduce((total, item) => total + getFinalItemPrice(item) * item.quantity, 0).toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -523,16 +530,13 @@ const MyOrders = () => {
                                               item.productId?.title}
                                           </p>
                                           <p className="text-xs text-gray-500 mt-1">
-                                            ₹{item.price?.toFixed(0)} x{" "}
+                                            ₹{getFinalItemPrice(item).toFixed(0)} x{" "}
                                             {item.quantity}
                                           </p>
                                         </div>
                                       </div>
                                       <p className="text-sm font-bold text-gray-900 text-right sm:text-left">
-                                        ₹
-                                        {(item.price * item.quantity)?.toFixed(
-                                          2,
-                                        )}
+                                        ₹{(getFinalItemPrice(item) * item.quantity).toFixed(2)}
                                       </p>
                                     </div>
                                   ))}
@@ -550,7 +554,7 @@ const MyOrders = () => {
                                       Subtotal
                                     </span>
                                     <span className="text-gray-900 font-medium">
-                                      ₹{order.subtotal?.toFixed(2) || "0.00"}
+                                      ₹{order.items?.reduce((total, item) => total + getFinalItemPrice(item) * item.quantity, 0).toFixed(2)}
                                     </span>
                                   </div>
                                   <div className="flex flex-col sm:flex-row sm:justify-between text-sm">
@@ -564,7 +568,7 @@ const MyOrders = () => {
                                       Total Amount
                                     </span>
                                     <span className="text-gray-900 text-lg">
-                                      ₹{order.totalAmount?.toFixed(2) || "0.00"}
+                                      ₹{order.items?.reduce((total, item) => total + getFinalItemPrice(item) * item.quantity, 0).toFixed(2)}
                                     </span>
                                   </div>
                                 </div>
