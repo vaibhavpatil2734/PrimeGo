@@ -144,7 +144,7 @@ const orderService = {
     console.log("🔗 API CONNECT: createPaymentOrder → /api/payment/create-order");
     alert("API CONNECTED: create-order request sent! Check backend.");
     try {
-      const response = await httpClient.post('/api/payment/create-order', { amount });
+      const response = await httpClient.post('/payment/create-order', { amount });
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -159,7 +159,7 @@ const orderService = {
     console.log("🔗 API CONNECT: verifyPayment → /api/payment/verify");
     alert("API CONNECTED: verify request sent! Check backend.");
     try {
-      const res = await httpClient.post('/api/payment/verify', response);
+      const res = await httpClient.post('/payment/verify', response);
       return { success: true, data: res.data };
     } catch (error) {
       return {
