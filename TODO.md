@@ -1,13 +1,18 @@
-# MyOrders.jsx Syntax Fixes
-## Task: Fix syntax errors and brackets in MyOrders page
+# MyOrders Premium Update + Mobile Responsiveness Fix
 
-### Steps:
-- [ ] Step 1: Fix useCallback dependency array trailing comma
-- [ ] Step 2: Fix malformed className template literal in order items preview section
-- [ ] Step 3: Fix malformed className template literal in cancel order button section  
-- [ ] Step 4: Verify all JSX brackets/tags are properly closed
-- [ ] Step 5: Test page loads without errors
-- [ ] Step 6: Update TODO.md with completion status
-- [ ] Step 7: Attempt completion
+## Original Plan (Complete):
+- [x] 1. Create TODO.md  
+- [x] 2. Update MyOrders.jsx to premium version
+- [x] 3. Verify update
+- [x] 4. Initial completion
 
-✅ All steps completed: Syntax and bracket errors fixed in MyOrders.jsx. File recreated with proper JSX structure, balanced brackets, and correct template literals.
+## Mobile Fix Plan (Feedback: text overlapping/outside cards on mobile):
+- [ ] 1. Add mobile wrapping to order header (flex-col on xs screens)
+- [ ] 2. Improve items preview wrapping (flex-col items, longer title max-w)
+- [ ] 3. Stack details flex items vertically on mobile (price/qty/summary)
+- [ ] 4. Ensure shipping/payment wrap properly
+- [ ] 5. Apply edits and verify
+- [ ] 6. Final completion
+
+**Status:** Implementing mobile overflow fixes for perfect text wrapping on small screens.
+
