@@ -109,8 +109,6 @@ const Checkout = () => {
 
   // 🟢 STEP 1: Pay button clicked - Handle Razorpay payment flow
   const handlePayment = async () => {
-    console.log("🟢 Step 1: Pay button clicked | Amount:", total, "Address:", selectedAddress?._id);
-    alert("🟢 DEBUG: Step 1 - Button clicked! Check console.");
 
     if (!selectedAddress) {
       setError("Please select a shipping address");
@@ -121,10 +119,7 @@ const Checkout = () => {
     setError("");
 
     try {
-      console.log("DEBUG REQ BODY:", { amount: total });
-      console.log("🟢 Step 2: Calling create-order API | Amount:", total);
       const result = await orderService.createPaymentOrder(total);
-      console.log("🟢 Step 2: create-order response:", result);
       if (result.success) {
         showRazorpay(result.data);
       } else {
@@ -140,8 +135,7 @@ const Checkout = () => {
   // Show Razorpay checkout
   // 🟢 STEP 3: Opening Razorpay
   const showRazorpay = useCallback((order) => {
-    console.log("🟢 Step 3: Opening Razorpay | Order:", order);
-    alert("🟢 DEBUG: Step 3 - Razorpay opening! Amount: " + (order.amount/100));
+ 
 
     if (!window.Razorpay || !isRzpLoaded) {
       setError("Payment gateway not loaded. Please refresh.");
@@ -157,19 +151,12 @@ const Checkout = () => {
       order_id: order.id,
       image: window.location.origin + "/made4uu-icon.svg",
       handler: async function (response) {
-        console.log("🟢 Step 4: Razorpay payment callback | Response:", response);
-        alert("🟢 DEBUG: Step 4 - Payment success callback!");
 
         setProcessing(true);
         try {
-          console.log("🟢 Step 5: Calling verify API | Response:", response);
           const verifyResult = await orderService.verifyPayment(response);
-          console.log("🟢 Step 6: Verify response:", verifyResult);
-          alert("🟢 DEBUG: Step 6 - Verify result: " + (verifyResult.success ? 'SUCCESS' : 'FAILED'));
           if (verifyResult.success && verifyResult.data.success) {
             // 🟢 STEP 7: Placing order (ONLY after verify success)
-            console.log("🟢 Step 7: Verified success → Placing order");
-            alert("🟢 DEBUG: Step 7 - Placing order NOW!");
             await handlePlaceOrder();
           } else {
             setError("Payment verification failed. Please contact support.");
@@ -201,8 +188,6 @@ const Checkout = () => {
 
   // 🟢 COD or verified order placement
   const handlePlaceOrder = async () => {
-    console.log("🟢 COD/Verified: handlePlaceOrder called | Method:", paymentMethod);
-    alert("🟢 DEBUG: handlePlaceOrder executed!");
     if (!selectedAddress) {
       setError("Please select a shipping address");
       return;

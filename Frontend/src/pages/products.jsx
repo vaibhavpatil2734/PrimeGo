@@ -386,7 +386,7 @@ const transformProduct = (product) => {
         </div>
       ) : (
         <>
-          <div ref={productsRef} className="max-h-[70vh] overflow-y-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8 lg:gap-10 pr-2" onScroll={saveScrollPosition}>
+          <div ref={productsRef} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8 lg:gap-10 pb-20" onScroll={saveScrollPosition}>
             {filteredProducts.map((product) => (
               <ProductCard
                 key={product.id}
