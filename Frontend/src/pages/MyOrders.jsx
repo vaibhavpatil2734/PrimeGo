@@ -43,13 +43,13 @@ const MyOrders = () => {
         setError(result.error || 'Failed to load orders');
       }
     } catch (err) {
-      console.error('MyOrders fetch error:', err);
+// console.error('MyOrders fetch error:', err);
       const errorMsg = err.response?.status === 401 ? 'Please login again' : (err.response?.data?.message || 'Failed to load orders');
       setError(errorMsg);
     } finally {
       setLoading(false);
     }
-}, []);
+  }, []);
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -126,8 +126,6 @@ const MyOrders = () => {
                 {error}
               </motion.div>
             )}
-
-
 
             {orders.length === 0 ? (
               <div className="text-center py-8 sm:py-12">
@@ -212,7 +210,7 @@ const MyOrders = () => {
 
                     {/* Order Items Preview */}
                     <div className="p-3 sm:p-4">
-                      <div className={`flex flex-wrap items-center ${order.status?.toUpperCase() === 'CANCELLED' ? 'gap-3 border-dashed border-2 border-gray-400 rounded-2xl p-4 bg-gray-50/50' : 'gap-2 sm:gap-4'}`}>
+                      <div className={`flex flex-wrap items-center ${order.status?.toUpperCase() === 'CANCELLED' ? 'gap-3 border-dashed border-2 border-gray-400 rounded-2xl p-4 bg-gray-50/50' : 'gap-4 sm:gap-6'}`}>
                         {order.items?.slice(0, 3).map((item, index) => (
                           <div key={index} className="flex items-center gap-2 sm:gap-3">
                             <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
@@ -244,24 +242,26 @@ const MyOrders = () => {
                       </div>
 
                       {order.status?.toUpperCase() === 'PLACED' && (
-                        <motion.button
-                          onClick={async () => {
-                            const result = await orderService.cancelOrder(order._id, 'Cancelled from MyOrders page');
-                            if (result.success) {
-                              setRefreshKey(prev => prev + 1);
-                            } else {
-                              setError(result.error || 'Failed to cancel order');
-                            }
-                          }}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          className="w-full mb-2 bg-red-500 hover:bg-red-600 text-white font-bold tracking-widest uppercase text-xs py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-2 mx-auto"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                          Cancel Order
-                        </motion.button>
+                        <div className="w-full mt-4 pt-2 flex justify-center">
+                          <motion.button
+                            onClick={async () => {
+                              const result = await orderService.cancelOrder(order._id, 'Cancelled from MyOrders page');
+                              if (result.success) {
+                                setRefreshKey(prev => prev + 1);
+                              } else {
+                                setError(result.error || 'Failed to cancel order');
+                              }
+                            }}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+className="w-full mt-6 mb-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold tracking-widest uppercase text-sm py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 mx-auto"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Cancel Order
+                          </motion.button>
+                        </div>
                       )}
                       {order.status?.toUpperCase() !== 'CANCELLED' ? (
                         <>

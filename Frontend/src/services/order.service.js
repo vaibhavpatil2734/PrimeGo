@@ -17,7 +17,7 @@ const orderService = {
       const userData = await getProfile();
       return userData._id;
     } catch (error) {
-      console.error("Error getting user:", error);
+// console.error("Error getting user:", error);
       return null;
     }
   },
@@ -141,8 +141,8 @@ const orderService = {
 
   // Create Razorpay payment order
   async createPaymentOrder(amount) {
-    console.log("🔗 API CONNECT: createPaymentOrder → /api/payment/create-order");
-    alert("API CONNECTED: create-order request sent! Check backend.");
+// console.log("🔗 API CONNECT: createPaymentOrder → /api/payment/create-order");
+// alert("API CONNECTED: create-order request sent! Check backend.");
     try {
       const response = await httpClient.post('/payment/create-order', { amount });
       return { success: true, data: response.data };
@@ -156,8 +156,8 @@ const orderService = {
 
   // Verify Razorpay payment
   async verifyPayment(response) {
-    console.log("🔗 API CONNECT: verifyPayment → /api/payment/verify");
-    alert("API CONNECTED: verify request sent! Check backend.");
+// console.log("🔗 API CONNECT: verifyPayment → /api/payment/verify");
+// alert("API CONNECTED: verify request sent! Check backend.");
     try {
       const res = await httpClient.post('/payment/verify', response);
       return { success: true, data: res.data };
