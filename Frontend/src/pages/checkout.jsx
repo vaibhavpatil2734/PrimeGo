@@ -121,7 +121,8 @@ const Checkout = () => {
         setError(result.error || "Payment validation failed");
       }
     } catch (err) {
-      setError("Payment initiation failed");
+      console.error('[Checkout] Payment initiation error:', err.response?.data || err);
+      setError(err.response?.data?.error || "Payment initiation failed");
     } finally {
       setProcessing(false);
     }
@@ -152,7 +153,8 @@ const Checkout = () => {
         setError(result.error || "COD order failed");
       }
     } catch (err) {
-      setError("COD order failed");
+      console.error('[Checkout] COD order error:', err.response?.data || err);
+      setError(err.response?.data?.error || "COD order failed");
     } finally {
       setProcessing(false);
     }
@@ -178,7 +180,7 @@ const Checkout = () => {
         // Explicitly send amount (paise) - Razorpay response format
         const verifyData = {
           ...response,
-          razorpay_amount: backendTotal * 100 // Backend expects this field in paise
+          razorpay_amount: razorpayOrder.amount // Use backend-provided paise value (fix race condition)
         };
         const verifyResult = await orderService.verifyPayment(verifyData);
         
@@ -186,7 +188,8 @@ const Checkout = () => {
           setOrderSuccess(verifyResult.data);
           await clearCart();
         } else {
-          setError("Payment failed. Please contact support.");
+          console.error('[Checkout] Verify payment error:', verifyResult.error || verifyResult.data);
+          setError(verifyResult.error || "Payment verification failed");
         }
       },
       prefill: {
