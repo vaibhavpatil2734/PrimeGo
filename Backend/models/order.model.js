@@ -58,10 +58,15 @@ const orderSchema = new mongoose.Schema({
   payment: {
     provider: {
       type: String,
-      enum: ["razorpay", "cash_on_delivery"] // extendable for other providers
+      enum: ["razorpay", "cash_on_delivery"]
     },
+    razorpayOrderId: { type: String },
+    razorpayPaymentId: { type: String },
     transactionId: { type: String },
-    status: { type: String }
+    status: { 
+      type: String,
+      enum: ['PENDING', 'PAID', 'FAILED', 'REFUNDED']
+    }
   },
 
   paymentStatus: {

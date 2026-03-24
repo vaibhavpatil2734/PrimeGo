@@ -1,93 +1,108 @@
 // controllers/order.controller.js
 const Order = require("../models/order.model");
 const Product = require("../models/product.model");
+const PaymentAttempt = require("../models/PaymentAttempt.model");
 
 /**
- * Place a new order
+ * ✅ UPDATED: COD Orders or Admin/Internal use only
+ * Stock validation but NO deduction (handled in payment flow)
+ * Idempotency protection
  */
 const createOrder = async (req, res) => {
   try {
-    const { userId, items, shippingAddressId, payment } = req.body;
+    const { items, shippingAddressId, payment, idempotencyKey } = req.body;
+    const userId = req.user._id; // From auth middleware
 
-    if (!items || items.length === 0) {
-      return res.status(400).json({ message: "Order must have at least one item" });
+    // 1. Idempotency check
+    if (idempotencyKey) {
+      const existingOrder = await Order.findOne({ 
+        userId, 
+        idempotencyKey,
+        status: { $in: ['PLACED', 'SHIPPED', 'DELIVERED'] }
+      });
+      if (existingOrder) {
+        console.log(`🔄 [ORDER] Idempotent: returning existing ${existingOrder.orderNumber}`);
+        return res.status(200).json(existingOrder);
+      }
     }
 
-    // Calculate subtotal and validate stock
+    if (!items || items.length === 0) {
+      return res.status(400).json({ error: "Order must have at least one item" });
+    }
+
+    // 2. Validate stock (but don't deduct - handled in payment flow)
     let subtotal = 0;
+    const validatedItems = [];
+    
     for (const item of items) {
       const product = await Product.findById(item.productId);
       if (!product || product.isDeleted || !product.isActive) {
-        return res.status(400).json({ message: `Invalid product: ${item.title}` });
+        return res.status(400).json({ error: `Invalid product: ${item.title}` });
       }
-      // Check if sufficient stock is available
       if (product.stock < item.quantity) {
         return res.status(400).json({ 
-          message: `Insufficient stock for ${item.title}. Available: ${product.stock}` 
+          error: `Insufficient stock for ${product.title}. Available: ${product.stock}` 
         });
       }
-      const finalPrice =
-        product.discountPrice && product.discountPrice > 0
-          ? product.discountPrice
-          : product.price;
 
-      item.price = finalPrice;
-      subtotal += finalPrice * item.quantity;
+      const price = product.discountPrice > 0 ? product.discountPrice : product.price;
+      validatedItems.push({
+        productId: product._id,
+        title: product.title,
+        price,
+        quantity: item.quantity
+      });
+      subtotal += price * item.quantity;
     }
 
-    const tax = Number((subtotal * 0.1).toFixed(2)); // example: 10% tax
+    const tax = Number((subtotal * 0.1).toFixed(2));
     const totalAmount = subtotal + tax;
+    const orderNumber = `ORD${Date.now()}`;
 
-    // Generate simple order number
-    const orderNumber = "ORD" + Date.now();
+    // 3. Determine payment status (COD only for now)
+    const paymentStatus = payment?.provider === 'cash_on_delivery' ? 'CASH_ON_DELIVERY' : 'UNPAID';
 
-    // Determine paymentStatus based on payment method
-    let paymentStatus = "UNPAID";
-    if (payment && payment.provider === "razorpay" && payment.status === "PAID") {
-      paymentStatus = "PAID";
-    } else if (payment && payment.provider === "cash_on_delivery") {
-      paymentStatus = "CASH_ON_DELIVERY";
-    }
-
-    const order = await Order.create({
+    const orderData = {
       orderNumber,
       userId,
-      items,
+      items: validatedItems,
       subtotal,
       tax,
       totalAmount,
       shippingAddressId,
-      payment,
+      payment: {
+        provider: payment?.provider || 'cod',
+        status: paymentStatus === 'CASH_ON_DELIVERY' ? 'PENDING' : 'UNPAID'
+      },
       paymentStatus,
-      status: "PLACED"
-    });
+      status: 'PLACED',
+      idempotencyKey // Store for future checks
+    };
 
-    // Decrease stock for each item in the order
-    for (const item of items) {
-      await Product.findByIdAndUpdate(item.productId, {
-        $inc: { stock: -item.quantity }
-      });
-    }
+    const order = await Order.create(orderData);
+    console.log(`✅ [ORDER COD] Created: ${orderNumber} for user ${userId}`);
 
     res.status(201).json(order);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('❌ [ORDER CREATE] Error:', error);
+    res.status(500).json({ error: error.message });
   }
 };
 
 /**
- * Get all orders (Admin)
+ * Get all orders (Admin) - Enhanced populate
  */
 const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
-      .populate("userId", "name email")
-      .populate("items.productId", "title price")
-      .populate("shippingAddressId");
+      .populate("userId", "name email phone")
+      .populate("items.productId", "title price images stock")
+      .populate("shippingAddressId", "name line1 city state postalCode phone")
+      .sort({ createdAt: -1 });
 
     res.json(orders);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -98,16 +113,16 @@ const getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
       .populate("userId", "name email")
-      .populate("items.productId", "title price")
+      .populate("items.productId", "title price images")
       .populate("shippingAddressId");
 
     if (!order) {
-      return res.status(404).json({ message: "Order not found" });
+      return res.status(404).json({ error: "Order not found" });
     }
 
     res.json(order);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -119,12 +134,13 @@ const getOrdersByUser = async (req, res) => {
     const { userId } = req.params;
 
     const orders = await Order.find({ userId })
-      .populate("items.productId", "title price")
-      .populate("shippingAddressId");
+      .populate("items.productId", "title price images")
+      .populate("shippingAddressId")
+      .sort({ createdAt: -1 });
 
     res.json(orders);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -137,12 +153,21 @@ const updateOrderStatus = async (req, res) => {
     const { status } = req.body;
 
     if (!["PLACED","SHIPPED","DELIVERED","CANCELLED"].includes(status)) {
-      return res.status(400).json({ message: "Invalid status" });
+      return res.status(400).json({ error: "Invalid status" });
     }
 
     const order = await Order.findById(id);
     if (!order) {
-      return res.status(404).json({ message: "Order not found" });
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    // Restore stock if cancelling shipped/delivered orders
+    if (status === 'CANCELLED' && order.status !== 'CANCELLED') {
+      for (const item of order.items) {
+        await Product.findByIdAndUpdate(item.productId, {
+          $inc: { stock: item.quantity }
+        });
+      }
     }
 
     order.status = status;
@@ -150,12 +175,12 @@ const updateOrderStatus = async (req, res) => {
 
     res.json({ message: "Order status updated", order });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
 /**
- * Cancel order (User/Admin)
+ * Cancel order (User/Admin) - Now handles stock restoration
  */
 const cancelOrder = async (req, res) => {
   try {
@@ -163,14 +188,14 @@ const cancelOrder = async (req, res) => {
 
     const order = await Order.findById(id);
     if (!order) {
-      return res.status(404).json({ message: "Order not found" });
+      return res.status(404).json({ error: "Order not found" });
     }
 
     if (order.status === "CANCELLED" || order.status === "DELIVERED") {
-      return res.status(400).json({ message: "Cannot cancel this order" });
+      return res.status(400).json({ error: "Cannot cancel this order" });
     }
 
-    // Restore stock for each item in the order
+    // Restore stock
     for (const item of order.items) {
       await Product.findByIdAndUpdate(item.productId, {
         $inc: { stock: item.quantity }
@@ -182,7 +207,7 @@ const cancelOrder = async (req, res) => {
 
     res.json({ message: "Order cancelled successfully", order });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -194,3 +219,4 @@ module.exports = {
   updateOrderStatus,
   cancelOrder
 };
+

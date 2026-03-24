@@ -1,4 +1,5 @@
 const express = require("express");
+const auth = require("../middleware/auth");
 const {
   createOrder,
   getAllOrders,
@@ -10,30 +11,23 @@ const {
 
 const router = express.Router();
 
+// 🛡️ Auth middleware for user routes
+const userAuth = auth;
+const adminAuth = [auth]; // Add admin check later
+
 /* ==========================
-   USER ROUTES
+   USER ROUTES (Auth protected)
 ========================== */
-
-// Place a new order
+router.use(userAuth);
 router.post("/", createOrder);
-
-// Get all orders for a specific user
 router.get("/user/:userId", getOrdersByUser);
-
-// Get single order by ID
 router.get("/:id", getOrderById);
-
-// Cancel an order
 router.patch("/:id/cancel", cancelOrder);
 
 /* ==========================
-   ADMIN ROUTES
+   ADMIN ROUTES (Auth protected)
 ========================== */
-
-// Get all orders (Admin)
-router.get("/admin/all", getAllOrders);
-
-// Update order status (Admin)
-router.patch("/admin/:id/status", updateOrderStatus);
+router.get("/admin/all", adminAuth, getAllOrders);
+router.patch("/admin/:id/status", adminAuth, updateOrderStatus);
 
 module.exports = router;
