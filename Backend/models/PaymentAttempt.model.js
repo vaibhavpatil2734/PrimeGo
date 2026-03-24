@@ -50,7 +50,7 @@ razorpayOrderId: {
 // Auto-expire old attempts (cleanup)
 paymentAttemptSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 paymentAttemptSchema.index({ userId: 1, status: 1 });
-paymentAttemptSchema.index({ razorpayOrderId: 1 });
+
 
 module.exports = mongoose.model('PaymentAttempt', paymentAttemptSchema);
 

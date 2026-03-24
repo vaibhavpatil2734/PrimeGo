@@ -178,7 +178,7 @@ const Checkout = () => {
         // Explicitly send amount (paise) - Razorpay response format
         const verifyData = {
           ...response,
-          razorpay_amount: response.amount // Backend expects this field in paise
+          razorpay_amount: backendTotal * 100 // Backend expects this field in paise
         };
         const verifyResult = await orderService.verifyPayment(verifyData);
         

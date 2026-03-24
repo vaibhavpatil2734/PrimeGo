@@ -204,16 +204,19 @@ const verifyPayment = async (req, res) => {
     }
 
     // 3. Amount matching (CRITICAL SECURITY)
-    const paidAmount = Number(razorpay_amount) / 100; // Convert paise to INR
-    if (paidAmount !== paymentAttempt.expectedAmount) {
-      console.log(`🔴 [VERIFY] Amount mismatch: paid=${paidAmount}, expected=${paymentAttempt.expectedAmount}`);
+    const paidAmountPaise = Number(razorpay_amount); // Keep as paise for exact match
+    const expectedPaise = Math.round(paymentAttempt.expectedAmount * 100);
+    console.log(`💰 [VERIFY] Amount: sent=${paidAmountPaise}p (${razorpay_amount}), expected=${expectedPaise}p`);
+    
+    if (paidAmountPaise !== expectedPaise) {
+      console.log(`🔴 [VERIFY] Amount mismatch: paid=${paidAmountPaise}p, expected=${expectedPaise}p`);
       
-      // Mark as failed
       paymentAttempt.status = 'FAILED';
       await paymentAttempt.save();
       
-      return res.status(400).json({ success: false, error: 'Amount mismatch' });
+      return res.status(400).json({ success: false, error: `Amount mismatch: paid ${paidAmountPaise}p, expected ${expectedPaise}p` });
     }
+    console.log('✅ [VERIFY] Amount match OK');
 
     // 4. ALL CHECKS PASS - Create final order + deduct stock
     paymentAttempt.status = 'VERIFIED';
