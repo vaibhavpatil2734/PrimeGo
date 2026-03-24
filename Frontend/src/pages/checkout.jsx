@@ -26,11 +26,9 @@ const Checkout = () => {
   const [isRzpLoaded, setIsRzpLoaded] = useState(false);
   const [backendTotal, setBackendTotal] = useState(0); // Backend-calculated total
 
-  // Frontend summary (for display only)
-  const taxRate = 0.1;
+  // Frontend summary (no tax)
   const frontendSubtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const frontendTax = Number((frontendSubtotal * taxRate).toFixed(2));
-  const frontendTotal = frontendSubtotal + frontendTax;
+  const frontendTotal = frontendSubtotal;
 
   // Fetch user and addresses
   useEffect(() => {
@@ -176,8 +174,13 @@ const Checkout = () => {
       order_id: razorpayOrder.id,
       image: window.location.origin + "/made4uu-icon.svg",
       handler: async function (response) {
-        // ✅ Send FULL Razorpay response (includes amount for backend matching)
-        const verifyResult = await orderService.verifyPayment(response);
+        console.log('RZP response:', response); // Debug
+        // Explicitly send amount (paise) - Razorpay response format
+        const verifyData = {
+          ...response,
+          razorpay_amount: response.amount // Backend expects this field in paise
+        };
+        const verifyResult = await orderService.verifyPayment(verifyData);
         
         if (verifyResult.success && verifyResult.data.success) {
           setOrderSuccess(verifyResult.data);
@@ -347,10 +350,6 @@ const Checkout = () => {
                 <div className="flex justify-between text-gray-600">
                   <span>Shipping</span>
                   <span className="text-green-600">Free</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Tax (10%)</span>
-                  <span>₹{frontendTax.toFixed(2)}</span>
                 </div>
                 <div className="border-t pt-3 flex justify-between text-xl font-bold text-gray-900">
                   <span>Total (finalized by backend)</span>

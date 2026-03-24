@@ -8,10 +8,10 @@ const paymentAttemptSchema = new mongoose.Schema({
     required: true,
     index: true
   },
-  razorpayOrderId: {
+razorpayOrderId: {
     type: String,
-    required: true,
-    unique: true
+    unique: true, // Remove required - set after Razorpay
+    sparse: true  // Allow null values for unique index
   },
   items: [{
     productId: {

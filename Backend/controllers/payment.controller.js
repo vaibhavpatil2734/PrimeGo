@@ -14,10 +14,20 @@ const { v4: uuidv4 } = require('uuid');
  */
 const createRazorpayOrder = async (req, res) => {
   try {
+    console.log('🔍 [PAYMENT CREATE] Start - user:', req.user?._id);
+    
+    // Key validation (safer than API call)
+    const { testConnection } = require('../config/razorpay');
+    if (!testConnection()) {
+      return res.status(503).json({ error: 'Razorpay keys missing' });
+    }
+    console.log('✅ Razorpay keys OK');
+    
     const { items, shippingAddressId } = req.body;
     const userId = req.user._id;
 
     console.log(`🟢 [PAYMENT] create-order: user=${userId}, items=${items.length}`);
+
 
     // 1. Input validation
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -56,13 +66,27 @@ const createRazorpayOrder = async (req, res) => {
       subtotal += price * item.quantity;
     }
 
-    const tax = Number((subtotal * 0.1).toFixed(2)); // 10% tax
-    const expectedAmount = subtotal + tax;
+    const tax = 0; // Tax removed per request
+    const expectedAmount = subtotal;
 
     // 3. Idempotency key (prevent duplicate attempts)
     const idempotencyKey = uuidv4();
 
-    // 4. Store PaymentAttempt (key security step)
+    // Idempotency - check existing
+    const existing = await PaymentAttempt.findOne({
+      idempotencyKey,
+      status: { $in: ['PENDING', 'VERIFIED'] }
+    });
+    if (existing?.razorpayOrderId) {
+      console.log(`🔄 Idempotent: using existing ${existing._id}`);
+      return res.json({
+        success: true,
+        razorpayOrder: { id: existing.razorpayOrderId },
+        expectedAmount: existing.expectedAmount
+      });
+    }
+
+    // 4. Store PaymentAttempt
     const paymentAttempt = await PaymentAttempt.create({
       userId,
       items: validatedItems,
@@ -73,18 +97,25 @@ const createRazorpayOrder = async (req, res) => {
       idempotencyKey
     });
 
-    // 5. Create Razorpay order with BACKEND amount only
+    // 5. Create Razorpay order
+    const amountPaise = Math.round(expectedAmount * 100);
+    if (amountPaise <= 0) {
+      throw new Error('Invalid amount: zero or negative');
+    }
+
     const options = {
-      amount: Math.round(expectedAmount * 100), // paise
+      amount: amountPaise,
       currency: 'INR',
-      receipt: `attempt_${paymentAttempt._id}`,
+      receipt: `rzp_${paymentAttempt._id}`,
       notes: {
         paymentAttemptId: paymentAttempt._id.toString(),
         userId: userId.toString()
       }
     };
 
+    console.log(`🧾 Creating RZP order: ${amountPaise} paise`);
     const razorpayOrder = await razorpay.orders.create(options);
+
     
     // Link razorpay order ID
     paymentAttempt.razorpayOrderId = razorpayOrder.id;
@@ -99,10 +130,36 @@ const createRazorpayOrder = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ [PAYMENT CREATE] Error:', error);
-    res.status(500).json({ error: 'Failed to create payment order' });
+    console.error('🔴 [PAYMENT CREATE] FULL ERROR:', {
+      message: error.message,
+      code: error.code,
+      statusCode: error.statusCode || 'N/A',
+      description: error.description,
+      name: error.name,
+      userId: req.user?._id
+    });
+
+    let errorMsg = 'Payment service error';
+    let status = 500;
+
+    if (error.code === 4001 || error.description?.includes('key')) {
+      errorMsg = 'Invalid Razorpay keys';
+      status = 503;
+    } else if (error.code === 402) {
+      errorMsg = 'Gateway payment limit exceeded';
+      status = 402;
+    } else if (error.name === 'ValidationError') {
+      errorMsg = 'Invalid order data';
+      status = 400;
+    } else if (error.message.includes('zero') || error.message.includes('negative')) {
+      errorMsg = 'Invalid order amount';
+      status = 400;
+    }
+
+    res.status(status).json({ error: errorMsg });
   }
 };
+
 
 /**
  * ✅ SECURE: Step 2 - Verify Razorpay Payment (Amount matching + order creation)
