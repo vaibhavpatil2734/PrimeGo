@@ -174,7 +174,7 @@ const Checkout = () => {
       name: "Made4UU",
       description: `Order: ₹${backendTotal}`,
       order_id: razorpayOrder.id,
-      image: window.location.origin + "/made4uu-icon.svg",
+      image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI0IDE2QzI0IDE5LjE2OCA1LjE2OCAyNCAxNiAyNEgyMFYxNkwyNCAxNlptLTQuMjA4IDBjMCAuODY0LjcgMS41NjYgMS41NjYgMS41NjZIMjRDMTguNDMyIDI0IDE2IDIxLjU2OCAxNiAxNlMyMC40MzIgOCAyNCA4SDIxLjc5MlMxOS43OTIgOCAxOS43OTIgOC4yMDhWMTRIMTZDMTMuNDM2IDE0IDEyIDExLjU2NCAxMiA5VjguMjA4QzEyIDcuNDM2IDEzLjQzNiA2IDE0LjIwOCA2SDI0QzI1LjU2NCA2IDI3IDcuNDM2IDI3IDguMjA4VjEyQzI3IDEzLjU2NCAyNS41NjQgMTUgMjQgMTVaIiBmaWxsPSIjRkZGRkZGIi8+CjxwYXRoIGQ9Ik0yNCAxNkMyNCAxOS4xNjggNS4xNjggMjQgMTYgMjRIMjBWMTZMMjQgMTZaIiBmaWxsPSIjRkZBRjAwIi8+CjxwYXRoIGQ9Ik0xOS43OTIgOC4yMDhDOCAxLjQzNiAxMy40MzYgNiAxNC4yMDggNkgyNEMyNS41NjQgNiAyNyA3LjQzNiAyNyA4LjIwOFYxMkMyNyAxMy41NjQgMjUuNTY0IDE1IDI0IDE1WiIgZmlsbD0iI0ZGQTAwIi8+Cjwvc3ZnPg==",
       handler: async function (response) {
         console.log('RZP response:', response); // Debug
         // Explicitly send amount (paise) - Razorpay response format
