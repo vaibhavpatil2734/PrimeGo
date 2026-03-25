@@ -75,6 +75,19 @@ const orderSchema = new mongoose.Schema({
     default: "UNPAID"
   },
 
+  deliveryProvider: {
+    type: String
+  },
+  trackingId: {
+    type: String
+  },
+  shipmentId: {
+    type: String
+  },
+  awbCode: {
+    type: String
+  },
+
   createdAt: {
     type: Date,
     default: Date.now

@@ -250,13 +250,37 @@ const verifyPayment = async (req, res) => {
       status: 'PLACED'
     });
 
-    console.log(`✅ [PAYMENT] SUCCESS: order=${orderNumber}, attempt=${paymentAttempt._id}`);
-
-    res.json({ 
-      success: true, 
-      orderId: order._id,
-      orderNumber: order.orderNumber 
-    });
+    // Shiprocket integration
+    try {
+      const populatedOrder = await Order.findById(order._id).populate(['shippingAddressId', 'userId']);
+      const { createShipment } = require("../services/shiprocket.service");
+      const shipment = await createShipment(populatedOrder);
+      
+      populatedOrder.deliveryProvider = "shiprocket";
+      populatedOrder.shipmentId = shipment.shipment_id;
+      populatedOrder.awbCode = shipment.awb_code;
+      populatedOrder.trackingId = shipment.awb_code;
+      populatedOrder.status = "SHIPPED";
+      
+      await populatedOrder.save();
+      
+      console.log(`✅ [PAYMENT + SHIPROCKET] SUCCESS: order=${orderNumber}, shipment=${shipment.shipment_id}`);
+      
+      res.json({ 
+        success: true, 
+        orderId: populatedOrder._id,
+        orderNumber: populatedOrder.orderNumber 
+      });
+    } catch (shiprocketError) {
+      console.log("Shiprocket error:", shiprocketError.message);
+      console.log(`✅ [PAYMENT Fallback] SUCCESS: order=${orderNumber}`);
+      
+      res.json({ 
+        success: true, 
+        orderId: order._id,
+        orderNumber: order.orderNumber 
+      });
+    }
 
   } catch (error) {
     console.error('❌ [PAYMENT VERIFY] Error:', error);

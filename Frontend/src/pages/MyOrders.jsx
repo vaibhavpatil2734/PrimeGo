@@ -399,6 +399,22 @@ const MyOrders = () => {
                               : "Track Order"}
                           </motion.button>
 
+                          {order.trackingId && (
+                            <motion.a
+                              href={`https://shiprocket.co/tracking/${order.trackingId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              className="w-full mt-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold tracking-widest uppercase text-xs sm:text-sm py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg transition-all flex items-center justify-center gap-2 block text-center"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              Track on Shiprocket
+                            </motion.a>
+                          )}
+
                           <AnimatePresence>
                             {trackingOrders[order._id] && (
                               <motion.div

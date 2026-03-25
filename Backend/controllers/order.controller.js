@@ -80,9 +80,28 @@ const createOrder = async (req, res) => {
     };
 
     const order = await Order.create(orderData);
-    console.log(`✅ [ORDER COD] Created: ${orderNumber} for user ${userId}`);
-
-    res.status(201).json(order);
+    
+    // Shiprocket integration
+    try {
+      const populatedOrder = await Order.findById(order._id).populate(['shippingAddressId', 'userId']);
+      const { createShipment } = require("../services/shiprocket.service");
+      const shipment = await createShipment(populatedOrder);
+      
+      populatedOrder.deliveryProvider = "shiprocket";
+      populatedOrder.shipmentId = shipment.shipment_id;
+      populatedOrder.awbCode = shipment.awb_code;
+      populatedOrder.trackingId = shipment.awb_code;
+      populatedOrder.status = "SHIPPED";
+      
+      await populatedOrder.save();
+      
+      console.log(`✅ [ORDER COD + SHIPROCKET] Created & Shipped: ${orderNumber} for user ${userId}, shipment: ${shipment.shipment_id}`);
+      res.status(201).json(populatedOrder);
+    } catch (shiprocketError) {
+      console.log("Shiprocket error:", shiprocketError.message);
+      console.log(`✅ [ORDER COD Fallback] Created: ${orderNumber} for user ${userId}`);
+      res.status(201).json(order);
+    }
   } catch (error) {
     console.error('❌ [ORDER CREATE] Error:', error);
     res.status(500).json({ error: error.message });
