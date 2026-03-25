@@ -1,43 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import TrackingSteps from "./TrackingSteps";
 import { Truck } from "lucide-react";
 
-const OrderTracking = ({ status = "PLACED" }) => {
+const OrderTracking = ({ order, status = "PLACED" }) => {
   const upperStatus = status?.toUpperCase() || "PLACED";
-  
-  // Map status to scene
-  const getInitialScene = () => {
-    if (upperStatus === "SHIPPED") return 1;
-    if (upperStatus === "DELIVERED") return 2;
-    return 0; // PLACED default
-  };
 
-  const [scene, setScene] = useState(getInitialScene());
+  const [scene, setScene] = useState(0);
+  const [playKey, setPlayKey] = useState(0);
 
-  // Status-based looping
+  // Enhanced loop: pause on DELIVERED, dynamic timing
   useEffect(() => {
-    if (upperStatus === 'PLACED') {
-      // Only scene 0 loops
-      const interval = setInterval(() => {
-        setScene(0);
-      }, 3000);
-      return () => clearInterval(interval);
-    } else if (upperStatus === 'SHIPPED') {
-      // Scenes 0-1 loop
-      const scenes = [0, 1];
-      let currentIndex = 0;
-      const interval = setInterval(() => {
-        setScene(scenes[currentIndex]);
-        currentIndex = (currentIndex + 1) % scenes.length;
-      }, 3000);
-      return () => clearInterval(interval);
-    } else if (upperStatus === 'DELIVERED') {
-      // All scenes 0-2 loop (current logic)
-      const interval = setInterval(() => {
-        setScene((prev) => (prev + 1) % 3);
-      }, 3000);
-      return () => clearInterval(interval);
-    }
+    const statusToScene = {
+      PLACED: 0,
+      SHIPPED: 1,
+      DELIVERED: 2,
+    };
+
+    let index = statusToScene[upperStatus] ?? 0;
+    setScene(index); // Start at correct scene
+
+    // STATIC ONLY: No animations beyond current status
+    if (upperStatus === 'PLACED' || upperStatus === 'SHIPPED' || upperStatus === 'DELIVERED') return;
+
+    return () => {};
   }, [upperStatus]);
 
   const getSceneText = () => {
@@ -48,52 +34,61 @@ const OrderTracking = ({ status = "PLACED" }) => {
   };
 
   return (
-    <div className="w-full max-w-sm sm:max-w-md mx-auto p-4 sm:p-6 bg-white rounded-2xl shadow-xl">
+    <div className="w-full p-2 sm:p-4 md:p-6">
+      <TrackingSteps scene={scene} orderData={order} />
 
       {/* 🎬 SCENE */}
-      <div className="relative h-48 sm:h-60 bg-gradient-to-r from-emerald-50 to-green-100 rounded-xl overflow-hidden">
-
-        <AnimatePresence mode="wait">
-
+      <div className="relative h-40 sm:h-48 md:h-60 bg-gradient-to-r from-emerald-50 to-green-100 rounded-xl overflow-hidden">
+        
+        {/* ✅ re-render animation */}
+        <AnimatePresence mode="wait" initial={false}>
+          
           {/* ================= 🎁 SCENE 1 ================= */}
           {scene === 0 && (
             <motion.div
-              key="wrap"
+              key={`wrap-${playKey}`}
               className="absolute inset-0 flex items-center justify-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
               <div className="relative scale-90 sm:scale-110">
+                
                 <motion.div
-                  className="w-12 h-12 sm:w-16 sm:h-16 bg-amber-400 rounded-xl shadow-xl"
-                  animate={{ scale: [1, 1.15, 1] }}
-                  transition={{ repeat: Infinity, duration: 1 }}
-                />
-                <motion.div
-                  className="absolute inset-0 bg-pink-400 rounded-xl"
+                  className="w-12 h-12 sm:w-16 sm:h-16 bg-amber-400 rounded-xl shadow-xl relative z-10"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  transition={{ duration: 0.6 }}
+                  transition={{ duration: 0.4 }}
                 />
+
                 <motion.div
-                  className="absolute left-1/2 top-0 w-1.5 sm:w-2 h-full bg-red-500 -translate-x-1/2"
+                  className="absolute inset-0 bg-pink-400 rounded-xl z-20"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.5, duration: 0.4 }}
+                />
+
+                <motion.div
+                  className="absolute left-1/2 top-0 w-1.5 sm:w-2 h-full bg-red-500 -translate-x-1/2 z-30"
                   initial={{ scaleY: 0 }}
                   animate={{ scaleY: 1 }}
-                  transition={{ delay: 0.4 }}
+                  transition={{ delay: 1, duration: 0.3 }}
                 />
+
                 <motion.div
-                  className="absolute top-1/2 left-0 h-1.5 sm:h-2 w-full bg-red-500 -translate-y-1/2"
+                  className="absolute top-1/2 left-0 h-1.5 sm:h-2 w-full bg-red-500 -translate-y-1/2 z-30"
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
-                  transition={{ delay: 0.6 }}
+                  transition={{ delay: 1.3, duration: 0.3 }}
                 />
+
                 <motion.div
-                  className="absolute -top-2 sm:-top-3 left-1/2 w-4 h-4 sm:w-5 sm:h-5 bg-red-600 rounded-full -translate-x-1/2"
+                  className="absolute -top-2 sm:-top-3 left-1/2 w-4 h-4 sm:w-5 sm:h-5 bg-red-600 rounded-full -translate-x-1/2 z-40"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  transition={{ delay: 0.8 }}
+                  transition={{ delay: 1.6, duration: 0.3 }}
                 />
+
               </div>
             </motion.div>
           )}
@@ -101,13 +96,12 @@ const OrderTracking = ({ status = "PLACED" }) => {
           {/* ================= 🚚 SCENE 2 ================= */}
           {scene === 1 && (
             <motion.div
-              key="truck"
+              key={`truck-${playKey}`}
               className="absolute inset-0 flex items-end justify-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              {/* Road */}
               <div className="absolute bottom-0 w-full h-10 sm:h-14 bg-gray-300 overflow-hidden">
                 {[...Array(6)].map((_, i) => (
                   <motion.div
@@ -125,7 +119,6 @@ const OrderTracking = ({ status = "PLACED" }) => {
                 ))}
               </div>
 
-              {/* Truck */}
               <motion.div
                 className="relative mb-1 sm:mb-2 z-10 scale-90 sm:scale-110"
                 animate={{ x: [0, 2, -2, 0] }}
@@ -139,55 +132,47 @@ const OrderTracking = ({ status = "PLACED" }) => {
           {/* ================= 🤝 SCENE 3 ================= */}
           {scene === 2 && (
             <motion.div
-              key="delivery"
+              key={`delivery-${playKey}`}
               className="absolute inset-0 flex items-end justify-center gap-1 sm:gap-2 pb-4 sm:pb-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              {/* Truck */}
               <div className="absolute left-1 sm:left-2 bottom-4 sm:bottom-6 text-4xl sm:text-6xl opacity-40 z-0">
                 🚚
               </div>
 
-              {/* LEFT PERSON */}
               <div className="text-5xl sm:text-7xl z-10 relative">
                 🧍
 
-                {/* 💬 PRO COMIC SPEECH BUBBLE */}
                 <motion.div
                   className="absolute -top-16 sm:-top-20 left-1/2 -translate-x-1/2 z-30"
                   initial={{ opacity: 0, scale: 0.4, rotate: -5 }}
                   animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                  transition={{ delay: 2.2, type: "spring", stiffness: 250, damping: 12 }}
+                  transition={{
+                    delay: 2.2,
+                    type: "spring",
+                    stiffness: 250,
+                    damping: 12,
+                  }}
                 >
                   <div className="relative">
-
-                    {/* Shadow */}
                     <div className="absolute inset-0 translate-x-1 translate-y-1 bg-black rounded-2xl"></div>
-
-                    {/* Bubble */}
                     <div className="relative bg-white border-[2.5px] border-black px-3 sm:px-5 py-2 sm:py-3 rounded-2xl font-extrabold text-[10px] sm:text-xs text-black tracking-wide">
                       Thanks for choosing MADE4UU...
                     </div>
-
                   </div>
                 </motion.div>
               </div>
 
-              {/* BOX */}
               <motion.div
                 className="text-3xl sm:text-4xl absolute z-20"
                 initial={{ x: -30, y: -8 }}
-                animate={{
-                  x: [-30, 40, 65],
-                  y: [-8, -8, 18],
-                }}
+                animate={{ x: [-30, 40, 65], y: [-8, -8, 18] }}
                 transition={{ duration: 1.5 }}
               >
                 🎁
               </motion.div>
 
-              {/* HANDSHAKE */}
               <motion.div
                 className="absolute text-3xl sm:text-4xl z-30 bottom-8 sm:bottom-10"
                 initial={{ opacity: 0 }}
@@ -197,11 +182,9 @@ const OrderTracking = ({ status = "PLACED" }) => {
                 🤝
               </motion.div>
 
-              {/* RIGHT PERSON */}
               <div className="text-5xl sm:text-7xl z-10">🧍</div>
             </motion.div>
           )}
-
         </AnimatePresence>
       </div>
 
@@ -214,4 +197,3 @@ const OrderTracking = ({ status = "PLACED" }) => {
 };
 
 export default OrderTracking;
-

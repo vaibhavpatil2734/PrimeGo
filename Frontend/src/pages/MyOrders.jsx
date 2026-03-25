@@ -413,9 +413,10 @@ const MyOrders = () => {
                                 className="flex justify-center mb-6 mx-auto max-w-sm sm:max-w-md"
                               >
                                 <OrderTracking
+                                  order={order}
                                   status={order.status}
-                                  size="sm"
                                 />
+
                               </motion.div>
                             )}
                           </AnimatePresence>

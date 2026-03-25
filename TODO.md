@@ -1,21 +1,13 @@
-# Payment Flow Fixes - Approved Plan ✅
+# Order Tracking Animation Enhancement ✅
+## Task: Enhance order tracking animation with dynamic data & refined loop logic
 
-## Steps Status:
+### Steps:
+- [x] 1. Create TODO.md
+- [x] 2. Update TrackingSteps.jsx: Accept orderData prop for dynamic dates
+- [x] 3. Update OrderTracking.jsx: Accept full order object, pass to TrackingSteps, refine loop (pause on DELIVERED)
+- [x] 4. Update MyOrders.jsx: Pass order data to OrderTracking  
+- [ ] 5. Test animations in browser (`cd Frontend && npm run dev`)
+- [ ] 6. Mark complete
 
-1. ✅ **Plan approved**
-
-2. ✅ **order.service.js** - Error handling already optimal
-
-3. ✅ **checkout.jsx** - Race condition fixed, error logging improved
-
-4. ✅ **Backend** - No changes needed (no duplicate index, signature present)
-
-5. **Test payment flow**
-   - Backend: `cd Backend && npm run dev`
-   - Frontend: `cd Frontend && npm run dev`
-   - Test checkout → expect `Amount: sent=XXXp, expected=XXXp` MATCH in backend logs
-
-6. **attempt_completion**
-
-**All code fixes complete. Ready for testing!**
-
+**Status**: Fixed - PLACED now static (no future scenes), SHIPPED→DELIVERED once then static. Ready.
+t 
