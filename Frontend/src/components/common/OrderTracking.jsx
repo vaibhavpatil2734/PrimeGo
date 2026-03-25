@@ -9,7 +9,7 @@ const OrderTracking = ({ order, status = "PLACED" }) => {
   const [scene, setScene] = useState(0);
   const [playKey, setPlayKey] = useState(0);
 
-  // Enhanced loop: pause on DELIVERED, dynamic timing
+  // Set scene based on status
   useEffect(() => {
     const statusToScene = {
       PLACED: 0,
@@ -18,17 +18,39 @@ const OrderTracking = ({ order, status = "PLACED" }) => {
     };
 
     let index = statusToScene[upperStatus] ?? 0;
-    setScene(index); // Start at correct scene
+    setScene(index);
 
-    // STATIC ONLY: No animations beyond current status
-    if (upperStatus === 'PLACED' || upperStatus === 'SHIPPED' || upperStatus === 'DELIVERED') return;
+    // initial trigger
+    setPlayKey(prev => prev + 1);
 
-    return () => {};
   }, [upperStatus]);
+
+  // ✅ REPLAY LOGIC (after animation ends + 5 sec delay)
+  useEffect(() => {
+    let timeout;
+
+    // ⏱ define animation durations
+    const sceneDurations = {
+      0: 2000, // wrapping animation ~2s
+      2: 2500, // delivery animation ~2.5s
+    };
+
+    if (scene === 0 || scene === 2) {
+      const totalDelay = sceneDurations[scene] + 5000;
+
+      timeout = setTimeout(() => {
+        setPlayKey(prev => prev + 1);
+      }, totalDelay);
+    }
+
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [scene, playKey]);
 
   const getSceneText = () => {
     if (scene === 0) return "Wrapping your order 🎁";
-    if (scene === 1) return "Out for delivery 🚚";
+    if (scene === 1) return "Your order has been shipped 🚚";
     if (scene === 2) return "Delivered successfully 🎉";
     return "Order Processing";
   };
@@ -40,8 +62,7 @@ const OrderTracking = ({ order, status = "PLACED" }) => {
       {/* 🎬 SCENE */}
       <div className="relative h-40 sm:h-48 md:h-60 bg-gradient-to-r from-emerald-50 to-green-100 rounded-xl overflow-hidden">
         
-        {/* ✅ re-render animation */}
-        <AnimatePresence mode="wait" initial={false}>
+        <AnimatePresence mode="wait">
           
           {/* ================= 🎁 SCENE 1 ================= */}
           {scene === 0 && (
