@@ -20,7 +20,8 @@ const MyOrders = () => {
   const [error, setError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [trackingOrders, setTrackingOrders] = useState({});
+  const [trackingOrders, setTrackingOrders] = useState({}); // {orderId: boolean}
+  const [trackingData, setTrackingData] = useState({}); // {orderId: trackingResult}
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
@@ -364,11 +365,23 @@ const MyOrders = () => {
                           <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={() => {
+                            onClick={async () => {
+                              const isVisible = trackingOrders[order._id];
                               setTrackingOrders((prev) => ({
                                 ...prev,
-                                [order._id]: !prev[order._id],
+                                [order._id]: !isVisible,
                               }));
+
+                              // Fetch tracking if not loaded and has trackingId
+                              if (!isVisible && !trackingData[order._id] && order.trackingId) {
+                                setTrackingData((prev) => ({ ...prev, [order._id]: { loading: true } }));
+                                const result = await orderService.getOrderTracking(order._id);
+                                setTrackingData((prev) => ({ 
+                                  ...prev, 
+                                  [order._id]: result 
+                                }));
+                              }
+
                               const trackingElement = document.getElementById(
                                 `tracking-${order._id}`,
                               );
@@ -394,14 +407,13 @@ const MyOrders = () => {
                                 d="M9 5l7 7-7 7"
                               />
                             </svg>
-                            {trackingOrders[order._id]
-                              ? "Hide Tracking"
-                              : "Track Order"}
+                            {trackingData[order._id]?.loading ? "Loading..." :
+                              trackingOrders[order._id] ? "Hide Tracking" : "Track Order"}
                           </motion.button>
 
-                          {order.trackingId && (
+                          {(order.trackingId || order.awbCode) && (
                             <motion.a
-                              href={`https://shiprocket.co/tracking/${order.trackingId}`}
+                              href={`https://shiprocket.co/tracking/${order.trackingId || order.awbCode}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               whileHover={{ scale: 1.02 }}
@@ -411,8 +423,38 @@ const MyOrders = () => {
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                               </svg>
-                              Track on Shiprocket
+                              Track on Shiprocket ({order.awbCode || order.trackingId})
                             </motion.a>
+                          )}
+                          {order.labelPdf && (
+                            <motion.a
+                              href={order.labelPdf}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full mt-1 bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs py-2 px-4 rounded flex items-center justify-center gap-2"
+                            >
+                              📄 Download Label
+                            </motion.a>
+                          )}
+                          {order.invoicePdf && (
+                            <motion.a
+                              href={order.invoicePdf}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full mt-1 bg-green-500 hover:bg-green-600 text-white font-bold text-xs py-2 px-4 rounded flex items-center justify-center gap-2"
+                            >
+                              💰 Download Invoice
+                            </motion.a>
+                          )}
+                          {order.courierName && (
+                            <div className="mt-2 text-xs text-gray-600 text-center">
+                              🚚 {order.courierName} | AWB: {order.awbCode}
+                            </div>
+                          )}
+                          {order.pickupBooked && (
+                            <div className="mt-1 text-xs bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-center">
+                              📅 Pickup Scheduled
+                            </div>
                           )}
 
                           <AnimatePresence>
@@ -431,6 +473,7 @@ const MyOrders = () => {
                                 <OrderTracking
                                   order={order}
                                   status={order.status}
+                                  trackingData={trackingData[order._id]}
                                 />
 
                               </motion.div>

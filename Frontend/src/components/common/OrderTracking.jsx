@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import TrackingSteps from "./TrackingSteps";
 import { Truck } from "lucide-react";
 
-const OrderTracking = ({ order, status = "PLACED", trackingId }) => {
+const OrderTracking = ({ order, status = "PLACED", trackingData }) => {
   const upperStatus = status?.toUpperCase() || "PLACED";
 
   const [scene, setScene] = useState(0);

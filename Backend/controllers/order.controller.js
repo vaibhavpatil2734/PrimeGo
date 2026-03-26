@@ -81,27 +81,55 @@ const createOrder = async (req, res) => {
 
     const order = await Order.create(orderData);
     
-    // Shiprocket integration
+    // Full Shiprocket integration
     try {
       const populatedOrder = await Order.findById(order._id).populate(['shippingAddressId', 'userId']);
-      const { createShipment } = require("../services/shiprocket.service");
+      console.log(`🚀 [ORDER-SR] Starting Shiprocket flow for order: ${orderNumber}, pincode: ${populatedOrder.shippingAddressId.postalCode}, weight: ${populatedOrder.packageDimensions?.weight || 0.5}, isCod: ${order.payment.provider === 'cash_on_delivery'}`);
+      
+      console.log(`🚀 [ORDER-SR] STEP1: Calling checkServiceability...`);
+      const { checkServiceability, createShipment, assignAWB, generatePickup, generateLabel, printInvoice } = require("../services/shiprocket.service");
+      await checkServiceability(populatedOrder.shippingAddressId.postalCode, populatedOrder.packageDimensions.weight || 0.5, order.payment.provider === 'cash_on_delivery');
+      console.log(`✅ [ORDER-SR] STEP1: Serviceability check PASSED`);
+      
+      console.log(`🚀 [ORDER-SR] STEP2: Calling createShipment...`);
       const shipment = await createShipment(populatedOrder);
+      console.log(`✅ [ORDER-SR] STEP2: Shipment created: ${JSON.stringify({shipment_id: shipment.shipment_id, awb_code: shipment.awb_code})}`);
       
       populatedOrder.deliveryProvider = "shiprocket";
       populatedOrder.shipmentId = shipment.shipment_id;
       populatedOrder.awbCode = shipment.awb_code;
       populatedOrder.trackingId = shipment.awb_code;
+      
+      console.log(`🚀 [ORDER-SR] STEP3: Calling assignAWB...`);
+      // Assign AWB (default fedex)
+      await assignAWB(shipment.shipment_id);
+      console.log(`✅ [ORDER-SR] STEP3: AWB assigned`);
+      
+      console.log(`🚀 [ORDER-SR] STEP4: Calling generatePickup...`);
+      // Generate pickup
+      await generatePickup(shipment.shipment_id);
+      populatedOrder.pickupBooked = true;
+      console.log(`✅ [ORDER-SR] STEP4: Pickup booked`);
+      
+      // Generate label and invoice PDFs
+      const labelData = await generateLabel(shipment.shipment_id);
+      populatedOrder.labelPdf = labelData.pdf; // Assume response has pdf
+      
+      const invoiceData = await printInvoice(order._id.toString());
+      populatedOrder.invoicePdf = invoiceData.pdf;
+      
       populatedOrder.status = "SHIPPED";
       
       await populatedOrder.save();
       
-      console.log(`✅ [ORDER COD + SHIPROCKET] Created & Shipped: ${orderNumber} for user ${userId}, shipment: ${shipment.shipment_id}`);
+      console.log(`✅ [ORDER FULL SHIPROCKET] ${orderNumber}: shipment=${shipment.shipment_id}, AWB=${shipment.awb_code}`);
       res.status(201).json(populatedOrder);
     } catch (shiprocketError) {
       console.log("Shiprocket error:", shiprocketError.message);
-      console.log(`✅ [ORDER COD Fallback] Created: ${orderNumber} for user ${userId}`);
+      console.log(`✅ [ORDER Fallback] Created: ${orderNumber}`);
       res.status(201).json(order);
     }
+
   } catch (error) {
     console.error('❌ [ORDER CREATE] Error:', error);
     res.status(500).json({ error: error.message });
@@ -230,12 +258,45 @@ const cancelOrder = async (req, res) => {
   }
 };
 
+/**
+ * Get live Shiprocket tracking for order
+ */
+const getOrderTracking = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const order = await Order.findById(id).populate('userId shippingAddressId');
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    if (!order.trackingId && !order.awbCode) {
+      return res.status(400).json({ error: "No tracking ID found for this order" });
+    }
+
+    const { getTracking } = require("../services/shiprocket.service");
+    const trackingData = await getTracking(order.awbCode || order.trackingId);
+
+    res.json({
+      success: true,
+      order,
+      tracking: trackingData,
+      trackUrl: `https://shiprocket.co/tracking/${order.trackingId || order.awbCode}`
+    });
+  } catch (error) {
+    console.error("❌ Tracking fetch error:", error.message);
+    res.status(500).json({ error: "Failed to fetch tracking data" });
+  }
+};
+
 module.exports = {
   createOrder,
   getAllOrders,
   getOrderById,
   getOrdersByUser,
   updateOrderStatus,
-  cancelOrder
+  cancelOrder,
+  getOrderTracking
 };
+
 

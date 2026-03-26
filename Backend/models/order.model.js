@@ -87,6 +87,28 @@ const orderSchema = new mongoose.Schema({
   awbCode: {
     type: String
   },
+  courierName: {
+    type: String
+  },
+  pickupBooked: {
+    type: Boolean,
+    default: false
+  },
+  labelPdf: {
+    type: String
+  },
+  invoicePdf: {
+    type: String
+  },
+  manifestPdf: {
+    type: String
+  },
+  packageDimensions: {
+    length: { type: Number, default: 10 },
+    breadth: { type: Number, default: 10 },
+    height: { type: Number, default: 10 },
+    weight: { type: Number, default: 0.5 }
+  },
 
   createdAt: {
     type: Date,

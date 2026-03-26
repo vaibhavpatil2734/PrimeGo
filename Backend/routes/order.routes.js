@@ -6,7 +6,8 @@ const {
   getOrderById,
   getOrdersByUser,
   updateOrderStatus,
-  cancelOrder
+  cancelOrder,
+  getOrderTracking
 } = require("../controllers/order.controller");
 
 const router = express.Router();
@@ -29,5 +30,14 @@ router.patch("/:id/cancel", cancelOrder);
 ========================== */
 router.get("/admin/all", adminAuth, getAllOrders);
 router.patch("/admin/:id/status", adminAuth, updateOrderStatus);
+
+// 🚀 Shiprocket admin actions
+router.post("/admin/:id/shiprocket/pickup", adminAuth, require('../controllers/shiprocket.controller').generateOrderPickup);
+router.post("/admin/:id/shiprocket/manifest", adminAuth, require('../controllers/shiprocket.controller').generateOrderManifest);
+router.post("/admin/:id/shiprocket/manifest/print", adminAuth, require('../controllers/shiprocket.controller').printOrderManifest);
+router.post("/admin/:id/shiprocket/label", adminAuth, require('../controllers/shiprocket.controller').regenerateOrderLabel);
+
+// 📦 Tracking route (user auth)
+router.get("/:id/track", userAuth, getOrderTracking);
 
 module.exports = router;

@@ -154,6 +154,19 @@ const orderService = {
     };
     return statusMap[status] || { label: status, class: 'secondary' };
   },
+
+// Get live Shiprocket tracking for order (enhanced with new fields)
+  async getOrderTracking(orderId) {
+    try {
+      const response = await httpClient.get(`/orders/${orderId}/track`);
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Failed to fetch tracking',
+      };
+    }
+  },
 };
 
 export default orderService;

@@ -28,7 +28,6 @@ const createRazorpayOrder = async (req, res) => {
 
     console.log(`🟢 [PAYMENT] create-order: user=${userId}, items=${items.length}`);
 
-
     // 1. Input validation
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'Valid items array required' });
@@ -116,7 +115,6 @@ const createRazorpayOrder = async (req, res) => {
     console.log(`🧾 Creating RZP order: ${amountPaise} paise`);
     const razorpayOrder = await razorpay.orders.create(options);
 
-    
     // Link razorpay order ID
     paymentAttempt.razorpayOrderId = razorpayOrder.id;
     await paymentAttempt.save();
@@ -250,38 +248,52 @@ const verifyPayment = async (req, res) => {
       status: 'PLACED'
     });
 
-    // Shiprocket integration
+    // Full Shiprocket integration
     try {
       const populatedOrder = await Order.findById(order._id).populate(['shippingAddressId', 'userId']);
-      const { createShipment } = require("../services/shiprocket.service");
+      console.log(`🚀 [PAYMENT-SR] Starting Shiprocket flow for order: ${orderNumber}, pincode: ${populatedOrder.shippingAddressId.postalCode}, weight: ${populatedOrder.packageDimensions?.weight || 0.5}, isCod: false`);
+      
+      console.log(`🚀 [PAYMENT-SR] STEP1: Calling checkServiceability...`);
+      const { checkServiceability, createShipment, assignAWB, generatePickup, generateLabel, printInvoice } = require("../services/shiprocket.service");
+      await checkServiceability(populatedOrder.shippingAddressId.postalCode, populatedOrder.packageDimensions.weight || 0.5, false);
+      console.log(`✅ [PAYMENT-SR] STEP1: Serviceability check PASSED`);
+      
+      console.log(`🚀 [PAYMENT-SR] STEP2: Calling createShipment...`);
       const shipment = await createShipment(populatedOrder);
+      console.log(`✅ [PAYMENT-SR] STEP2: Shipment created: ${JSON.stringify({shipment_id: shipment.shipment_id, awb_code: shipment.awb_code})}`);
       
       populatedOrder.deliveryProvider = "shiprocket";
       populatedOrder.shipmentId = shipment.shipment_id;
       populatedOrder.awbCode = shipment.awb_code;
       populatedOrder.trackingId = shipment.awb_code;
+      
+      console.log(`🚀 [PAYMENT-SR] STEP3: Calling assignAWB...`);
+      await assignAWB(shipment.shipment_id);
+      console.log(`✅ [PAYMENT-SR] STEP3: AWB assigned`);
+      
+      console.log(`🚀 [PAYMENT-SR] STEP4: Calling generatePickup...`);
+      await generatePickup(shipment.shipment_id);
+      populatedOrder.pickupBooked = true;
+      console.log(`✅ [PAYMENT-SR] STEP4: Pickup booked`);
+      
+      // Generate label and invoice PDFs
+      const labelData = await generateLabel(shipment.shipment_id);
+      populatedOrder.labelPdf = labelData.pdf;
+      
+      const invoiceData = await printInvoice(order._id.toString());
+      populatedOrder.invoicePdf = invoiceData.pdf;
+      
       populatedOrder.status = "SHIPPED";
       
       await populatedOrder.save();
       
-      console.log(`✅ [PAYMENT + SHIPROCKET] SUCCESS: order=${orderNumber}, shipment=${shipment.shipment_id}`);
-      
-      res.json({ 
-        success: true, 
-        orderId: populatedOrder._id,
-        orderNumber: populatedOrder.orderNumber 
-      });
+      console.log(`✅ [PAYMENT FULL SHIPROCKET] ${orderNumber}: shipment=${shipment.shipment_id}, AWB=${shipment.awb_code}`);
+      res.status(201).json(populatedOrder);
     } catch (shiprocketError) {
       console.log("Shiprocket error:", shiprocketError.message);
-      console.log(`✅ [PAYMENT Fallback] SUCCESS: order=${orderNumber}`);
-      
-      res.json({ 
-        success: true, 
-        orderId: order._id,
-        orderNumber: order.orderNumber 
-      });
+      console.log(`✅ [PAYMENT Fallback] Created: ${orderNumber}`);
+      res.status(201).json(order);
     }
-
   } catch (error) {
     console.error('❌ [PAYMENT VERIFY] Error:', error);
     res.status(500).json({ success: false, error: 'Payment verification failed' });
@@ -292,4 +304,3 @@ module.exports = {
   createRazorpayOrder,
   verifyPayment
 };
-
