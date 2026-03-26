@@ -57,7 +57,7 @@ const OrderTracking = ({ order, status = "PLACED", trackingData }) => {
 
   return (
     <div className="w-full p-2 sm:p-4 md:p-6">
-      <TrackingSteps scene={scene} orderData={order} trackingId={trackingId} />
+      <TrackingSteps scene={scene} orderData={order} trackingId={order?.trackingId || ''} />
 
       {/* 🎬 SCENE */}
       <div className="relative h-40 sm:h-48 md:h-60 bg-gradient-to-r from-emerald-50 to-green-100 rounded-xl overflow-hidden">

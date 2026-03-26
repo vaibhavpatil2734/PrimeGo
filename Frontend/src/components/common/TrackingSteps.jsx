@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-const TrackingSteps = ({ scene, orderData, trackingId }) => {
+const TrackingSteps = ({ scene, orderData, trackingId = '' }) => {
   // Dynamic dates from order data or fallback mocks
   const getFormattedDate = (timestamp, fallback, isExpected = false) => {
     if (!timestamp) return fallback;
