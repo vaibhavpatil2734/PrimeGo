@@ -1,44 +1,48 @@
 const axios = require("axios");
 
-let token = null;
+let shiprocketToken = null;
 
-// 🔐 Generate Token (shared)
+// 🔐 Generate Token
 const generateToken = async () => {
-  try {
-    if (!process.env.SHIPROCKET_EMAIL || !process.env.SHIPROCKET_PASSWORD) {
-      throw new Error('Shiprocket credentials missing in .env');
-    }
-    const res = await axios.post(
-      "https://apiv2.shiprocket.in/v1/external/auth/login",
-      {
-        email: process.env.SHIPROCKET_EMAIL,
-        password: process.env.SHIPROCKET_PASSWORD,
-      }
-    );
+  if (shiprocketToken) return shiprocketToken;
 
-    token = res.data.token;
-    console.log("🚀 [SR-TOKEN] Credentials used: email=" + process.env.SHIPROCKET_EMAIL + ", password=***MASKED***");
-    console.log("🚀 [SR-TOKEN] Full response:", JSON.stringify(res.data, null, 2));
-    console.log("🚀 [SR-TOKEN] Extracted token:", token ? token.substring(0, 20) + "..." : "NULL");
-    console.log("✅ Shiprocket token generated");
-    return token;
-  } catch (error) {
-    console.error("❌ Shiprocket token error:", error.message);
-    throw error;
+  if (!process.env.SHIPROCKET_EMAIL || !process.env.SHIPROCKET_PASSWORD) {
+    throw new Error("Shiprocket credentials missing in .env");
   }
+
+  const res = await axios.post(
+    "https://apiv2.shiprocket.in/v1/external/auth/login",
+    {
+      email: process.env.SHIPROCKET_EMAIL,
+      password: process.env.SHIPROCKET_PASSWORD,
+    }
+  );
+
+  shiprocketToken = res.data.token;
+  console.log("✅ [SR-TOKEN] Generated:", shiprocketToken.substring(0, 20) + "...");
+  return shiprocketToken;
 };
 
-// 🚚 Ensure token for all calls
-const ensureToken = async () => {
-  if (!token) await generateToken();
+// 📅 FIXED DATE FORMAT (IMPORTANT)
+const getFormattedDate = () => {
+  const d = new Date();
+  d.setDate(d.getDate() + 2);
+
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 };
 
-// Generic API caller with token retry
+// 🚀 Common API Caller
 const apiCall = async (method, url, data = {}) => {
-  await ensureToken();
-  console.log(`🚀 [SR-API] ${method.toUpperCase()} ${url}`);
-  console.log(`🚀 [SR-API] Headers: Authorization=Bearer ${token ? token.substring(0, 20) + '...' : 'MISSING'}`);
-  console.log(`🚀 [SR-API] Data:`, JSON.stringify(data, null, 2));
+  const token = await generateToken();
+
+  console.log(`\n🚀 [SR-API] ${method.toUpperCase()} ${url}`);
+  console.log(`🔑 Token: ${token.substring(0, 15)}...`);
+  console.log("📦 Payload:", JSON.stringify(data, null, 2));
+
   try {
     const res = await axios({
       method,
@@ -49,112 +53,175 @@ const apiCall = async (method, url, data = {}) => {
         Authorization: `Bearer ${token}`,
       },
     });
+
+    console.log("✅ [SR-API SUCCESS]:", res.data);
     return res.data;
   } catch (error) {
-    if (error.response?.status === 401) {
-      console.log("🔄 Token expired, regenerating...");
-      await generateToken();
-      return apiCall(method, url, data); // retry once
-    }
-    console.log(`🚀 [SR-API] Full ERROR response:`, JSON.stringify(error.response?.data || error.message, null, 2));
-    console.log(`🚀 [SR-API] ERROR status:`, error.response?.status);
-    console.error(`❌ Shiprocket ${method.toUpperCase()} ${url}:`, error.response?.data || error.message);
+    console.log("❌ [SR-API ERROR STATUS]:", error.response?.status);
+    console.log(
+      "❌ [SR-API ERROR DATA]:",
+      JSON.stringify(error.response?.data || error.message, null, 2)
+    );
     throw error;
   }
 };
 
-// ✅ 1. FIXED Tracking - Step 11
+// 📍 Tracking
 const getTracking = async (awbCode) => {
-  return apiCall('get', `https://apiv2.shiprocket.in/v1/external/courier/track/awb/${awbCode}`);
+  return apiCall(
+    "get",
+    `https://apiv2.shiprocket.in/v1/external/courier/track/awb/${awbCode}`
+  );
 };
 
-// ✅ 2. Serviceability Check - Step 3 prep
+// 📍 Serviceability
 const checkServiceability = async (pincode, weight = 0.5, isCod = false) => {
-  console.log(`🚀 [SR-SERVICEABILITY] Inputs: pincode=${pincode}, weight=${weight}, isCod=${isCod}`);
-  const data = {
-    pickup_postcode: "411014", // Default Pune
-    delivery_postcode: pincode,
-    weight,
-    cod: isCod ? 0 : 1, // 0=Prepaid, 1=COD? Check docs
-  };
-  const fullUrl = 'https://apiv2.shiprocket.in/v1/external/courier/serviceability/?pickup_postcode=411014&delivery_postcode=' + pincode + '&weight=' + weight + '&cod=' + (isCod ? 0 : 1);
-  console.log(`🚀 [SR-SERVICEABILITY] Full URL: ${fullUrl}`);
-  const result = await apiCall('get', fullUrl);
-  console.log(`🚀 [SR-SERVICEABILITY] Success response:`, JSON.stringify(result, null, 2));
-  return result;
+  const token = await generateToken();
+  const codValue = isCod ? 1 : 0;
+
+  const url = `https://apiv2.shiprocket.in/v1/external/courier/serviceability/?pickup_postcode=411014&delivery_postcode=${pincode}&weight=${weight}&cod=${codValue}`;
+
+  console.log(`\n🚀 [SERVICEABILITY] ${url}`);
+
+  const res = await axios.get(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  console.log("✅ Available Couriers:", res.data.data.available_courier_companies.length);
+  return res.data.data.available_courier_companies;
 };
 
-// 🚚 Create Shipment - UPDATED dynamic - Step 3
+// 📦 Create Shipment
 const createShipment = async (order) => {
-  if (!order.shippingAddressId?.postalCode) {
-    throw new Error('Shipping address required for shipment');
-  }
+  const fullName = order.shippingAddressId.name || "John Doe";
+  const nameParts = fullName.trim().split(" ");
+
   const payload = {
     order_id: order._id.toString(),
-    order_date: new Date(order.createdAt || Date.now()),
-    pickup_location: "Primary",
-    billing_customer_name: order.shippingAddressId.name,
+    order_date: new Date(order.createdAt || Date.now()).toISOString(),
+    pickup_location: "warehouse",
+
+    billing_customer_name: fullName,
+    billing_first_name: nameParts[0] || "John",
+    billing_last_name: nameParts.slice(1).join(" ") || "Doe",
+
     billing_address: order.shippingAddressId.line1,
     billing_city: order.shippingAddressId.city,
     billing_pincode: order.shippingAddressId.postalCode,
-    billing_state: order.shippingAddressId.state,
+    billing_state: order.shippingAddressId.state || "Maharashtra",
     billing_country: "India",
+
+    shipping_is_billing: true,
     billing_phone: order.shippingAddressId.phone,
     billing_email: order.userId?.email,
+
     order_items: order.items.map((item) => ({
       name: item.title,
-      sku: item.productId?.toString() || "SKU",
+      sku: item.productId?.toString(),
       units: item.quantity,
-      selling_price: item.price,
+      selling_price: parseFloat(item.price),
     })),
-    payment_method: order.payment?.provider === "cash_on_delivery" ? "COD" : "Prepaid",
-    sub_total: order.totalAmount,
-    length: order.packageDimensions?.length || 10,
-    breadth: order.packageDimensions?.breadth || 10,
-    height: order.packageDimensions?.height || 10,
-    weight: order.packageDimensions?.weight || 0.5,
+
+    payment_method:
+      order.payment?.provider === "cash_on_delivery" ? "COD" : "Prepaid",
+
+    sub_total: parseFloat(order.totalAmount),
+
+    length: 10,
+    breadth: 10,
+    height: 10,
+    weight: 0.5,
   };
-  return apiCall('post', 'https://apiv2.shiprocket.in/v1/external/orders/create/adhoc', payload);
+
+  return apiCall(
+    "post",
+    "https://apiv2.shiprocket.in/v1/external/orders/create/adhoc",
+    payload
+  );
 };
 
-// ✅ 4. Assign AWB
-const assignAWB = async (shipment_id, courier_code = 'fedex') => {
+// 📍 Assign AWB
+const assignAWB = async (shipment_id, courier_company_id) => {
   const payload = {
     shipment_id,
-    courier_id: courier_code, // e.g. 'fedex', from serviceability
+    courier_id: courier_company_id,
   };
-  return apiCall('post', 'https://apiv2.shiprocket.in/v1/external/courier/assign/awb', payload);
+
+  const res = await apiCall(
+    "post",
+    "https://apiv2.shiprocket.in/v1/external/courier/assign/awb",
+    payload
+  );
+
+  console.log("✅ [AWB ASSIGNED]:", res);
+  return res;
 };
 
-// ✅ 5. Generate Pickup
-const generatePickup = async (shipment_ids, pickup_date = new Date(Date.now() + 2*24*60*60*1000).toISOString().split('T')[0]) => {
+// 🚚 Generate Pickup (FINAL FIXED)
+const generatePickup = async (
+  shipment_ids,
+  pickup_date = getFormattedDate(),
+  pickup_location = "warehouse"
+) => {
   const payload = {
     pickup_date,
-    pickup_location: "Primary",
-    shipment_ids: Array.isArray(shipment_ids) ? shipment_ids : [shipment_ids],
+    shipment_id: Array.isArray(shipment_ids)
+      ? shipment_ids
+      : [shipment_ids], // ✅ FIXED KEY
+    pickup_location,
   };
-  return apiCall('post', 'https://apiv2.shiprocket.in/v1/external/courier/generate/pickup', payload);
+
+  console.log("\n🚀 [PICKUP REQUEST]");
+  console.log("📦 Shipment ID:", payload.shipment_id);
+  console.log("📅 Pickup Date:", pickup_date);
+  console.log("📍 Location:", pickup_location);
+
+  const res = await apiCall(
+    "post",
+    "https://apiv2.shiprocket.in/v1/external/courier/generate/pickup",
+    payload
+  );
+
+  // ✅ VALIDATE RESPONSE
+  if (!res || res.Status === false) {
+    console.log("❌ [PICKUP FAILED]:", res);
+    return null;
+  }
+
+  console.log("✅ [PICKUP SUCCESS]");
+  return res;
 };
 
-// ✅ 6-7. Manifests
+// 📄 Manifest
 const generateManifest = async (shipment_ids) => {
-  const payload = { shipment_ids: Array.isArray(shipment_ids) ? shipment_ids : [shipment_ids] };
-  return apiCall('post', 'https://apiv2.shiprocket.in/v1/external/manifests/generate', payload);
+  return apiCall("post",
+    "https://apiv2.shiprocket.in/v1/external/manifests/generate",
+    { shipment_ids: Array.isArray(shipment_ids) ? shipment_ids : [shipment_ids] }
+  );
 };
 
 const printManifest = async (shipment_ids) => {
-  const payload = { shipment_ids: Array.isArray(shipment_ids) ? shipment_ids : [shipment_ids] };
-  return apiCall('post', 'https://apiv2.shiprocket.in/v1/external/manifests/print', payload);
+  return apiCall("post",
+    "https://apiv2.shiprocket.in/v1/external/manifests/print",
+    { shipment_ids: Array.isArray(shipment_ids) ? shipment_ids : [shipment_ids] }
+  );
 };
 
-// ✅ 9. Label
+// 🏷 Label (SAFE)
 const generateLabel = async (shipment_id) => {
-  return apiCall('get', `https://apiv2.shiprocket.in/v1/external/courier/generate/label/${shipment_id}`);
+  console.log("\n🏷 Generating Label...");
+  return apiCall(
+    "get",
+    `https://apiv2.shiprocket.in/v1/external/courier/generate/label/${shipment_id}`
+  );
 };
 
-// ✅ 10. Invoice
+// 🧾 Invoice
 const printInvoice = async (order_id) => {
-  return apiCall('get', `https://apiv2.shiprocket.in/v1/external/orders/print/invoice/${order_id}`);
+  return apiCall(
+    "get",
+    `https://apiv2.shiprocket.in/v1/external/orders/print/invoice/${order_id}`
+  );
 };
 
 module.exports = {

@@ -254,22 +254,27 @@ const verifyPayment = async (req, res) => {
       console.log(`🚀 [PAYMENT-SR] Starting Shiprocket flow for order: ${orderNumber}, pincode: ${populatedOrder.shippingAddressId.postalCode}, weight: ${populatedOrder.packageDimensions?.weight || 0.5}, isCod: false`);
       
       console.log(`🚀 [PAYMENT-SR] STEP1: Calling checkServiceability...`);
-      const { checkServiceability, createShipment, assignAWB, generatePickup, generateLabel, printInvoice } = require("../services/shiprocket.service");
-      await checkServiceability(populatedOrder.shippingAddressId.postalCode, populatedOrder.packageDimensions.weight || 0.5, false);
-      console.log(`✅ [PAYMENT-SR] STEP1: Serviceability check PASSED`);
+      const { checkServiceability, createShipment, assignAWB } = require("../services/shiprocket.service");
+      const couriers = await checkServiceability(populatedOrder.shippingAddressId.postalCode, populatedOrder.packageDimensions.weight || 0.5, false);
+      console.log(`✅ [PAYMENT-SR] STEP1: Found ${couriers.length} couriers`);
+      
+      const selectedCourier = couriers.sort((a, b) => a.rate - b.rate)[0];
+      console.log("Selected:", selectedCourier);
       
       console.log(`🚀 [PAYMENT-SR] STEP2: Calling createShipment...`);
       const shipment = await createShipment(populatedOrder);
-      console.log(`✅ [PAYMENT-SR] STEP2: Shipment created: ${JSON.stringify({shipment_id: shipment.shipment_id, awb_code: shipment.awb_code})}`);
+      console.log(`✅ [PAYMENT-SR] STEP2: Shipment created:`, shipment);
       
       populatedOrder.deliveryProvider = "shiprocket";
       populatedOrder.shipmentId = shipment.shipment_id;
-      populatedOrder.awbCode = shipment.awb_code;
-      populatedOrder.trackingId = shipment.awb_code;
+      populatedOrder.shipment_id = shipment.shipment_id;
       
-      console.log(`🚀 [PAYMENT-SR] STEP3: Calling assignAWB...`);
-      await assignAWB(shipment.shipment_id);
-      console.log(`✅ [PAYMENT-SR] STEP3: AWB assigned`);
+      console.log(`🚀 [PAYMENT-SR] STEP3: Calling assignAWB with courier ${selectedCourier.courier_company_id}...`);
+      const awbRes = await assignAWB(shipment.shipment_id, selectedCourier.courier_company_id);
+      console.log(`✅ [PAYMENT-SR] STEP3: AWB assigned:`, awbRes);
+      
+      populatedOrder.awbCode = awbRes.awb_code || shipment.awb_code;
+      populatedOrder.trackingId = populatedOrder.awbCode;
       
       console.log(`🚀 [PAYMENT-SR] STEP4: Calling generatePickup...`);
       await generatePickup(shipment.shipment_id);
