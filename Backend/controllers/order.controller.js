@@ -81,57 +81,42 @@ const createOrder = async (req, res) => {
 
     const order = await Order.create(orderData);
     
-    // Full Shiprocket integration
+    // 🚀 Basic Shiprocket shipment creation ONLY (manual pickup/label via admin)
     try {
       const populatedOrder = await Order.findById(order._id).populate(['shippingAddressId', 'userId']);
-      console.log(`🚀 [ORDER-SR] Starting Shiprocket flow for order: ${orderNumber}, pincode: ${populatedOrder.shippingAddressId.postalCode}, weight: ${populatedOrder.packageDimensions?.weight || 0.5}, isCod: ${order.payment.provider === 'cash_on_delivery'}`);
+      console.log(`🚀 [ORDER-SR] Creating basic shipment for ${orderNumber}`);
       
-      console.log(`🚀 [ORDER-SR] STEP1: Calling checkServiceability...`);
-      const { checkServiceability, createShipment, assignAWB, generatePickup, generateLabel, printInvoice } = require("../services/shiprocket.service");
-      const couriers = await checkServiceability(populatedOrder.shippingAddressId.postalCode, populatedOrder.packageDimensions.weight || 0.5, order.payment.provider === 'cash_on_delivery');
-      console.log(`✅ [ORDER-SR] STEP1: Found ${couriers.length} couriers`);
-      console.log("Couriers:", couriers);
+      const { checkServiceability, createShipment, assignAWB } = require("../services/shiprocket.service");
+      
+      // Check serviceability
+      const couriers = await checkServiceability(populatedOrder.shippingAddressId.postalCode, 0.5, order.payment.provider === 'cash_on_delivery');
+      if (couriers.length === 0) {
+        console.log(`⚠️ No couriers available for pin ${populatedOrder.shippingAddressId.postalCode}`);
+        return res.status(201).json(order);
+      }
       
       const selectedCourier = couriers.sort((a, b) => a.rate - b.rate)[0];
-      console.log("Selected:", selectedCourier);
       
-      console.log(`🚀 [ORDER-SR] STEP2: Calling createShipment...`);
+      // Create shipment
       const shipment = await createShipment(populatedOrder);
-      console.log(`✅ [ORDER-SR] STEP2: Shipment created:`, shipment);
-      
-      populatedOrder.deliveryProvider = "shiprocket";
       populatedOrder.shipmentId = shipment.shipment_id;
       populatedOrder.shipment_id = shipment.shipment_id;
+      populatedOrder.deliveryProvider = "shiprocket";
       
-      console.log(`🚀 [ORDER-SR] STEP3: Calling assignAWB with courier ${selectedCourier.courier_company_id}...`);
+      // Assign AWB
       const awbRes = await assignAWB(shipment.shipment_id, selectedCourier.courier_company_id);
-      console.log(`✅ [ORDER-SR] STEP3: AWB assigned:`, awbRes);
-      
       populatedOrder.awbCode = awbRes.awb_code || shipment.awb_code;
       populatedOrder.trackingId = populatedOrder.awbCode;
       
-      console.log(`🚀 [ORDER-SR] STEP4: Calling generatePickup...`);
-      // Generate pickup - uses safe default
-      await generatePickup(shipment.shipment_id);
-      populatedOrder.pickupBooked = true;
-      console.log(`✅ [ORDER-SR] STEP4: Pickup booked`);
-      
-      // Generate label and invoice PDFs
-      const labelData = await generateLabel(shipment.shipment_id);
-      populatedOrder.labelPdf = labelData.pdf; // Assume response has pdf
-      
-      const invoiceData = await printInvoice(order._id.toString());
-      populatedOrder.invoicePdf = invoiceData.pdf;
-      
-      populatedOrder.status = "SHIPPED";
+      populatedOrder.shiprocketOrderId = shipment.order_id;
       
       await populatedOrder.save();
       
-      console.log(`✅ [ORDER FULL SHIPROCKET] ${orderNumber}: shipment=${shipment.shipment_id}, AWB=${shipment.awb_code}`);
+      console.log(`✅ [ORDER BASIC SR] ${orderNumber}: shipment_id=${shipment.shipment_id}, ready for manual pickup`);
       res.status(201).json(populatedOrder);
     } catch (shiprocketError) {
-      console.log("Shiprocket error:", shiprocketError.message);
-      console.log(`✅ [ORDER Fallback] Created: ${orderNumber}`);
+      console.log("⚠️ Shiprocket partial fail:", shiprocketError.message);
+      console.log(`✅ Order created (manual SR steps needed): ${orderNumber}`);
       res.status(201).json(order);
     }
 

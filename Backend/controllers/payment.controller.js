@@ -277,15 +277,20 @@ const verifyPayment = async (req, res) => {
       populatedOrder.trackingId = populatedOrder.awbCode;
       
       console.log(`🚀 [PAYMENT-SR] STEP4: Calling generatePickup...`);
-      await generatePickup(shipment.shipment_id);
-      populatedOrder.pickupBooked = true;
-      console.log(`✅ [PAYMENT-SR] STEP4: Pickup booked`);
+      const pickupResult = await generatePickup(shipment.shipment_id);
+      if (!pickupResult) {
+        console.log(`⚠️ [PAYMENT-SR] Pickup failed - skipping label`);
+      } else {
+        populatedOrder.pickupBooked = true;
+        console.log(`✅ [PAYMENT-SR] STEP4: Pickup booked`);
+        
+        // Label with AWB if available
+        const labelData = await generateLabel(shipment.shipment_id, populatedOrder.awbCode);
+        populatedOrder.labelPdf = labelData.pdf || labelData.label_pdf_url || 'pickup-failed-no-label';
+      }
       
-      // Generate label and invoice PDFs
-      const labelData = await generateLabel(shipment.shipment_id);
-      populatedOrder.labelPdf = labelData.pdf;
-      
-      const invoiceData = await printInvoice(order._id.toString());
+      populatedOrder.shiprocketOrderId = shipment.order_id;
+      const invoiceData = await printInvoice(shipment.order_id);
       populatedOrder.invoicePdf = invoiceData.pdf;
       
       populatedOrder.status = "SHIPPED";
