@@ -48,6 +48,29 @@ const orderSchema = new mongoose.Schema({
     enum: ["PLACED", "SHIPPED", "DELIVERED", "CANCELLED"],
     default: "PLACED"
   },
+  // Real-time Shiprocket tracking fields (webhook updates)
+  current_status: {
+    type: String,
+    default: "Order Placed"
+  },
+  shipment_status: {
+    type: String
+  },
+  shipment_status_id: {
+    type: Number
+  },
+  current_timestamp: {
+    type: Date,
+    default: Date.now
+  },
+  etd: {
+    type: Date
+  },
+  scans: [{
+    date: { type: String },
+    activity: { type: String },
+    location: { type: String }
+  }],
 
   shippingAddressId: {
     type: mongoose.Schema.Types.ObjectId,

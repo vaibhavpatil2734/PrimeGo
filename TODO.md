@@ -1,12 +1,58 @@
-# Shiprocket Pickup Fix - TODO Steps
+# Real-Time Order Tracking Webhook Implementation
 
-## Plan Breakdown:
-1. ✅ [DONE] Understand files and create plan
-2. ✅ [DONE] Edit Backend/services/shiprocket.service.js - Unified getPickupDate(), now used in generatePickup()
-3. ✅ [DONE] Edit Backend/controllers/order.controller.js - Removed auto-pickup/label/invoice; now creates shipment+AWB only
-4. ⬜ Test order creation → manual pickup → verify 2026 date + success
-5. ⬜ Test invoice after pickup success
-6. ✅ [DONE] attempt_completion
+✅ Step 1: Order model updated with tracking fields
 
-**All code changes complete. Ready for testing!**
+Current progress: Model ready. Next: Webhook handler
+
+## Step-by-Step Plan
+
+### 1. ✅ Update Order Model
+   - Added fields: `current_status`, `shipment_status`, `shipment_status_id`, `current_timestamp`, `etd`, `scans[]`
+
+### 2. ✅ Add Webhook Handler
+   - `Backend/controllers/order.controller.js`: `processTrackingWebhook()` added
+   - Parse payload, update Order by AWB, append scans, sync status
+
+### 3. ✅ Add Webhook Route  
+   - `Backend/routes/order.routes.js`: `POST /webhook/shiprocket/track` (public, before auth) added
+
+### 4. ✅ Enhance Tracking Endpoint
+   - `getOrderTracking()`: Uses stored scans if recent (<1hr), fallback to live SR API. Added `source` field
+
+### 5. ➡️ Test Webhook
+   - `curl -X POST ...` with sample payload
+
+### 6. ➡️ Frontend Real-Time (Optional)
+
+### 7. ➡️ Shiprocket Config
+
+### 8. ✅ Complete & Demo
+
+## Step-by-Step Plan
+
+### 1. ✅ Update Order Model
+   - Add fields: `current_status`, `shipment_status`, `shipment_status_id`, `current_timestamp`, `etd`, `scans[]`
+
+### 2. ➡️ Add Webhook Handler
+   - `Backend/controllers/order.controller.js`: `processTrackingWebhook()`
+   - Parse payload, update Order by AWB, append scans, sync status
+
+### 3. ➡️ Add Webhook Route  
+   - `Backend/routes/order.routes.js`: `POST /webhook/shiprocket/track` (public, before auth)
+
+### 4. ➡️ Enhance Tracking Endpoint
+   - `getOrderTracking()`: Use stored scans if recent, fallback to live SR API
+
+### 5. ➡️ Test Webhook
+   - `curl -X POST ...` with sample payload
+
+### 6. ➡️ Frontend Real-Time (Optional)
+   - Poll /track in MyOrders or OrderTracking component
+
+### 7. ➡️ Shiprocket Config
+   - Add webhook URL in SR dashboard
+
+### 8. ✅ Complete & Demo
+
+**Next: Model update**
 

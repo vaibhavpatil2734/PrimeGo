@@ -7,10 +7,14 @@ const {
   getOrdersByUser,
   updateOrderStatus,
   cancelOrder,
-  getOrderTracking
+  getOrderTracking,
+  processTrackingWebhook
 } = require("../controllers/order.controller");
 
 const router = express.Router();
+
+// 🌐 Public Webhook (before auth) - Shiprocket tracking updates
+router.post('/webhook/shiprocket/track', processTrackingWebhook);
 
 // 🛡️ Auth middleware for user routes
 const userAuth = auth;

@@ -264,18 +264,120 @@ const getOrderTracking = async (req, res) => {
       return res.status(400).json({ error: "No tracking ID found for this order" });
     }
 
-    const { getTracking } = require("../services/shiprocket.service");
-    const trackingData = await getTracking(order.awbCode || order.trackingId);
+    let trackingData;
+
+    // 📱 Prefer stored webhook data if recent (within 1hr)
+    if (order.scans && order.scans.length > 0) {
+      const latestScan = order.scans[order.scans.length - 1];
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      if (new Date(latestScan.date) > oneHourAgo) {
+        trackingData = {
+          awb: order.awbCode || order.trackingId,
+          current_status: order.current_status,
+          shipment_status: order.shipment_status,
+          shipment_status_id: order.shipment_status_id,
+          current_timestamp: order.current_timestamp,
+          etd: order.etd,
+          scans: order.scans,
+          courier_name: order.courierName
+        };
+        console.log(`📱 [TRACK] Using stored webhook data for ${order.orderNumber} (${order.scans.length} scans)`);
+      }
+    }
+
+    // 🔄 Fallback to live Shiprocket API
+    if (!trackingData) {
+      const { getTracking } = require("../services/shiprocket.service");
+      trackingData = await getTracking(order.awbCode || order.trackingId);
+      console.log(`🔄 [TRACK] Fetched live SR data for ${order.orderNumber}`);
+    }
 
     res.json({
       success: true,
       order,
       tracking: trackingData,
-      trackUrl: `https://shiprocket.co/tracking/${order.trackingId || order.awbCode}`
+      trackUrl: `https://shiprocket.co/tracking/${order.trackingId || order.awbCode}`,
+      source: trackingData.scans === order.scans ? 'webhook' : 'shiprocket'
     });
   } catch (error) {
     console.error("❌ Tracking fetch error:", error.message);
     res.status(500).json({ error: "Failed to fetch tracking data" });
+  }
+};
+
+// 🚀 Shiprocket Tracking Webhook - Real-time updates
+const processTrackingWebhook = async (req, res) => {
+  try {
+    const payload = req.body;
+    const awb = payload.awb;
+    
+    if (!awb) {
+      console.log('📡 [WEBHOOK] Missing AWB');
+      return res.status(400).json({ error: 'AWB required' });
+    }
+
+    console.log(`📡 [WEBHOOK] Processing ${awb}: ${payload.current_status}`);
+
+    // Find matching order
+    const order = await Order.findOne({
+      $or: [
+        { awbCode: awb },
+        { trackingId: awb }
+      ]
+    });
+
+    if (!order) {
+      console.log(`⚠️ [WEBHOOK] No order for AWB: ${awb}`);
+      return res.status(200).json({ received: true }); // 200 OK for SR
+    }
+
+    // Update core fields
+    const previousScansCount = order.scans ? order.scans.length : 0;
+    order.current_status = payload.current_status;
+    order.shipment_status = payload.shipment_status;
+    order.shipment_status_id = payload.shipment_status_id;
+    order.current_timestamp = new Date(payload.current_timestamp || Date.now());
+    if (payload.etd) order.etd = new Date(payload.etd);
+    if (payload.courier_name) order.courierName = payload.courier_name;
+
+    // Status sync to main enum
+    const statusSync = {
+      'Delivered': 'DELIVERED',
+      'Out for Delivery': 'SHIPPED',
+      'Shipped': 'SHIPPED',
+      'RTO': 'CANCELLED'
+    };
+    if (statusSync[payload.current_status]) {
+      order.status = statusSync[payload.current_status];
+    }
+
+    // Append new scans (dedupe)
+    if (payload.scans && Array.isArray(payload.scans)) {
+      payload.scans.forEach((scan) => {
+        const duplicate = order.scans.some((existingScan) => 
+          existingScan.date === scan.date &&
+          existingScan.activity === scan.activity &&
+          existingScan.location === scan.location
+        );
+        if (!duplicate) {
+          order.scans.push(scan);
+        }
+      });
+    }
+
+    await order.save();
+
+    console.log(`✅ [WEBHOOK] ${order.orderNumber} updated | Status: ${payload.current_status} | Scans: ${order.scans.length - previousScansCount} new (${order.scans.length} total)`);
+
+    res.json({ 
+      success: true, 
+      order: order.orderNumber, 
+      newScans: order.scans.length - previousScansCount 
+    });
+
+  } catch (error) {
+    console.error('❌ [WEBHOOK ERROR]:', error);
+    res.status(500).json({ error: 'Webhook processing failed' });
   }
 };
 
@@ -286,7 +388,8 @@ module.exports = {
   getOrdersByUser,
   updateOrderStatus,
   cancelOrder,
-  getOrderTracking
+  getOrderTracking,
+  processTrackingWebhook
 };
 
 
