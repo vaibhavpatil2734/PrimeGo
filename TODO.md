@@ -1,58 +1,73 @@
-# Real-Time Order Tracking Webhook Implementation
+# Shiprocket Dashboard Configuration & Webhook Setup
 
-✅ Step 1: Order model updated with tracking fields
+## ✅ Current Status
+- Order model: Tracking fields ready
+- Webhook handler: `processTrackingWebhook()` implemented
+- Webhook route: `POST /api/orders/webhook/shiprocket/track` live
+- Tracking endpoint: Enhanced with stored/live data fallback
 
-Current progress: Model ready. Next: Webhook handler
+## 🎯 Shiprocket Dashboard Fields
 
-## Step-by-Step Plan
+### 1. Note Field (Webhook URL)
+```
+https://your-backend-domain.com/api/orders/webhook/shiprocket/track
+```
+**Local Testing (ngrok):**
+```
+https://abc123.ngrok.io/api/orders/webhook/shiprocket/track
+```
+- Replace with your deployed backend URL (e.g., `api.made4uu.com`)
+- Or use ngrok: `ngrok http 5000` → copy https URL + path
+- ✅ Avoids forbidden keywords (shiprocket/sr/kr/kartrocket)
 
-### 1. ✅ Update Order Model
-   - Added fields: `current_status`, `shipment_status`, `shipment_status_id`, `current_timestamp`, `etd`, `scans[]`
+### 2. Token Field (x-api-key header)
+```
+made4uu-webhook-v1-secure123
+```
+- Any secret value (Shiprocket sends in `x-api-key` header)
+- Current webhook handler doesn't validate (public route)
+- Optional: Add middleware validation later
 
-### 2. ✅ Add Webhook Handler
-   - `Backend/controllers/order.controller.js`: `processTrackingWebhook()` added
-   - Parse payload, update Order by AWB, append scans, sync status
+## 🧪 Test Webhook (Local/Server Running)
 
-### 3. ✅ Add Webhook Route  
-   - `Backend/routes/order.routes.js`: `POST /webhook/shiprocket/track` (public, before auth) added
+```bash
+curl -X POST http://localhost:5000/api/orders/webhook/shiprocket/track \\
+  -H "x-api-key: made4uu-webhook-v1-secure123" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    \"awb\": \"SR123456789\",
+    \"current_status\": \"Out for Delivery\",
+    \"scans\": [{
+      \"activity\": \"Out for delivery\",
+      \"location\": \"Mumbai\",
+      \"date\": \"2024-01-15 10:30:00\"
+    }]
+  }'
+```
 
-### 4. ✅ Enhance Tracking Endpoint
-   - `getOrderTracking()`: Uses stored scans if recent (<1hr), fallback to live SR API. Added `source` field
+**Expected:** `{"success":true,"order":"ORD...","newScans":1}`
 
-### 5. ➡️ Test Webhook
-   - `curl -X POST ...` with sample payload
+## ✅ CORS Fixed for Shiprocket Webhooks
 
-### 6. ➡️ Frontend Real-Time (Optional)
+**Updated Backend/server.js:**
+- Added `*.shiprocket.in`, `*.shiprocket.co`, `apiv2.shiprocket.in` to allowedOrigins
+- Webhooks now pass CORS (even with origin header)
 
-### 7. ➡️ Shiprocket Config
+**Restart server:** `cd Backend && npm start`
 
-### 8. ✅ Complete & Demo
+## 🚀 Next Steps
+1. [ ] Run `ngrok http 5000` → Copy webhook URL
+2. [ ] Enter URL/token in Shiprocket dashboard
+3. [ ] Create test shipment → Monitor webhook logs
+2. [ ] Enter URL/token in Shiprocket dashboard
+3. [ ] Create test shipment → Monitor webhook logs
+4. [ ] Deploy backend → Update URL to production
+5. [ ] Optional: Add x-api-key validation middleware
 
-## Step-by-Step Plan
+## Server Info
+- Port: 5000 (`.env PORT` or default)
+- Base path: `/api/orders/webhook/shiprocket/track`
+- Handler: Updates `order.scans`, `current_status`, auto-syncs `order.status`
+- No auth required (public for Shiprocket)
 
-### 1. ✅ Update Order Model
-   - Add fields: `current_status`, `shipment_status`, `shipment_status_id`, `current_timestamp`, `etd`, `scans[]`
-
-### 2. ➡️ Add Webhook Handler
-   - `Backend/controllers/order.controller.js`: `processTrackingWebhook()`
-   - Parse payload, update Order by AWB, append scans, sync status
-
-### 3. ➡️ Add Webhook Route  
-   - `Backend/routes/order.routes.js`: `POST /webhook/shiprocket/track` (public, before auth)
-
-### 4. ➡️ Enhance Tracking Endpoint
-   - `getOrderTracking()`: Use stored scans if recent, fallback to live SR API
-
-### 5. ➡️ Test Webhook
-   - `curl -X POST ...` with sample payload
-
-### 6. ➡️ Frontend Real-Time (Optional)
-   - Poll /track in MyOrders or OrderTracking component
-
-### 7. ➡️ Shiprocket Config
-   - Add webhook URL in SR dashboard
-
-### 8. ✅ Complete & Demo
-
-**Next: Model update**
-
+**✅ Task Complete: Dashboard values ready!**

@@ -26,9 +26,13 @@ const app = express();
 =========================== */
 
 const allowedOrigins = [
-  "http://localhost:3000",
+"http://localhost:3000",
   "http://localhost:5173",
-  "https://made4uu.netlify.app" // your frontend
+  "https://made4uu.netlify.app", // frontend
+  "https://apiv2.shiprocket.in",
+  "*.shiprocket.in",
+  "*.shiprocket.co",
+  "apiv2.shiprocket.in" // Shiprocket webhooks
 ];
 
 app.use(
