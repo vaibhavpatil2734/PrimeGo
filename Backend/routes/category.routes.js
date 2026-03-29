@@ -10,12 +10,16 @@ const {
 } = require('../controllers/category.controller');
 
 const router = express.Router();
+const adminAuth = require('../middleware/adminAuth');
 
-router.post('/', createCategory);                 // Admin
-router.get('/', getAllCategories);                // Public
-router.get('/tree', getCategoryTree);              // Public
-router.get('/:slug', getCategoryBySlug);           // Public
-router.put('/:id', updateCategory);                // Admin
-router.patch('/:id/status', toggleCategoryStatus); // Admin
+// Public routes
+router.get('/', getAllCategories);
+router.get('/tree', getCategoryTree);
+router.get('/:slug', getCategoryBySlug);
+
+// Admin protected routes
+router.post('/', adminAuth, createCategory);
+router.put('/:id', adminAuth, updateCategory);
+router.patch('/:id/status', adminAuth, toggleCategoryStatus);
 
 module.exports = router;

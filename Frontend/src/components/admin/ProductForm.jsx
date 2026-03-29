@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Upload, X, Image as ImageIcon } from "lucide-react";
+import { Loader2, Upload, X, Image as ImageIcon, Plus } from "lucide-react";
 import axios from "axios";
 import productService from "../../services/product.service";
+                
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api`;
 
@@ -83,6 +84,8 @@ useEffect(() => {
   useEffect(() => {
     fetchCategories();
   }, []);
+
+                
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -306,22 +309,26 @@ useEffect(() => {
                 Loading categories...
               </div>
             ) : (
+              <>
               <select
-                name="categoryId"
-                value={formData.categoryId}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-              >
-                <option value="">Select a category</option>
-                {categories.map((cat) => (
-                  <option key={cat._id} value={cat._id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
+                  name="categoryId"
+                  value={formData.categoryId}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                >
+                  <option value="">Select a category</option>
+                  {categories.map((cat) => (
+                    <option key={cat._id} value={cat._id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </>
             )}
           </div>
+
+
 
           {/* Price & Discount */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

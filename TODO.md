@@ -1,32 +1,10 @@
-# Activity Logging System Implementation
-## Status: 🚀 In Progress (3/18 complete)
+# Create Category Fix TODO
 
-### Backend Foundation (1-5)
-- [x] 1. ✅ Update activityLog.model.js (add fields: details, reqData; indexes)
-- [x] 2. ✅ Create Backend/utils/logActivity.js utility
-- [x] 3. ✅ Analyzed controllers (wishlist, cart, order, auth, admin)
-- [x] 4. ✅ Integrate logActivity in wishlist.controller.js
-- [ ] 5. Integrate logActivity in cart.controller.js
-
-
-### Controller Integrations (6-10)
-- [ ] 6. Integrate in order.controller.js
-- [ ] 7. Integrate in admin.controller.js  
-- [ ] 8. Integrate in auth.routes.js (login/register/profile)
-- [ ] 9. Enhance activityLog.controller.js (populate, date filter, pagination)
-- [ ] 10. Protect activityLog.routes.js with adminAuth
-
-### Frontend UI (11-14)
-- [ ] 11. Create Frontend/src/services/adminLog.service.js
-- [ ] 12. Create Frontend/src/pages/adminPages/ActivityLogs.jsx (table + filters)
-- [ ] 13. Add nav link in AdminNav.jsx/AdminLayout.jsx
-- [ ] 14. Add route in AppRoutes.jsx (admin logs page)
-
-### Polish & Test (15-18)
-- [ ] 15. Test all logging endpoints
-- [ ] 16. Backend restart & verify
-- [ ] 17. Frontend dev server & test UI
-- [ ] 18. Deploy & monitor
-
-**Next Step: 1. Update model → 2. Create utility → 3+. Integrations**
+## Plan Steps:
+- [x] Step 1: Update Backend/controllers/category.controller.js - Auto-generate slug if missing
+- [x] Step 2: Update Backend/routes/category.routes.js - Add adminAuth middleware to admin routes
+- [x] Step 3: Update Frontend/src/pages/adminPages/ManageProduct.jsx - Generate slug from name in handleCreateCategory
+- [x] Step 4: Test create category functionality
+- [x] Step 5: Backend restart if needed (cd Backend && npm start)
+- [x] Step 6: Complete task
 

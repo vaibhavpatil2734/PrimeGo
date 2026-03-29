@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import productService from "../../services/product.service";
 import ProductForm from "../../components/admin/ProductForm";
-import { Trash2, Edit3, Eye, Search, ChevronDown, X } from "lucide-react";
+import { Trash2, Edit3, Eye, Search, ChevronDown, X, Plus } from "lucide-react";
+import categoryService from "../../services/category.service";
 
 export default function ManageProduct() {
   const navigate = useNavigate();
@@ -21,6 +22,12 @@ export default function ManageProduct() {
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const pageSize = 10;
+  const [showCategoriesModal, setShowCategoriesModal] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [deletingCategoryId, setDeletingCategoryId] = useState(null);
 
   const fetchProducts = async (page = currentPage, isSearch = false, reset = false) => {
     setLoading(page === 1);
@@ -112,7 +119,71 @@ export default function ManageProduct() {
     fetchProducts(currentPage, !!searchTerm.trim(), true);
   };
 
+  const fetchCategories = async () => {
+    setLoadingCategories(true);
+    try {
+      const result = await categoryService.getAll();
+      if (result.success) {
+        setCategories(result.data);
+      }
+    } catch (err) {
+      setError("Failed to fetch categories");
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    
+    try {
+      const categoryData = {
+        name: newCategoryName.trim(),
+        // slug will be auto-generated in backend
+      };
+      const result = await categoryService.create(categoryData);
+      if (result.success) {
+        await fetchCategories();
+        setNewCategoryName("");
+      } else {
+        setError(result.error || "Failed to create category");
+      }
+    } catch (err) {
+      setError("Failed to create category");
+    }
+  };
+
+  const handleDeleteCategory = async (id) => {
+    if (deletingCategoryId === id) return;
+    setDeletingCategoryId(id);
+    try {
+      const result = await categoryService.delete(id);
+      if (result.success) {
+        await fetchCategories();
+      }
+    } catch (err) {
+      setError("Failed to delete category");
+    } finally {
+      setDeletingCategoryId(null);
+    }
+  };
+
+  const toggleCategoryStatus = async (id) => {
+    try {
+      const result = await categoryService.update(id, { isActive: false }); // Toggle logic in backend
+      if (result.success) {
+        await fetchCategories();
+      }
+    } catch (err) {
+      setError("Failed to toggle category status");
+    }
+  };
+
   const displayProducts = isSearching ? searchResults : products;
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     fetchProducts(1, false, true);
@@ -131,7 +202,15 @@ export default function ManageProduct() {
             {isSearching && ` • Searching "${searchTerm}"`}
           </p>
         </div>
-        
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowCategoriesModal(true)}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 font-medium"
+          >
+            <Plus size={20} />
+            Manage Categories
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -347,7 +426,7 @@ export default function ManageProduct() {
       </div>
 
       {/* Edit Modal */}
-      {showEditModal && (
+{showEditModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-4xl max-h-[90vh] w-full overflow-y-auto shadow-2xl">
             <div className="sticky top-0 bg-white border-b border-gray-200 p-6">
@@ -376,6 +455,115 @@ export default function ManageProduct() {
                 setEditingProduct(null);
               }}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Categories Modal */}
+      {showCategoriesModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold">Manage Categories</h2>
+                <button
+                  onClick={() => setShowCategoriesModal(false)}
+                  className="text-gray-500 hover:text-gray-700 p-1 rounded hover:bg-gray-100"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              {/* Create New Category */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <h3 className="text-lg font-semibold mb-3">Create New Category</h3>
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="Enter category name"
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button
+                    onClick={handleCreateCategory}
+                    disabled={!newCategoryName.trim() || loadingCategories}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 font-medium"
+                  >
+                    <Plus size={16} />
+                    Create
+                  </button>
+                </div>
+              </div>
+
+              {/* Categories Table */}
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {loadingCategories ? (
+                      <tr>
+                        <td colSpan="3" className="px-6 py-12 text-center text-gray-500">
+                          Loading categories...
+                        </td>
+                      </tr>
+                    ) : categories.length === 0 ? (
+                      <tr>
+                        <td colSpan="3" className="px-6 py-12 text-center text-gray-500">
+                          No categories found. Create one above!
+                        </td>
+                      </tr>
+                    ) : (
+                      categories.map((category) => (
+                        <tr key={category._id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">{category.name}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              category.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {category.isActive ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => toggleCategoryStatus(category._id)}
+                                className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                                title="Toggle Status"
+                              >
+                                {category.isActive ? 'Deactivate' : 'Activate'}
+                              </button>
+                              <button
+                                onClick={() => handleDeleteCategory(category._id)}
+                                disabled={deletingCategoryId === category._id}
+                                className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 disabled:opacity-50"
+                                title="Delete"
+                              >
+                                <Trash2 size={16} />
+                                {deletingCategoryId === category._id && (
+                                  <span className="ml-1 animate-spin text-xs">...</span>
+                                )}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       )}
