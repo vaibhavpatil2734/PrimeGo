@@ -15,13 +15,14 @@ const router = express.Router();
 // Create a new log entry
 router.post("/", createLog);
 
-// Get all logs (with optional query filters)
-router.get("/", getLogs);
+// Get all logs (with optional query filters) - Admin only
+const adminAuth = require("../middleware/adminAuth");
+router.get("/", adminAuth, getLogs);
 
-// Get a single log by ID
-router.get("/:id", getLogById);
+// Get a single log by ID - Admin only
+router.get("/:id", adminAuth, getLogById);
 
-// Delete a log by ID
-router.delete("/:id", deleteLog);
+// Delete a log by ID - Admin only
+router.delete("/:id", adminAuth, deleteLog);
 
 module.exports = router;

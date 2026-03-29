@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const auth = require('../middleware/auth');
+const logActivity = require('../utils/logActivity');
 
 // Your actual Google Client ID
 const CLIENT_ID = "198473426738-d0o59tf5mr4q7jpl4lgae0qh13mi7ilh.apps.googleusercontent.com";
@@ -26,6 +27,7 @@ router.post('/register', async (req, res) => {
 
     try {
         await user.save();
+        await logActivity(req, 'REGISTER', 'User', user._id);
         res.status(201).json({ message: 'User Created' });
     } catch (err) {
         res.status(400).json({ message: err.message });
@@ -42,6 +44,7 @@ router.post('/login', async (req, res) => {
 
     // FIXED: Using your .env secret instead of placeholder text
     const token = jwt.sign({ _id: user._id, role: user.role }, process.env.JWT_SECRET);
+    await logActivity(req, 'LOGIN', 'User', user._id);
     res.json({ token, role: user.role, message: 'Logged In' });
 });
 
@@ -67,6 +70,7 @@ router.post('/google-login', async (req, res) => {
         }
 
         const sessionToken = jwt.sign({ _id: user._id, role: user.role }, process.env.JWT_SECRET);
+        if (user._id) await logActivity(req, 'LOGIN', 'User', user._id, 'Google Login');
         res.json({ token: sessionToken, role: user.role });
     } catch (err) {
         console.error("Google Auth Error:", err.message); 

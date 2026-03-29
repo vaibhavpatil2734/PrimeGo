@@ -3,8 +3,10 @@
 const mongoose = require("mongoose");
 const Cart = require("../models/cart.model");
 const Product = require("../models/product.model");
+const logActivity = require("../utils/logActivity");
 
 console.log('🛒 Cart controller loaded');
+
 
 /* ==============================
    GET CART
@@ -72,10 +74,11 @@ const addOrUpdateCartItem = async (req, res) => {
     }
 
     await cart.save();
-
+    await logActivity(req, 'UPDATE', 'Cart', cart._id, `Added/Updated item ${productId}`);
     const updatedCart = await Cart.findOne({ userId }).populate("items.productId");
     res.status(200).json(updatedCart);
   } catch (error) {
+
     res.status(500).json({ message: error.message });
   }
 };
@@ -99,10 +102,11 @@ const removeCartItem = async (req, res) => {
     );
 
     await cart.save();
-
+    await logActivity(req, 'DELETE', 'CartItem', cartItemId);
     const updatedCart = await Cart.findOne({ userId }).populate("items.productId");
     res.json(updatedCart);
   } catch (error) {
+
     res.status(500).json({ message: error.message });
   }
 };
@@ -122,10 +126,11 @@ const clearCart = async (req, res) => {
 
     cart.items = [];
     await cart.save();
-
+    await logActivity(req, 'UPDATE', 'Cart', cart._id, 'Cart cleared');
     const updatedCart = await Cart.findOne({ userId }).populate("items.productId");
     res.json(updatedCart);
   } catch (error) {
+
     res.status(500).json({ message: error.message });
   }
 };

@@ -2,6 +2,8 @@
 const Order = require("../models/order.model");
 const Product = require("../models/product.model");
 const PaymentAttempt = require("../models/PaymentAttempt.model");
+const logActivity = require("../utils/logActivity");
+
 
 /**
  * ✅ UPDATED: COD Orders or Admin/Internal use only
@@ -113,14 +115,17 @@ const createOrder = async (req, res) => {
       await populatedOrder.save();
       
       console.log(`✅ [ORDER BASIC SR] ${orderNumber}: shipment_id=${shipment.shipment_id}, ready for manual pickup`);
+      await logActivity(req, 'CREATE', 'Order', order._id, `Order ${orderNumber} placed ($${totalAmount.toFixed(2)})`);
       res.status(201).json(populatedOrder);
     } catch (shiprocketError) {
       console.log("⚠️ Shiprocket partial fail:", shiprocketError.message);
       console.log(`✅ Order created (manual SR steps needed): ${orderNumber}`);
+      await logActivity(req, 'CREATE', 'Order', order._id, `Order ${orderNumber} placed ($${totalAmount.toFixed(2)})`);
       res.status(201).json(order);
     }
 
   } catch (error) {
+
     console.error('❌ [ORDER CREATE] Error:', error);
     res.status(500).json({ error: error.message });
   }
@@ -209,9 +214,10 @@ const updateOrderStatus = async (req, res) => {
 
     order.status = status;
     await order.save();
-
+    await logActivity(req, 'UPDATE', 'Order', id, `Status changed to: ${status}`);
     res.json({ message: "Order status updated", order });
   } catch (error) {
+
     res.status(500).json({ error: error.message });
   }
 };
@@ -241,9 +247,10 @@ const cancelOrder = async (req, res) => {
 
     order.status = "CANCELLED";
     await order.save();
-
+    await logActivity(req, 'UPDATE', 'Order', id, 'Order cancelled');
     res.json({ message: "Order cancelled successfully", order });
   } catch (error) {
+
     res.status(500).json({ error: error.message });
   }
 };

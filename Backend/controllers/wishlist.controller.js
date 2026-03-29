@@ -65,9 +65,11 @@ exports.addToWishlist = async (req, res) => {
       // Add product to wishlist
       wishlist.items.push({ productId });
       await wishlist.save();
+      await logActivity(req, 'CREATE', 'WishlistItem', productId);
     }
 
     res.status(200).json({
+
       success: true,
       message: "Product added to wishlist",
       data: wishlist
@@ -124,8 +126,10 @@ exports.removeFromWishlist = async (req, res) => {
       { userId },
       { items: wishlist.items }
     );
+    await logActivity(req, 'DELETE', 'WishlistItem', productId);
 
     res.status(200).json({
+
       success: true,
       message: "Product removed from wishlist",
       data: { items: wishlist.items, itemCount: wishlist.items.length }

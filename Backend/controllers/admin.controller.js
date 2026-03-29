@@ -1,6 +1,7 @@
 const Order = require("../models/order.model");
 const Product = require("../models/product.model");
 const User = require("../models/user.model");
+const logActivity = require("../utils/logActivity");
 
 /**
  * Get dashboard statistics
@@ -218,22 +219,29 @@ const updateUserRole = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    user.role = role;
-    await user.save();
+    const updatedUser = await User.findByIdAndUpdate(
+      id, 
+      { role }, 
+      { new: true, runValidators: false }
+    );
+
+    await logActivity(req, 'UPDATE', 'User', id, `Role changed to ${role}`);
 
     // Generate new token with updated role
     const jwt = require('jsonwebtoken');
-    const newToken = jwt.sign({ _id: user._id, role: user.role }, process.env.JWT_SECRET);
+    const newToken = jwt.sign({ _id: updatedUser._id, role: updatedUser.role }, process.env.JWT_SECRET);
 
     res.json({ 
       message: "User role updated", 
-      user: { ...user._doc, password: undefined },
+      user: updatedUser,
       newToken 
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
+
 
 /**
  * Delete user (Admin)
@@ -242,10 +250,7 @@ const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const user = await User.findById(id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    await logActivity(req, 'DELETE', 'User', id);
 
     await User.findByIdAndDelete(id);
     res.json({ message: "User deleted successfully" });

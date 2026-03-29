@@ -1,4 +1,5 @@
 const Contact = require('../models/contact.model');
+const logActivity = require('../utils/logActivity');
 
 // Create new contact message
 const createContact = async (req, res) => {
@@ -103,6 +104,8 @@ const deleteContact = async (req, res) => {
       });
     }
 
+    await logActivity(req, 'DELETE', 'Contact', id);
+
     res.json({
       success: true,
       message: 'Contact deleted successfully'
@@ -115,6 +118,7 @@ const deleteContact = async (req, res) => {
     });
   }
 };
+
 
 // Mark contact as read
 const markAsRead = async (req, res) => {
@@ -133,6 +137,8 @@ const markAsRead = async (req, res) => {
         message: 'Contact not found'
       });
     }
+
+    await logActivity(req, 'UPDATE', 'Contact', id, 'Marked as read');
 
     res.json({
       success: true,
@@ -154,4 +160,5 @@ module.exports = {
   deleteContact,
   markAsRead
 };
+
 

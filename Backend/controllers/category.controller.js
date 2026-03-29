@@ -1,5 +1,6 @@
 const Product = require('../models/product.model');
 const Category = require('../models/category.model');
+const logActivity = require('../utils/logActivity');
 
 /**
  * Create Category (Admin)
@@ -35,11 +36,14 @@ const createCategory = async (req, res) => {
       parentCategory: parentCategory || null
     });
 
+    await logActivity(req, 'CREATE', 'Category', category._id);
+
     res.status(201).json(category);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 /**
  * Get all categories
@@ -118,11 +122,14 @@ const updateCategory = async (req, res) => {
 
     await category.save();
 
+    await logActivity(req, 'UPDATE', 'Category', id);
+
     res.json(category);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 /**
  * Toggle category status (Admin)
@@ -138,6 +145,8 @@ const toggleCategoryStatus = async (req, res) => {
 
     category.isActive = !category.isActive;
     await category.save();
+
+    await logActivity(req, 'UPDATE', 'Category', id, `Status toggled to ${category.isActive ? 'Active' : 'Inactive'}`);
 
     res.json({ message: 'Category status updated', category });
   } catch (error) {

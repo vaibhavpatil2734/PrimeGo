@@ -9,9 +9,14 @@ const ActivityLog = require('../models/activityLog.model');
  * @param {String} details - Optional description
  */
 const logActivity = async (req, action, entity, entityId, details = '') => {
+  // Skip logging if not authenticated
+  if (!req.user?._id) {
+    console.log(`📝 [GUEST LOG] ${action} ${entity}:${entityId}`);
+    return;
+  }
+
   try {
-    // Determine userId (authenticated or guest)
-    const userId = req.user?._id || null;
+    const userId = req.user._id;
     
     // Get IP address (handle proxy/X-Forwarded-For)
     let ipAddress = req.ip || 
@@ -39,7 +44,7 @@ const logActivity = async (req, action, entity, entityId, details = '') => {
     };
 
     await ActivityLog.create(logData);
-    console.log(`📝 [LOG] ${userId ? 'User ' + userId.toString().substring(0,6) : 'Guest'} - ${action} ${entity}:${entityId}`);
+    console.log(`📝 [LOG] User ${userId.toString().substring(0,6)} - ${action} ${entity}:${entityId}`);
     
   } catch (error) {
     console.error('❌ [LOG ERROR]', error.message);
