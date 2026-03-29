@@ -53,10 +53,8 @@ export const WishlistProvider = ({ children }) => {
           _id: item._id,
           productId: item.productId?._id || item.productId,
           name: item.productId?.title || "Product",
-          price: item.productId?.discountPrice && item.productId?.discountPrice > 0
-            ? item.productId.price - item.productId.discountPrice
-            : item.productId?.price || 0,
-          oldPrice: item.productId?.price || 0,
+          price: item.productId?.discountPrice > 0 ? item.productId.discountPrice : item.productId?.price || 0,
+          oldPrice: item.productId?.discountPrice > 0 ? item.productId.price : item.productId?.price || 0,
           img: item.productId?.images?.[0]?.url || "/placeholder.jpg",
           addedAt: item.addedAt,
         }))
@@ -65,6 +63,10 @@ export const WishlistProvider = ({ children }) => {
       // Silent fail
     }
   }, [userId]);
+
+  useEffect(() => {
+    fetchWishlist();
+  }, []); 
 
   useEffect(() => {
     if (userId) {
@@ -113,8 +115,7 @@ export const WishlistProvider = ({ children }) => {
 
       try {
         await wishlistService.addToWishlist(userId, product.id);
-        // Don't fetch fresh data here - local state is already updated
-        // This prevents race conditions where fetchWishlist might get stale data
+        await fetchWishlist(); // Refresh with fresh backend data
       } catch (error) {
         // Revert on error - restore previous state
         if (!isAlreadyInWishlist) {
@@ -204,9 +205,9 @@ export const WishlistProvider = ({ children }) => {
      CHECK IF PRODUCT IN WISHLIST
   ============================== */
   const isInWishlist = useCallback(
-    (productId) => {
+    (id) => {
       return wishlistRef.current.some(
-        (item) => String(item.productId) === String(productId)
+        (item) => String(item.productId) === String(id) || String(item._id) === String(id)
       );
     },
     []

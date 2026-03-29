@@ -20,18 +20,11 @@ const ProductDetails = () => {
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState(null);
   const [suggestedProducts, setSuggestedProducts] = useState([]);
-  const [isLiked, setIsLiked] = useState(false);
   const [likeAnimating, setLikeAnimating] = useState(false);
   const [buttonState, setButtonState] = useState("idle");
   
-  // Update isLiked when wishlist changes - fixes stale closure issue
-  useEffect(() => {
-    if (product && product.id) {
-      const liked = isInWishlist(product.id);
-      setIsLiked(liked);
-              console.log(`ProductDetails ${product.id}: isLiked=${liked}, wishlistLoading=${wishlistLoading}`);
-    }
-  }, [product, isInWishlist, wishlistLoading]);
+  // Direct from context
+  const isLiked = isInWishlist(product?.id);
   
   // Touch/swipe support for image gallery
   const touchStartX = useRef(0);
@@ -195,9 +188,8 @@ const fetchProduct = async () => {
                   if (wishlistLoading) return;
                   setLikeAnimating(true);
                   toggleWishlist(product);
-                  setTimeout(() => {
+                setTimeout(() => {
                     setLikeAnimating(false);
-                    if (product) setIsLiked(isInWishlist(product.id));
                   }, 500);
                 }}
                 className={`

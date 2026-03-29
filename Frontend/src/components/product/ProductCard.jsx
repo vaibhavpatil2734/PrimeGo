@@ -10,18 +10,13 @@ const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist, wishlistLoading, loading } = useWishlist();
   const [buttonState, setButtonState] = useState("idle"); // idle, loading, success
-  const [isLiked, setIsLiked] = useState(false);
   const [likeAnimating, setLikeAnimating] = useState(false);
 
   // ✅ Safe ID handling (fix)
   const productId = product.id || product._id;
   
-  // Update isLiked when wishlist changes - fixes stale closure issue
-  useEffect(() => {
-    const liked = isInWishlist(productId);
-    setIsLiked(liked);
-    if (productId) console.log(`ProductCard ${productId}: isLiked=${liked}, loading=${loading}`);
-  }, [productId, isInWishlist, loading]);
+  // Direct from context - no local state
+  const isLiked = isInWishlist(productId);
 
   const discount =
     product.oldPrice > product.price
@@ -51,7 +46,6 @@ const handleLikeClick = (e) => {
     // Reset animation and force sync
     setTimeout(() => {
       setLikeAnimating(false);
-      setIsLiked(isInWishlist(productId));
     }, 500);
   };
 

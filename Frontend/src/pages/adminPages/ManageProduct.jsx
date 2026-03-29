@@ -249,10 +249,7 @@ export default function ManageProduct() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell">{product.categoryId?.name || 'N/A'}</td>
                       <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
-                        <span className="text-sm font-semibold text-gray-900">₹{product.price}</span>
-                        {product.discountPrice && (
-                          <span className="text-sm text-gray-400 line-through ml-1">₹{product.discountPrice}</span>
-                        )}
+                        <span className="text-sm font-semibold text-gray-900">₹{product.discountPrice}</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${

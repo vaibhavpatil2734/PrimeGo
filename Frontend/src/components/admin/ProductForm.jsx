@@ -326,7 +326,7 @@ useEffect(() => {
           {/* Price & Discount */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Price *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Original Price *</label>
               <input
                 type="number"
                 name="price"
@@ -340,7 +340,7 @@ useEffect(() => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Discount Price</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Price with Discount</label>
               <input
                 type="number"
                 name="discountPrice"

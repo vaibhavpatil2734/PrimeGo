@@ -19,7 +19,7 @@ export default function Contact() {
     const fetchContactInfo = async () => {
       console.log('[Contact.jsx] Fetching contact info...');
       try {
-        const response = await publicHttpClient.get('/contact-info');
+        const response = await publicHttpClient.get('/api/contact-info');
         console.log('[Contact.jsx] Fetch response:', response.data);
         if (response.data && response.data.success) {
           setContactInfo(response.data.data);

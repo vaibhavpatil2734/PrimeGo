@@ -1,4 +1,5 @@
 const Wishlist = require("../models/wishlist.model");
+const logActivity = require("../utils/logActivity");
 
 /* ==========================
    GET WISHLIST
