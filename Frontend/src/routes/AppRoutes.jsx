@@ -25,6 +25,8 @@ import CreateProduct from "../pages/adminPages/CreateProduct";
 import ManageProduct from "../pages/adminPages/ManageProduct";
 import UpdateProduct from "../pages/adminPages/UpdateProduct";
 import ManageContacts from "../pages/adminPages/ManageContacts";
+import AdminActivityLogs from "../pages/adminPages/AdminActivityLogs";
+import LogExport from "../pages/adminPages/LogExport";
 
 // Loader
 const PageLoader = () => (
@@ -132,7 +134,10 @@ const AppRoutes = createBrowserRouter([
           { path: "products/create", element: <CreateProduct /> },
           { path: "products/:id/edit", element: <UpdateProduct /> },
           { path: "contacts", element: <ManageContacts /> },
+          { path: "activity-logs", element: <AdminActivityLogs /> },
+          { path: "export-logs", element: <LogExport /> },
         ],
+
       },
     ],
   },

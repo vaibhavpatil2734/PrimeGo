@@ -20,23 +20,24 @@ const AdminActivityLogs = () => {
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      // Use direct API call to /api/activity-logs (Backend API)
+      // Use full /api prefix since Backend/server.js uses /api/activity-logs
       const params = new URLSearchParams({
         ...filters,
         page: filters.page,
         limit: filters.limit
       });
       
-      const response = await httpClient.get(`/activity-logs?${params}`);
+      const response = await httpClient.get(`/api/activity-logs?${params}`);
       setLogs(response.data.logs || []);
       setPagination(response.data.pagination || {});
     } catch (error) {
       console.error('Failed to fetch logs:', error);
-      alert('Failed to fetch activity logs. Ensure you are logged in as admin.');
+      console.log('Full error:', error.response);
     } finally {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchLogs();
@@ -215,9 +216,10 @@ const AdminActivityLogs = () => {
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity ID</th>
-                <httpClient px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</httpClient>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP</th>
               </tr>
+
             </thead>
             <tbody className="divide-y divide-gray-200">
               {logs.map((log, index) => (

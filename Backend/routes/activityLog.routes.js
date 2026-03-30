@@ -3,7 +3,8 @@ const {
   createLog,
   getLogs,
   getLogById,
-  deleteLog
+  deleteLog,
+  exportLogs
 } = require("../controllers/activityLog.controller");
 
 const router = express.Router();
@@ -24,5 +25,6 @@ router.get("/:id", adminAuth, getLogById);
 
 // Delete a log by ID - Admin only
 router.delete("/:id", adminAuth, deleteLog);
+router.get("/export", adminAuth, exportLogs);
 
 module.exports = router;

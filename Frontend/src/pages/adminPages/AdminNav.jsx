@@ -8,6 +8,8 @@ import {
   Settings,
   Plus,
   MessageCircle,
+  Activity,
+  Download
 } from "lucide-react";
 
 export default function AdminNav() {
@@ -19,12 +21,10 @@ export default function AdminNav() {
     { label: "Create Product", path: "/admin/products/create", icon: <Plus size={16} /> },
     { label: "Manage Products", path: "/admin/products", icon: <Package size={16} /> },
     { label: "Manage Contacts", path: "/admin/contacts", icon: <MessageCircle size={16} /> },
-    { label: "Manage Orders", path: "/admin/orders", icon: <ShoppingCart size={16} /> },
-  ];
+    { label: "Manage Orders", path: "/admin/orders", icon: <ShoppingCart size={16} /> }]
 
   const isProductsActive = location.pathname.startsWith("/admin/products");
   const isContactsActive = location.pathname === "/admin/contacts";
-
 
   return (
     <div className="bg-white shadow-sm">
@@ -33,7 +33,6 @@ export default function AdminNav() {
       </div>
 
       <div className="px-6 pb-4 flex gap-3 flex-wrap">
-
         {/* Main Navigation */}
         {buttons.map((btn) => {
           const isActive = location.pathname === btn.path;
@@ -53,8 +52,8 @@ export default function AdminNav() {
             </button>
           );
         })}
-
       </div>
     </div>
   );
 }
+
