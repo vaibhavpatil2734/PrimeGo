@@ -36,10 +36,6 @@ export default function ProductForm({
     price: initialData.price || "",
     discountPrice: initialData.discountPrice || "",
     stock: initialData.stock || 0,
-    attributes: {
-      color: initialData.attributes?.color || "",
-      size: initialData.attributes?.size || "",
-    },
     isActive: initialData.isActive !== undefined ? initialData.isActive : true,
   });
 
@@ -53,10 +49,6 @@ useEffect(() => {
     price: initialData.price || "",
     discountPrice: initialData.discountPrice || "",
     stock: initialData.stock || 0,
-    attributes: {
-      color: initialData.attributes?.color || "",
-      size: initialData.attributes?.size || "",
-    },
     isActive: initialData.isActive !== undefined ? initialData.isActive : true,
   });
 
@@ -90,16 +82,7 @@ useEffect(() => {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
-    if (name.startsWith("attributes.")) {
-      const attrKey = name.split(".")[1];
-      setFormData((prev) => ({
-        ...prev,
-        attributes: {
-          ...prev.attributes,
-          [attrKey]: value,
-        },
-      }));
-    } else if (type === "checkbox") {
+    if (type === "checkbox") {
       setFormData((prev) => ({
         ...prev,
         [name]: checked,
@@ -176,10 +159,7 @@ useEffect(() => {
         price: Number(formData.price),
         discountPrice: formData.discountPrice ? Number(formData.discountPrice) : null,
         stock: Number(formData.stock),
-        attributes: {
-          color: formData.attributes.color || null,
-          size: formData.attributes.size || null,
-        },
+        attributes: {},
         isActive: formData.isActive,
       };
 
@@ -375,31 +355,7 @@ useEffect(() => {
             />
           </div>
 
-          {/* Attributes */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
-              <input
-                type="text"
-                name="attributes.color"
-                value={formData.attributes.color}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                placeholder="e.g., Red, Blue"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Size</label>
-              <input
-                type="text"
-                name="attributes.size"
-                value={formData.attributes.size}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                placeholder="e.g., S, M, L"
-              />
-            </div>
-          </div>
+
 
           {/* Active Status */}
           <div className="flex items-center gap-2">

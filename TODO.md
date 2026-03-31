@@ -1,8 +1,9 @@
-# ActivityLog Validation Fix Progress
+# Task Progress: Replace "Add to Cart" buttons on Product Cards with "View Product"
 
-## Steps:
-- [✅] 1. Create TODO.md with plan steps
-- [✅] 2. Edit Backend/models/activityLog.model.js - remove required validation on userId
-- [✅] 3. Update TODO.md with completion status
-- [✅] 4. Suggest server restart and testing
-- [✅] 5. Verify fix complete
+## Steps to complete:
+- [x] Create TODO.md with plan
+- [ ] 1. Update Frontend/src/components/product/ProductCard.jsx - Replace add to cart button/logic with View Product
+- [ ] 2. Verify in products.jsx and home FeaturedProducts
+- [ ] 3. Mark complete
+
+Current status: Starting ProductCard update...

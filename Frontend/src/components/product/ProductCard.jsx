@@ -7,9 +7,9 @@ import { HeartIcon as OutlineHeart } from "@heroicons/react/24/outline";
 
 const ProductCard = ({ product }) => {
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+
   const { isInWishlist, toggleWishlist, wishlistLoading, loading } = useWishlist();
-  const [buttonState, setButtonState] = useState("idle"); // idle, loading, success
+
   const [likeAnimating, setLikeAnimating] = useState(false);
 
   // ✅ Safe ID handling (fix)
@@ -49,45 +49,9 @@ const handleLikeClick = (e) => {
     }, 500);
   };
 
-  const handleAddToCart = async (e) => {
-    e.stopPropagation();
-    
-    // If already success, don't trigger again
-    if (buttonState === "success") return;
-    
-    // Set loading state
-    setButtonState("loading");
-    
-    try {
-      await addToCart({
-        id: productId,
-        name: product.name || product.title,
-        price: product.price,
-        img: product.img || product.images?.[0]?.url
-      });
-      
-      // Set success state after adding
-      setButtonState("success");
-      
-      // Reset to idle after 2.5 seconds
-      setTimeout(() => {
-        setButtonState("idle");
-      }, 2500);
-    } catch (error) {
-      setButtonState("idle");
-    }
-  };
 
-  // Sparkle component
-  const Sparkle = ({ className }) => (
-    <svg
-      className={`absolute w-3 h-3 text-yellow-300 ${className}`}
-      viewBox="0 0 24 24"
-      fill="currentColor"
-    >
-      <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
-    </svg>
-  );
+
+
 
   return (
     <div
@@ -179,109 +143,38 @@ const handleLikeClick = (e) => {
           )}
         </div>
 
-        <div className="mt-1 md:mt-2 relative">
+        <div className="mt-1 md:mt-2">
           <button
-            onClick={handleAddToCart}
-            disabled={buttonState === "loading" || buttonState === "success"}
-            className={`
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/product/${productId}`);
+            }}
+            className="
               w-full py-2 md:py-2.5 rounded-xl font-medium flex items-center justify-center gap-1.5 md:gap-2 transition-all duration-300 shadow-md
-              ${buttonState === "success" 
-                ? "btn-success text-white" 
-                : "bg-gradient-to-r from-gray-900 to-gray-700 text-white hover:from-gray-800 hover:to-gray-600 hover:shadow-lg"
-              }
-              ${buttonState === "loading" ? "cursor-wait opacity-80" : ""}
-            `}
+              bg-gradient-to-r from-gray-900 to-gray-700 text-white hover:from-gray-800 hover:to-gray-600 hover:shadow-lg
+            "
           >
-            {buttonState === "idle" && (
-              <>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-3 w-3 md:h-4 md:w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-                <span className="text-[10px] md:text-sm">Add to Cart</span>
-              </>
-            )}
-
-            {buttonState === "loading" && (
-              <svg
-                className="spinner h-4 w-4"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-            )}
-
-            {buttonState === "success" && (
-              <>
-                {/* Sparkles container - only visible on success - all around the button border */}
-                <div className="absolute inset-0 pointer-events-none overflow-visible">
-                  {/* Top edge */}
-                  <Sparkle className="sparkle-s1" style={{ top: '2%', left: '10%' }} />
-                  <Sparkle className="sparkle-s2" style={{ top: '2%', right: '10%' }} />
-                  <Sparkle className="sparkle-s3" style={{ top: '2%', left: '30%' }} />
-                  <Sparkle className="sparkle-s4" style={{ top: '2%', right: '30%' }} />
-                  <Sparkle className="sparkle-s5" style={{ top: '2%', left: '50%', transform: 'translateX(-50%)' }} />
-                  
-                  {/* Bottom edge */}
-                  <Sparkle className="sparkle-s6" style={{ bottom: '2%', left: '10%' }} />
-                  <Sparkle className="sparkle-s7" style={{ bottom: '2%', right: '10%' }} />
-                  <Sparkle className="sparkle-s8" style={{ bottom: '2%', left: '30%' }} />
-                  <Sparkle className="sparkle-s9" style={{ bottom: '2%', right: '30%' }} />
-                  <Sparkle className="sparkle-s10" style={{ bottom: '2%', left: '50%', transform: 'translateX(-50%)' }} />
-                  
-                  {/* Left edge */}
-                  <Sparkle className="sparkle-s11" style={{ top: '20%', left: '2%' }} />
-                  <Sparkle className="sparkle-s12" style={{ top: '50%', left: '2%' }} />
-                  <Sparkle className="sparkle-s1" style={{ top: '80%', left: '2%' }} />
-                  
-                  {/* Right edge */}
-                  <Sparkle className="sparkle-s2" style={{ top: '20%', right: '2%' }} />
-                  <Sparkle className="sparkle-s3" style={{ top: '50%', right: '2%' }} />
-                  <Sparkle className="sparkle-s4" style={{ top: '80%', right: '2%' }} />
-                </div>
-                
-                {/* Checkmark icon */}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-3 w-3 md:h-5 md:w-5 checkmark-bounce"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={3}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span className="text-[10px] md:text-sm text-fade-in">Added!</span>
-              </>
-            )}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-3 w-3 md:h-4 md:w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+              />
+            </svg>
+            <span className="text-[10px] md:text-sm">View Product</span>
           </button>
         </div>
       </div>

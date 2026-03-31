@@ -15,6 +15,9 @@ import ProductDetails from "../pages/ProductDetails";
 import MyOrders from "../pages/MyOrders";
 import Wishlist from "../pages/Wishlist";
 import AdminRouteGuard from "../components/admin/AdminRouteGuard";
+import Privacy from "../pages/Privacy";
+import Terms from "../pages/Terms";
+import RefundPolicy from "../pages/RefundPolicy";
 
 // ADMIN
 import AdminLayout from "../pages/adminPages/AdminLayout";
@@ -114,6 +117,11 @@ const AppRoutes = createBrowserRouter([
       { path: "products", element: <Products /> },
       { path: "product/:id", element: <ProductDetails /> },
       { path: "wishlist", element: <Wishlist /> },
+      { path: "privacy", element: <Privacy /> },
+      { path: "terms", element: <Terms /> },
+      { path: "refund-policy", element: <RefundPolicy /> },
+
+
 
       // ADMIN ROUTES
       {

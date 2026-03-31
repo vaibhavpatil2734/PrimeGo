@@ -53,16 +53,7 @@ const productSchema = new mongoose.Schema({
     default: 0
   },
 
-  attributes: {
-    color: {
-      type: String,
-      default: null
-    },
-    size: {
-      type: String,
-      default: null
-    }
-  },
+
 
   rating: {
     type: Number,
