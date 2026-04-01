@@ -4,7 +4,7 @@ const {
   addOrUpdateCartItem,
   removeCartItem,
   clearCart,
-  updateCartItemQuantity
+  updateCartItem
 } = require("../controllers/cart.controller");
 
 const router = express.Router();
@@ -19,8 +19,8 @@ router.get("/:userId", getCart);
 // Add or update item in cart
 router.post("/:userId", addOrUpdateCartItem);
 
-// Update item quantity (set absolute quantity)
-router.put("/:userId/:productId", updateCartItemQuantity);
+// Update cart item (quantity, custom...)
+router.put("/:userId/:cartItemId", updateCartItem);
 
 // Remove single item from cart (FIXED)
 router.delete("/:userId/:productId", removeCartItem);

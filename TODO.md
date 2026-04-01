@@ -1,9 +1,8 @@
-# Task Progress: Replace "Add to Cart" buttons on Product Cards with "View Product"
+# Cart Toggle Feature
 
-## Steps to complete:
-- [x] Create TODO.md with plan
-- [ ] 1. Update Frontend/src/components/product/ProductCard.jsx - Replace add to cart button/logic with View Product
-- [ ] 2. Verify in products.jsx and home FeaturedProducts
-- [ ] 3. Mark complete
+✅ Previous: Fixed routes + Enhanced UI
 
-Current status: Starting ProductCard update...
+## Toggle Steps:
+- [x] 1. Add state & per-item toggle button to Frontend/src/pages/cart.jsx (default hidden)
+- [x] 2. Test toggle functionality (Dev server running, UI updated)
+- [x] 3. Complete (Button styled larger/better)

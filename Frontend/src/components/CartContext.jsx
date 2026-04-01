@@ -24,6 +24,8 @@ export const CartProvider = ({ children }) => {
           Math.round(((item.productId.price - item.productId.discountPrice) / item.productId.price) * 100) : 0,
         quantity: item.quantity || 1,
         img: item.productId?.images?.[0]?.url || "/placeholder.jpg",
+        customizationType: item.customizationType || 'plain',
+        customName: item.customName || null
       };
     });
   }, []);
@@ -120,7 +122,13 @@ export const CartProvider = ({ children }) => {
       }
 
       try {
-        await cartService.addToCart(userId, productId, quantity);
+        await cartService.addToCart(
+          userId, 
+          productId, 
+          quantity,
+          product.customizationType || 'plain',
+          product.customName || null
+        );
         await fetchCart();
       } catch (error) {
         console.error("Error adding to cart:", error);
@@ -165,7 +173,7 @@ export const CartProvider = ({ children }) => {
       }
 
       try {
-        await cartService.updateCartQuantity(userId, cartItemId, quantity);
+        await cartService.updateCartItem(userId, cartItemId, { quantity });
         await fetchCart();
       } catch (error) {
         console.error("Error updating quantity:", error);

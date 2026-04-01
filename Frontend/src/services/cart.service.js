@@ -12,11 +12,13 @@ export const getCart = async (userId) => {
 };
 
 // Add or update item in cart
-export const addToCart = async (userId, productId, quantity = 1) => {
+export const addToCart = async (userId, productId, quantity = 1, customizationType = 'plain', customName = null) => {
   try {
     const response = await httpClient.post(`/cart/${userId}`, {
       productId,
-      quantity
+      quantity,
+      customizationType,
+      customName: customizationType === 'customized' ? customName : undefined
     });
     return response.data;
   } catch (error) {
@@ -47,13 +49,11 @@ export const clearCart = async (userId) => {
   }
 };
 
-// Update cart item quantity (set absolute quantity) - WITH DEBUG LOGS
-export const updateCartQuantity = async (userId, cartItemId, quantity) => {
-  console.log(`🌐 Service: PUT /cart/${userId}/${cartItemId} qty=${quantity}`);
+// Update cart item (quantity, custom...)
+export const updateCartItem = async (userId, cartItemId, updates) => {
+  console.log(`🌐 Service: PUT /cart/${userId}/${cartItemId}`, updates);
   try {
-    const response = await httpClient.put(`/cart/${userId}/${cartItemId}`, {
-      quantity
-    });
+    const response = await httpClient.put(`/cart/${userId}/${cartItemId}`, updates);
     console.log(`✅ Service: Update success, ${response.data.items?.length || 0} items`);
     return response.data;
   } catch (error) {
@@ -67,6 +67,6 @@ export default {
   addToCart,
   removeFromCart,
   clearCart,
-  updateCartQuantity
+  updateCartItem
 };
 

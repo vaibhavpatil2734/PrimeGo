@@ -25,6 +25,16 @@ const cartSchema = new mongoose.Schema(
         priceSnapshot: {
           type: Number,
           required: true
+        },
+        customizationType: {
+          type: String,
+          enum: ['plain', 'customized'],
+          default: 'plain'
+        },
+        customName: {
+          type: String,
+          maxlength: 50,
+          trim: true
         }
       }
     ]

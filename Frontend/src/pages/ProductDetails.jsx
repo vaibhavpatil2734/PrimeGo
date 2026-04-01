@@ -21,7 +21,10 @@ const ProductDetails = () => {
   const [error, setError] = useState(null);
   const [suggestedProducts, setSuggestedProducts] = useState([]);
   const [likeAnimating, setLikeAnimating] = useState(false);
-  const [buttonState, setButtonState] = useState("idle");
+const [buttonState, setButtonState] = useState("idle");
+  const [customizationType, setCustomizationType] = useState('plain');
+  const [customName, setCustomName] = useState('');
+  const [nameError, setNameError] = useState('');
   
   // Direct from context
   const isLiked = isInWishlist(product?.id);
@@ -364,6 +367,81 @@ const fetchProduct = async () => {
               </div>
             </div>
 
+            {/* CUSTOMIZATION OPTIONS */}
+            <div className="bg-gray-100 p-4 rounded-2xl mb-6">
+              <h3 className="font-semibold text-gray-800 mb-4 text-sm sm:text-base">Personalization Option</h3>
+              <div className="space-y-3">
+                <label className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all w-full ${customizationType === "plain" ? "border-black bg-gray-50 ring-2 ring-black/20" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"}`}>
+                  <input
+                    type="radio"
+                    name="customization"
+                    value="plain"
+                    checked={customizationType === "plain"}
+                    onChange={(e) => {
+                      setCustomizationType('plain');
+                      setCustomName('');
+                      setNameError('');
+                    }}
+                    className="w-5 h-5 text-black border-2 border-gray-300 focus:ring-black focus:border-black"
+                  />
+                  <div className="ml-4 flex-1">
+                    <div className="font-medium text-gray-900">Plain (No Name)</div>
+                    <div className="text-sm text-gray-600 mt-1">Standard product without customization</div>
+                  </div>
+                </label>
+                
+                <label className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all w-full ${customizationType === "customized" ? "border-black bg-gray-50 ring-2 ring-black/20" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"}`}>
+                  <input
+                    type="radio"
+                    name="customization"
+                    value="customized"
+                    checked={customizationType === "customized"}
+                    onChange={(e) => {
+                      setCustomizationType('customized');
+                      setNameError('');
+                    }}
+                    className="w-5 h-5 text-black border-2 border-gray-300 focus:ring-black focus:border-black"
+                  />
+                  <div className="ml-4 flex-1">
+                    <div className="font-medium text-gray-900">Customized (Add Name)</div>
+                    <div className="text-sm text-gray-600 mt-1">Add personalized name (max 50 characters)</div>
+                  </div>
+                </label>
+              </div>
+
+              {customizationType === 'customized' && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <input
+                      type="text"
+                      value={customName}
+                      onChange={(e) => {
+                        const value = e.target.value.slice(0, 50);
+                        setCustomName(value);
+                        if (nameError && value.trim()) setNameError('');
+                      }}
+                      placeholder="Enter text to be printed (max 50 chars)"
+                      className={`flex-1 p-3 border-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/30 transition-all ${
+                        nameError ? 'border-red-300 bg-red-50' : 'border-gray-200 focus:border-black/50'
+                      }`}
+                      maxLength={50}
+                    />
+                    <span className="text-sm text-gray-500 font-medium self-end sm:self-center min-w-[4rem] text-center">
+                      {customName.length}/50
+                    </span>
+                  </div>
+                  {nameError && (
+                    <p className="text-red-500 text-xs mt-2 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1 0z" clipRule="evenodd" />
+                      </svg>
+                      {nameError}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* ADD TO BAG */}
             <div className="relative">
               <button
@@ -377,11 +455,23 @@ const fetchProduct = async () => {
                     alert(`Only ${product.stock} items available in stock`);
                     return;
                   }
+
+                  // Customization validation
+                  if (customizationType === 'customized' && !customName.trim()) {
+                    setNameError('Please enter the name to be printed');
+                    return;
+                  }
+
+                  const productToAdd = {
+                    ...product,
+                    customizationType,
+                    customName: customizationType === 'customized' ? customName.trim() : null
+                  };
                   
                   buttonState === "loading" ? null : setButtonState("loading");
                   
                   try {
-                    await addToCart(product, quantity);
+                    await addToCart(productToAdd, quantity);
                     setButtonState("success");
                     setTimeout(() => setButtonState("idle"), 2500);
                   } catch (error) {

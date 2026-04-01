@@ -33,7 +33,7 @@ const getCart = async (req, res) => {
 const addOrUpdateCartItem = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { productId, quantity } = req.body;
+    const { productId, quantity, customizationType, customName } = req.body;
 
     const qty = Number(quantity) || 1;
 
@@ -43,6 +43,15 @@ const addOrUpdateCartItem = async (req, res) => {
 
     if (qty < 1) {
       return res.status(400).json({ message: "Quantity must be at least 1" });
+    }
+
+    // Validate custom data if provided
+    const type = customizationType || 'plain';
+    if (type !== 'plain' && type !== 'customized') {
+      return res.status(400).json({ message: "Invalid customizationType" });
+    }
+    if (type === 'customized' && (!customName || customName.trim().length === 0 || customName.trim().length > 50)) {
+      return res.status(400).json({ message: "customName required and max 50 chars for customized" });
     }
 
     let cart = await Cart.findOne({ userId });
@@ -55,11 +64,14 @@ const addOrUpdateCartItem = async (req, res) => {
     }
 
     const existingItem = cart.items.find(
-      (item) => item.productId.toString() === productId.toString()
+      (item) => 
+        item.productId.toString() === productId.toString() &&
+        item.customizationType === type &&
+        (!customName || item.customName === customName.trim())
     );
 
     if (existingItem) {
-      console.log(`📦 Merging: product ${productId} qty ${existingItem.quantity} + ${qty}`);
+      console.log(`📦 Merging: product ${productId} (${type}) qty ${existingItem.quantity} + ${qty}`);
       existingItem.quantity += qty;
     } else {
       const product = await Product.findById(productId);
@@ -69,7 +81,9 @@ const addOrUpdateCartItem = async (req, res) => {
       cart.items.push({
         productId,
         quantity: qty,
-        priceSnapshot: product.price
+        priceSnapshot: product.price,
+        customizationType: type,
+        customName: type === 'customized' ? customName.trim() : null
       });
     }
 
@@ -138,58 +152,50 @@ const clearCart = async (req, res) => {
 /* ==============================
    UPDATE ITEM QUANTITY (Set absolute quantity) - WITH DEBUG LOGS
 ============================== */
-const updateCartItemQuantity = async (req, res) => {
-  console.log('🖥️ Backend: updateCartItemQuantity START');
+const updateCartItem = async (req, res) => {
+  console.log('🖥️ Backend: updateCartItem START');
   console.log('👤 userId:', req.params.userId);
-  console.log('🛒 cartItemId:', req.params.productId);  // Actually cart item ID
-  console.log('🔢 quantity:', req.body.quantity);
+  console.log('🛒 cartItemId:', req.params.cartItemId);
+  console.log('📝 body:', req.body);
   
   try {
     const { userId } = req.params;
-    const cartItemId = req.params.productId;
-    const { quantity } = req.body;
-
-    if (!quantity || quantity < 1) {
-      console.log('❌ Invalid quantity:', quantity);
-      return res.status(400).json({ message: "Invalid quantity" });
-    }
+    const cartItemId = req.params.cartItemId;
+    const { quantity, customizationType, customName } = req.body;
 
     const cart = await Cart.findOne({ userId });
-    console.log('📦 Cart items:', cart?.items.map(item => ({
-      productId: item.productId.toString().substring(0,24),
-      itemId: item._id.toString(),
-      qty: item.quantity
-    })) || 'NO CART');
-
     if (!cart) {
-      console.log('❌ Cart not found');
       return res.status(404).json({ message: "Cart not found" });
     }
 
-    // Find cart item by cart item _id
     const existingItemIndex = cart.items.findIndex(
       item => item._id.toString() === cartItemId
     );
 
-    console.log('🔍 Looking for cartItemId:', cartItemId);
-    console.log('🔍 Found at index:', existingItemIndex);
-
     if (existingItemIndex === -1) {
-      console.log('❌ Cart item not found by ID');
       return res.status(404).json({ message: "Cart item not found" });
     }
 
-    const oldQty = cart.items[existingItemIndex].quantity;
-    cart.items[existingItemIndex].quantity = Number(quantity);
-    console.log(`📊 Updated item ${cartItemId}: ${oldQty} → ${quantity}`);
-    
-    await cart.save();
-    console.log('💾 Cart saved');
+    const item = cart.items[existingItemIndex];
 
-    // Return full populated cart
+    // Update fields if provided
+    if (quantity !== undefined && quantity >= 1) {
+      item.quantity = Number(quantity);
+    }
+    if (customizationType !== undefined) {
+      if (customizationType !== 'plain' && customizationType !== 'customized') {
+        return res.status(400).json({ message: "Invalid customizationType" });
+      }
+      item.customizationType = customizationType;
+      item.customName = customizationType === 'customized' ? (customName || item.customName || '').trim() : null;
+      if (item.customizationType === 'customized' && (!item.customName || item.customName.length === 0 || item.customName.length > 50)) {
+        return res.status(400).json({ message: "customName required and max 50 chars for customized" });
+      }
+    }
+
+    await cart.save();
+
     const updatedCart = await Cart.findOne({ userId }).populate('items.productId');
-    console.log('✅ Returning', updatedCart.items.length, 'items');
-    
     res.json(updatedCart);
   } catch (error) {
     console.error('💥 Controller ERROR:', error.message);
@@ -202,6 +208,6 @@ module.exports = {
   addOrUpdateCartItem,
   removeCartItem,
   clearCart,
-  updateCartItemQuantity,
+  updateCartItem,
 };
 
