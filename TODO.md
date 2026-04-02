@@ -17,6 +17,8 @@
   | UI: buttons always visible when dirty, after radios/input
 - [x] 4. Updated TODO.md ✓
 
-**Task Complete:** Save button now shows on any selected button (radio) change.
+**Follow-up Complete:** Added customization display to checkout items (Customized badge + personalized name).
+
+**Final Task Status:** ✅ Save button shows on selection change + Checkout shows selected option & personalized text per item.
 
 **Current Progress:** Plan approved, ready for code edit.

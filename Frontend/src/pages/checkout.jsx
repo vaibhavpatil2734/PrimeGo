@@ -9,7 +9,10 @@ import AddressManager from "../components/AddressManager";
 
 const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_test_key_here';
 
-const Checkout = () => {
+  // Simple state helper for checkout (no full cart context needed)
+  const getItemState = (itemId) => ({ customizationType: 'plain' }); // Fallback
+
+  const Checkout = () => {
   const navigate = useNavigate();
   const { cart, clearCart } = useCart();
   
@@ -324,18 +327,33 @@ const Checkout = () => {
             <div className="bg-white rounded-2xl shadow-md p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-6">Order Items ({cart.length})</h2>
               <div className="space-y-4">
-                {cart.map((item) => (
-                  <div key={item.productId} className="flex gap-4 py-4 border-b border-gray-100 last:border-0">
-                    <div className="w-20 h-20 flex-shrink-0">
-                      <img src={item.img} alt={item.name} className="w-full h-full object-cover rounded-lg" />
+                {cart.map((item) => {
+                  const state = getItemState ? getItemState(item.cartItemId || item.productId) : {};
+                  const isCustomized = item.customizationType === 'customized' && item.customName;
+                  return (
+                    <div key={item.productId} className="flex gap-4 py-4 border-b border-gray-100 last:border-0">
+                      <div className="w-20 h-20 flex-shrink-0">
+                        <img src={item.img} alt={item.name} className="w-full h-full object-cover rounded-lg" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold line-clamp-2 pr-2">{item.name}</h3>
+                        <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                        {isCustomized && (
+                          <div className="mt-1 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p className="text-xs font-medium text-blue-800">✅ Customized</p>
+                            <p className="text-xs text-blue-700">Personalized: {item.customName}</p>
+                          </div>
+                        )}
+                        <div className="mt-2">
+                          <p className="font-bold">₹{(item.price * item.quantity).toLocaleString()}</p>
+                          {item.oldPrice > item.price && (
+                            <p className="text-xs text-gray-400 line-through">₹{item.oldPrice.toLocaleString()}</p>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold line-clamp-2">{item.name}</h3>
-                      <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
-                      <p className="font-bold mt-1">₹{(item.price * item.quantity).toFixed(2)}</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
