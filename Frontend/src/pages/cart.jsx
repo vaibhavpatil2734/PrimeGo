@@ -205,9 +205,22 @@ const Cart = () => {
                           ₹{item.price.toLocaleString()} × {item.quantity}
                         </p>
                       </div>
+                      <div>
+                        {item.customizationType === "customized" &&
+                            item.customName && (
+                              <div className="mb-3 mt-4 p-2 bg-blue-50 rounded-lg">
+                                <div className="flex items-center gap-2 text-xs sm:text-sm text-blue-800">
+                                  <span className="font-medium">
+                                    Personalized:
+                                  </span>
+                                  <span>{item.customName}</span>
+                                </div>
+                              </div>
+                            )}
+                      </div>
                     </div>
                         {/* Personalization Toggle Section */}
-                    <div className="relative mb-3">
+                    <div className="relative mb-3 mt-5">
                       <button
                         onClick={() => {
                           const id = item.cartItemId || item._id;
@@ -225,17 +238,7 @@ const Cart = () => {
                       </button>
                       {expandedItems[item.cartItemId || item._id] && (
                         <>
-                          {item.customizationType === "customized" &&
-                            item.customName && (
-                              <div className="mb-3 p-2 bg-blue-50 rounded-lg">
-                                <div className="flex items-center gap-2 text-xs sm:text-sm text-blue-800">
-                                  <span className="font-medium">
-                                    Personalized:
-                                  </span>
-                                  <span>{item.customName}</span>
-                                </div>
-                              </div>
-                            )}
+                          
                           <div className="bg-gray-100 p-3 rounded-xl">
                             <h4 className="font-semibold text-gray-800 mb-2 text-xs">
                               Personalization Option
