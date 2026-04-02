@@ -13,7 +13,7 @@ console.log('🛒 Cart controller loaded');
 ============================== */
 const getCart = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user._id;
 
     const cart = await Cart.findOne({ userId }).populate("items.productId");
 
@@ -32,7 +32,7 @@ const getCart = async (req, res) => {
 ============================== */
 const addOrUpdateCartItem = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user._id;
     const { productId, quantity, customizationType, customName } = req.body;
 
     const qty = Number(quantity) || 1;
@@ -102,8 +102,8 @@ const addOrUpdateCartItem = async (req, res) => {
 ============================== */
 const removeCartItem = async (req, res) => {
   try {
-    const { userId, productId } = req.params;
-    const cartItemId = productId;
+    const userId = req.user._id;
+    const { cartItemId } = req.params;
 
     const cart = await Cart.findOne({ userId });
 
@@ -130,7 +130,7 @@ const removeCartItem = async (req, res) => {
 ============================== */
 const clearCart = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user._id;
 
     const cart = await Cart.findOne({ userId });
 
@@ -154,12 +154,12 @@ const clearCart = async (req, res) => {
 ============================== */
 const updateCartItem = async (req, res) => {
   console.log('🖥️ Backend: updateCartItem START');
-  console.log('👤 userId:', req.params.userId);
+  console.log('👤 userId:', req.user._id);
   console.log('🛒 cartItemId:', req.params.cartItemId);
   console.log('📝 body:', req.body);
   
   try {
-    const { userId } = req.params;
+    const userId = req.user._id;
     const cartItemId = req.params.cartItemId;
     const { quantity, customizationType, customName } = req.body;
 

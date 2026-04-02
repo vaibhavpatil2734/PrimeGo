@@ -7,25 +7,28 @@ const {
   updateCartItem
 } = require("../controllers/cart.controller");
 
+const auth = require("../middleware/auth");
+
 const router = express.Router();
+router.use(auth);
 
 /* ==========================
    CART ROUTES
 ========================== */
 
-// Get cart for a user
-router.get("/:userId", getCart);
+// Get cart for authenticated user
+router.get("/", getCart);
 
-// Add or update item in cart
-router.post("/:userId", addOrUpdateCartItem);
+// Add or update item in cart 
+router.post("/", addOrUpdateCartItem);
 
 // Update cart item (quantity, custom...)
-router.put("/:userId/:cartItemId", updateCartItem);
+router.put("/:cartItemId", updateCartItem);
 
-// Remove single item from cart (FIXED)
-router.delete("/:userId/:productId", removeCartItem);
+// Remove single item from cart
+router.delete("/:cartItemId", removeCartItem);
 
-// Clear all items from cart (FIXED)
-router.delete("/:userId", clearCart);
+// Clear all items from cart 
+router.delete("/", clearCart);
 
 module.exports = router;

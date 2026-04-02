@@ -62,16 +62,14 @@ export const CartProvider = ({ children }) => {
      FETCH CART
   ============================== */
   const fetchCart = useCallback(async () => {
-    if (!userId) return;
-
     try {
-      const cartData = await cartService.getCart(userId);
+      const cartData = await cartService.getCart();
       const items = cartData.items || [];
       setCart(mapCartItems(items));
     } catch (error) {
       console.error("Error fetching cart:", error);
     }
-  }, [userId, mapCartItems]);
+  }, [mapCartItems]);
 
   /* =============================
      HANDLE CART SOURCE
@@ -83,8 +81,8 @@ export const CartProvider = ({ children }) => {
           const guestCart = JSON.parse(localStorage.getItem("guestCart") || "[]");
 
           if (guestCart.length > 0) {
-            for (const item of guestCart) {
-              await cartService.addToCart(userId, item.productId, item.quantity);
+          for (const item of guestCart) {
+              await cartService.addToCart(item.productId, item.quantity);
             }
             localStorage.removeItem("guestCart");
           }
@@ -123,7 +121,6 @@ export const CartProvider = ({ children }) => {
 
       try {
         await cartService.addToCart(
-          userId, 
           productId, 
           quantity,
           product.customizationType || 'plain',
@@ -146,7 +143,7 @@ export const CartProvider = ({ children }) => {
       setCartLoading(true);
 
       try {
-        await cartService.removeFromCart(userId, cartItemId);
+        await cartService.removeFromCart(cartItemId);
         await fetchCart();
       } catch (error) {
         console.error("Error removing item:", error);
@@ -173,7 +170,7 @@ export const CartProvider = ({ children }) => {
       }
 
       try {
-        await cartService.updateCartItem(userId, cartItemId, { quantity });
+        await cartService.updateCartItem(cartItemId, { quantity });
         await fetchCart();
       } catch (error) {
         console.error("Error updating quantity:", error);
@@ -195,7 +192,7 @@ export const CartProvider = ({ children }) => {
     }
 
     try {
-      await cartService.clearCart(userId);
+      await cartService.clearCart();
       setCart([]);
     } catch (error) {
       console.error("Error clearing cart:", error);

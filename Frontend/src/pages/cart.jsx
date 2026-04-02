@@ -4,6 +4,7 @@ import { useCart } from "../components/CartContext";
 import { isAuthenticated } from "../services/auth.service";
 import cartService from "../services/cart.service";
 
+
 const Cart = () => {
   const navigate = useNavigate();
 
@@ -16,6 +17,7 @@ const Cart = () => {
     cartCount,
     loading,
     cartLoading,
+    fetchCart,
   } = useCart();
 
 // Redirect if not logged in
@@ -33,7 +35,7 @@ const Cart = () => {
 const updateCartItemCustom = async (cartItemId, updates, onSuccess) => {
     if (cartLoading) return;
     try {
-      await cartService.updateCartItem(getUserId(), cartItemId, updates);
+      await cartService.updateCartItem(cartItemId, updates);
       onSuccess && onSuccess();
       // fetchCart is called via context
     } catch (error) {
@@ -84,20 +86,21 @@ const updateCartItemCustom = async (cartItemId, updates, onSuccess) => {
 
   const saveCustomization = async (itemId) => {
     const state = getItemState(itemId);
-    if (!state.isDirty || state.localType !== 'customized' || !state.localName?.trim()) return;
+    if (!state.isDirty) return;
 
     const updates = {
       customizationType: state.localType,
-      customName: state.localName.trim()
+      ...(state.localType === 'customized' && { customName: state.localName?.trim() || null })
     };
 
     await updateCartItemCustom(itemId, updates, () => {
       updateItemState(itemId, {
         originalType: state.localType,
-        originalName: state.localName,
+        originalName: state.localType === 'customized' ? (state.localName?.trim() || '') : '',
         isDirty: false
       });
       setUnsaved(itemId, false);
+      fetchCart();
     });
   };
 
@@ -372,7 +375,7 @@ const updateCartItemCustom = async (cartItemId, updates, onSuccess) => {
                                 </div>
                               </label>
                             </div>
- {getItemState(item.cartItemId || item._id).localType === "customized" && (
+{getItemState(item.cartItemId || item._id).localType === "customized" && (
                               <div className="mt-2 pt-2 border-t border-gray-200">
                                 <div className="flex gap-1">
                                   <input
@@ -387,25 +390,25 @@ const updateCartItemCustom = async (cartItemId, updates, onSuccess) => {
                                     {(getItemState(item.cartItemId || item._id).localName || '').length}/50
                                   </span>
                                 </div>
-                                {getItemState(item.cartItemId || item._id).isDirty && (
-                                  <div className="flex gap-2 mt-3 pt-3 border-t border-yellow-200">
-                                    <button
-                                      onClick={() => saveCustomization(item.cartItemId || item._id)}
-                                      className="flex-1 bg-green-500 text-white text-xs py-1.5 rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center justify-center gap-1"
-                                    >
-                                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                      </svg>
-                                      Save
-                                    </button>
-                                    <button
-                                      onClick={() => cancelCustomization(item.cartItemId || item._id)}
-                                      className="flex-1 bg-gray-200 text-gray-700 text-xs py-1.5 rounded-lg font-medium hover:bg-gray-300 transition-colors"
-                                    >
-                                      Cancel
-                                    </button>
-                                  </div>
-                                )}
+                              </div>
+                            )}
+                            {getItemState(item.cartItemId || item._id).isDirty && (
+                              <div className="flex gap-2 mt-3 pt-3 border-t border-yellow-200">
+                                <button
+                                  onClick={() => saveCustomization(item.cartItemId || item._id)}
+                                  className="flex-1 bg-green-500 text-white text-xs py-1.5 rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center justify-center gap-1"
+                                >
+                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() => cancelCustomization(item.cartItemId || item._id)}
+                                  className="flex-1 bg-gray-200 text-gray-700 text-xs py-1.5 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                                >
+                                  Cancel
+                                </button>
                               </div>
                             )}
                           </div>
