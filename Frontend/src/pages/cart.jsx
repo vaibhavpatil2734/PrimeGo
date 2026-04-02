@@ -21,7 +21,7 @@ const Cart = () => {
   // Redirect if not logged in
   useEffect(() => {
     if (!isAuthenticated()) {
-      window.location.href = '/login';
+      window.location.href = "/login";
     }
   }, []);
 
@@ -34,25 +34,29 @@ const Cart = () => {
       await cartService.updateCartItem(getUserId(), cartItemId, updates);
       // fetchCart is called via context
     } catch (error) {
-      console.error('Error updating cart item:', error);
+      console.error("Error updating cart item:", error);
     }
   };
 
   const increaseQuantity = (cartItemId, currentQty) => {
     if (!cartLoading) {
-      console.log(`📦 Cart Page: Increasing cartItemId ${cartItemId} from ${currentQty} → ${currentQty + 1}`);
+      console.log(
+        `📦 Cart Page: Increasing cartItemId ${cartItemId} from ${currentQty} → ${currentQty + 1}`,
+      );
       updateQuantity(cartItemId, currentQty + 1);
     }
   };
 
   const decreaseQuantity = (cartItemId, currentQty) => {
     if (currentQty <= 1 || cartLoading) return;
-    console.log(`📦 Cart Page: Decreasing cartItemId ${cartItemId} from ${currentQty} → ${currentQty - 1}`);
+    console.log(
+      `📦 Cart Page: Decreasing cartItemId ${cartItemId} from ${currentQty} → ${currentQty - 1}`,
+    );
     updateQuantity(cartItemId, currentQty - 1);
   };
 
   const getUserId = () => {
-    const userStr = localStorage.getItem('user');
+    const userStr = localStorage.getItem("user");
     return userStr ? JSON.parse(userStr)._id : null;
   };
 
@@ -125,7 +129,9 @@ const Cart = () => {
                       </h3>
 
                       <button
-                        onClick={() => handleRemove(item.cartItemId || item._id)}
+                        onClick={() =>
+                          handleRemove(item.cartItemId || item._id)
+                        }
                         className="text-red-500 hover:text-red-700 font-medium text-xs sm:text-sm p-1 -m-1 rounded transition-colors flex-shrink-0 ml-1"
                         title="Remove item"
                       >
@@ -141,7 +147,10 @@ const Cart = () => {
                       <div className="flex items-center gap-1 sm:gap-2 sm:gap-3">
                         <button
                           onClick={() =>
-                            decreaseQuantity(item.cartItemId || item._id, item.quantity)
+                            decreaseQuantity(
+                              item.cartItemId || item._id,
+                              item.quantity,
+                            )
                           }
                           disabled={cartLoading || item.quantity <= 1}
                           className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white shadow-sm hover:shadow-md active:scale-95 transition-all font-bold text-gray-800 border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center"
@@ -160,7 +169,10 @@ const Cart = () => {
 
                         <button
                           onClick={() =>
-                            increaseQuantity(item.cartItemId || item._id, item.quantity)
+                            increaseQuantity(
+                              item.cartItemId || item._id,
+                              item.quantity,
+                            )
                           }
                           disabled={cartLoading}
                           className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white shadow-sm hover:shadow-md active:scale-95 transition-all font-bold text-gray-800 border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center"
@@ -175,88 +187,7 @@ const Cart = () => {
                       </div>
                     </div>
 
-    {/* Personalization Toggle Section */}
-                    <div className="relative mb-3">
-                      <button
-  onClick={() => {
-    const id = item.cartItemId || item._id;
-    setExpandedItems(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
-  }}
-  className="absolute -top-5 right-2 px-3 py-1.5 bg-white/90 backdrop-blur-md border border-gray-200 rounded-full text-xs font-medium text-gray-700 shadow-sm hover:shadow-md hover:bg-white hover:text-gray-900 transition-all duration-200 z-10"
-  title="Toggle personalization"
->
-  {expandedItems[item.cartItemId || item._id] ? '− Customize' : '+ Customize'}
-</button>
-                      {expandedItems[item.cartItemId || item._id] && (
-                        <>
-                          {item.customizationType === 'customized' && item.customName && (
-                            <div className="mb-3 p-2 bg-blue-50 rounded-lg">
-                              <div className="flex items-center gap-2 text-xs sm:text-sm text-blue-800">
-                                <span className="font-medium">Personalized:</span>
-                                <span>{item.customName}</span>
-                              </div>
-                            </div>
-                          )}
-                          <div className="bg-gray-100 p-3 rounded-xl">
-                            <h4 className="font-semibold text-gray-800 mb-2 text-xs">Personalization Option</h4>
-                            <div className="space-y-2">
-                              <label className={`flex items-center p-2.5 border rounded-lg cursor-pointer transition-all w-full text-xs ${item.customizationType === "plain" ? "border-black bg-gray-50 ring-1 ring-black/20" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"}`}>
-                                <input
-                                  type="radio"
-                                  name={`custom-${item.cartItemId || item._id}`}
-                                  value="plain"
-                                  checked={item.customizationType === "plain"}
-                                  onChange={() => updateCartItemCustom(item.cartItemId || item._id, { customizationType: 'plain' })}
-                                  className="w-3 h-3 text-black border-gray-300 focus:ring-black mr-2"
-                                />
-                                <div className="flex-1">
-                                  <div className="font-medium text-gray-900">Plain (No Name)</div>
-                                  <div className="text-xs text-gray-600">Standard product</div>
-                                </div>
-                              </label>
-                              
-                              <label className={`flex items-center p-2.5 border rounded-lg cursor-pointer transition-all w-full text-xs ${item.customizationType === "customized" ? "border-black bg-gray-50 ring-1 ring-black/20" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"}`}>
-                                <input
-                                  type="radio"
-                                  name={`custom-${item.cartItemId || item._id}`}
-                                  value="customized"
-                                  checked={item.customizationType === "customized"}
-                                  onChange={() => updateCartItemCustom(item.cartItemId || item._id, { customizationType: 'customized' })}
-                                  className="w-3 h-3 text-black border-gray-300 focus:ring-black mr-2"
-                                />
-                                <div className="flex-1">
-                                  <div className="font-medium text-gray-900">Customized (Add Name)</div>
-                                  <div className="text-xs text-gray-600">Personalized name (max 50 chars)</div>
-                                </div>
-                              </label>
-                            </div>
-                            {item.customizationType === 'customized' && (
-                              <div className="mt-2 pt-2 border-t border-gray-200">
-                                <div className="flex gap-1">
-                                  <input
-                                    type="text"
-                                    value={item.customName || ''}
-                                    onChange={(e) => updateCartItemCustom(item.cartItemId || item._id, {
-                                      customizationType: 'customized',
-                                      customName: e.target.value.slice(0, 50)
-                                    })}
-                                    placeholder="Enter name..."
-                                    className="flex-1 p-1.5 border rounded text-xs focus:outline-none focus:ring-1 focus:ring-black/30 border-gray-300"
-                                    maxLength={50}
-                                  />
-                                  <span className="text-xs text-gray-500 min-w-[3rem] text-center px-1">
-                                    {item.customName?.length || 0}/50
-                                  </span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </div>
+                
 
                     <div className="text-right mt-auto">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between sm:gap-2 mb-1">
@@ -274,6 +205,127 @@ const Cart = () => {
                           ₹{item.price.toLocaleString()} × {item.quantity}
                         </p>
                       </div>
+                    </div>
+                        {/* Personalization Toggle Section */}
+                    <div className="relative mb-3">
+                      <button
+                        onClick={() => {
+                          const id = item.cartItemId || item._id;
+                          setExpandedItems((prev) => ({
+                            ...prev,
+                            [id]: !prev[id],
+                          }));
+                        }}
+                        className="absolute -top-5 right-2 px-3 py-1.5 bg-white/90 backdrop-blur-md border border-gray-200 rounded-full text-xs font-medium text-gray-700 shadow-sm hover:shadow-md hover:bg-white hover:text-gray-900 transition-all duration-200 z-10"
+                        title="Toggle personalization"
+                      >
+                        {expandedItems[item.cartItemId || item._id]
+                          ? "− Customize"
+                          : "+ Customize"}
+                      </button>
+                      {expandedItems[item.cartItemId || item._id] && (
+                        <>
+                          {item.customizationType === "customized" &&
+                            item.customName && (
+                              <div className="mb-3 p-2 bg-blue-50 rounded-lg">
+                                <div className="flex items-center gap-2 text-xs sm:text-sm text-blue-800">
+                                  <span className="font-medium">
+                                    Personalized:
+                                  </span>
+                                  <span>{item.customName}</span>
+                                </div>
+                              </div>
+                            )}
+                          <div className="bg-gray-100 p-3 rounded-xl">
+                            <h4 className="font-semibold text-gray-800 mb-2 text-xs">
+                              Personalization Option
+                            </h4>
+                            <div className="space-y-2">
+                              <label
+                                className={`flex items-center p-2.5 border rounded-lg cursor-pointer transition-all w-full text-xs ${item.customizationType === "plain" ? "border-black bg-gray-50 ring-1 ring-black/20" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"}`}
+                              >
+                                <input
+                                  type="radio"
+                                  name={`custom-${item.cartItemId || item._id}`}
+                                  value="plain"
+                                  checked={item.customizationType === "plain"}
+                                  onChange={() =>
+                                    updateCartItemCustom(
+                                      item.cartItemId || item._id,
+                                      { customizationType: "plain" },
+                                    )
+                                  }
+                                  className="w-3 h-3 text-black border-gray-300 focus:ring-black mr-2"
+                                />
+                                <div className="flex-1">
+                                  <div className="font-medium text-gray-900">
+                                    Plain (No Name)
+                                  </div>
+                                  <div className="text-xs text-gray-600">
+                                    Standard product
+                                  </div>
+                                </div>
+                              </label>
+
+                              <label
+                                className={`flex items-center p-2.5 border rounded-lg cursor-pointer transition-all w-full text-xs ${item.customizationType === "customized" ? "border-black bg-gray-50 ring-1 ring-black/20" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"}`}
+                              >
+                                <input
+                                  type="radio"
+                                  name={`custom-${item.cartItemId || item._id}`}
+                                  value="customized"
+                                  checked={
+                                    item.customizationType === "customized"
+                                  }
+                                  onChange={() =>
+                                    updateCartItemCustom(
+                                      item.cartItemId || item._id,
+                                      { customizationType: "customized" },
+                                    )
+                                  }
+                                  className="w-3 h-3 text-black border-gray-300 focus:ring-black mr-2"
+                                />
+                                <div className="flex-1">
+                                  <div className="font-medium text-gray-900">
+                                    Customized (Add Name)
+                                  </div>
+                                  <div className="text-xs text-gray-600">
+                                    Personalized name (max 50 chars)
+                                  </div>
+                                </div>
+                              </label>
+                            </div>
+                            {item.customizationType === "customized" && (
+                              <div className="mt-2 pt-2 border-t border-gray-200">
+                                <div className="flex gap-1">
+                                  <input
+                                    type="text"
+                                    value={item.customName || ""}
+                                    onChange={(e) =>
+                                      updateCartItemCustom(
+                                        item.cartItemId || item._id,
+                                        {
+                                          customizationType: "customized",
+                                          customName: e.target.value.slice(
+                                            0,
+                                            50,
+                                          ),
+                                        },
+                                      )
+                                    }
+                                    placeholder="Enter name..."
+                                    className="flex-1 p-1.5 border rounded text-xs focus:outline-none focus:ring-1 focus:ring-black/30 border-gray-300"
+                                    maxLength={50}
+                                  />
+                                  <span className="text-xs text-gray-500 min-w-[3rem] text-center px-1">
+                                    {item.customName?.length || 0}/50
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
