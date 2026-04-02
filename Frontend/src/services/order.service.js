@@ -51,16 +51,19 @@ const orderService = {
     }
   },
 
-  // ✅ UPDATED: COD Orders - Send items only (backend recalculates)
-  async createOrderCOD(items, shippingAddressId) {
+  // ✅ UPDATED: COD Orders - Send items + personalizationText (backend recalculates)
+  async createOrderCOD(items, shippingAddressId, personalizationText = null) {
     try {
       const idempotencyKey = uuidv4(); // Prevent duplicates
-      const response = await httpClient.post(ORDER_ENDPOINTS.createOrder, {
+      const payload = {
         items,
         shippingAddressId,
         payment: { provider: 'cash_on_delivery' },
         idempotencyKey
-      });
+      };
+      if (personalizationText) payload.personalizationText = personalizationText;
+      
+      const response = await httpClient.post(ORDER_ENDPOINTS.createOrder, payload);
       return { success: true, data: response.data };
     } catch (error) {
       return {

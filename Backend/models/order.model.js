@@ -23,7 +23,17 @@ const orderSchema = new mongoose.Schema({
       },
       title: { type: String, required: true },
       price: { type: Number, required: true },
-      quantity: { type: Number, required: true, min: 1 }
+      quantity: { type: Number, required: true, min: 1 },
+      customizationType: {
+        type: String,
+        enum: ['plain', 'customized'],
+        default: 'plain'
+      },
+      customName: {
+        type: String,
+        maxlength: 50,
+        trim: true
+      }
     }
   ],
 
@@ -136,6 +146,13 @@ const orderSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+
+  personalizationText: {
+    type: String,
+    maxlength: 200,
+    trim: true,
+    default: null
   }
 });
 

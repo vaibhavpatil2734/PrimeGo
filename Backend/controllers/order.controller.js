@@ -1,5 +1,6 @@
 // controllers/order.controller.js
 const Order = require("../models/order.model");
+const Cart = require("../models/cart.model");
 const Product = require("../models/product.model");
 const PaymentAttempt = require("../models/PaymentAttempt.model");
 const logActivity = require("../utils/logActivity");
@@ -12,6 +13,8 @@ const logActivity = require("../utils/logActivity");
  */
 const createOrder = async (req, res) => {
   try {
+    console.log('📦 [ORDER CREATE] Request body:', JSON.stringify(req.body, null, 2));
+    console.log('👤 User ID:', req.user._id);
     const { items, shippingAddressId, payment, idempotencyKey } = req.body;
     const userId = req.user._id; // From auth middleware
 
@@ -32,7 +35,21 @@ const createOrder = async (req, res) => {
       return res.status(400).json({ error: "Order must have at least one item" });
     }
 
-    // 2. Validate stock (but don't deduct - handled in payment flow)
+    // ✅ NEW: Fetch user's cart to copy customization
+    const userCart = await Cart.findOne({ userId }).populate('items.productId');
+    const cartItemsMap = new Map();
+    if (userCart?.items) {
+      userCart.items.forEach(cartItem => {
+        const key = cartItem.productId._id.toString();
+        if (!cartItemsMap.has(key)) cartItemsMap.set(key, []);
+        cartItemsMap.get(key).push({
+          customizationType: cartItem.customizationType,
+          customName: cartItem.customName
+        });
+      });
+    }
+
+    // 2. Validate stock & copy customization (don't deduct - handled in payment flow)
     let subtotal = 0;
     const validatedItems = [];
     
@@ -48,12 +65,25 @@ const createOrder = async (req, res) => {
       }
 
       const price = product.discountPrice > 0 ? product.discountPrice : product.price;
+      
+      // ✅ NEW: Copy customization from cart (first match, or plain fallback)
+      const productCartCustoms = cartItemsMap.get(product._id.toString()) || [];
+      const customization = productCartCustoms.find(c => c.customizationType === 'customized' && c.customName)?.customName 
+        ? productCartCustoms.find(c => c.customizationType === 'customized') 
+        : productCartCustoms[0] || { customizationType: 'plain', customName: null };
+      
       validatedItems.push({
         productId: product._id,
         title: product.title,
         price,
-        quantity: item.quantity
+        quantity: item.quantity,
+        customizationType: customization.customizationType,
+        customName: customization.customName
       });
+      
+      const customLabel = customization.customName ? ` (Custom: ${customization.customName})` : '';
+      console.log(`🛍️ Item ${product.title}${customLabel} | Qty: ${item.quantity} | Stock OK`);
+      
       subtotal += price * item.quantity;
     }
 
@@ -72,6 +102,7 @@ const createOrder = async (req, res) => {
       tax,
       totalAmount,
       shippingAddressId,
+      personalizationText: req.body.personalizationText || null,
       payment: {
         provider: payment?.provider || 'cod',
         status: paymentStatus === 'CASH_ON_DELIVERY' ? 'PENDING' : 'UNPAID'
@@ -82,6 +113,7 @@ const createOrder = async (req, res) => {
     };
 
     const order = await Order.create(orderData);
+    console.log('✅ [ORDER CREATE] Created order:', JSON.stringify(order.toObject(), null, 2));
     
     // 🚀 Basic Shiprocket shipment creation ONLY (manual pickup/label via admin)
     try {
@@ -115,12 +147,12 @@ const createOrder = async (req, res) => {
       await populatedOrder.save();
       
       console.log(`✅ [ORDER BASIC SR] ${orderNumber}: shipment_id=${shipment.shipment_id}, ready for manual pickup`);
-      await logActivity(req, 'CREATE', 'Order', order._id, `Order ${orderNumber} placed ($${totalAmount.toFixed(2)})`);
+      await logActivity(req, 'CREATE', 'Order', order._id, `Order ${orderNumber} placed ($${totalAmount.toFixed(2)})${req.body.personalizationText ? ' w/ personalization' : ''}`);
       res.status(201).json(populatedOrder);
     } catch (shiprocketError) {
       console.log("⚠️ Shiprocket partial fail:", shiprocketError.message);
       console.log(`✅ Order created (manual SR steps needed): ${orderNumber}`);
-      await logActivity(req, 'CREATE', 'Order', order._id, `Order ${orderNumber} placed ($${totalAmount.toFixed(2)})`);
+      await logActivity(req, 'CREATE', 'Order', order._id, `Order ${orderNumber} placed ($${totalAmount.toFixed(2)})${req.body.personalizationText ? ' w/ personalization' : ''}`);
       res.status(201).json(order);
     }
 

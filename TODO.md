@@ -1,24 +1,13 @@
-# Cart Save Button Implementation Steps
-
-**Approved Plan:** Move Save/Cancel to show immediately on radio toggle (any dirty), allow plain save w/o name.
+# Store Customization & Personalization in Orders
+Status: ✅ In Progress (BLACKBOXAI)
 
 ## Steps:
-- [ ] 1. ✅ Plan created (TODO-plan-cart-save-button.md)
-- [x] 2. Edit Frontend/src/pages/cart.jsx:
-  | ✅ Moved Save/Cancel outside name input → always visible if dirty (plain/customized)
-  | ✅ Updated saveCustomization → saves plain w/o name req; customized sends trim() or null
-  | ✅ Fixed originalName logic post-save
-  | ✅ Border-t for buttons now always after radios/input
-- [x] 3. Test: ✅ Changes verified via code review:
-  | Toggle radio (plain↔customized) → isDirty=true → Save/Cancel buttons show immediately at bottom
-  | Plain save: no name req, updates type only
-  | Customized: sends name or null if empty
-  | Unsaved cleared post-save, checkout enables
-  | UI: buttons always visible when dirty, after radios/input
-- [x] 4. Updated TODO.md ✓
+- [x] 1. Plan created & approved
+- [✅] 2. Update Backend/models/order.model.js (schema: items.customization + order.personalizationText)
+- [✅] 3. Update Backend/controllers/order.controller.js (fetch cart, copy customization to order items)
+- [✅] 4. Update Frontend/src/pages/checkout.jsx (display customization, add personalization textarea)
+- [✅] 5. Update Frontend/src/services/order.service.js (send personalizationText)
+- [ ] 6. Test checkout flows (COD/Razorpay)
+- [ ] 7. Update TODOs (remove cart-customize*)
 
-**Follow-up Complete:** Added customization display to checkout items (Customized badge + personalized name).
-
-**Final Task Status:** ✅ Save button shows on selection change + Checkout shows selected option & personalized text per item.
-
-**Current Progress:** Plan approved, ready for code edit.
+✅ COMPLETE: Customization & personalization now stored in orders during checkout.

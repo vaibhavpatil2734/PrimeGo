@@ -9,8 +9,7 @@ import AddressManager from "../components/AddressManager";
 
 const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_test_key_here';
 
-  // Simple state helper for checkout (no full cart context needed)
-  const getItemState = (itemId) => ({ customizationType: 'plain' }); // Fallback
+  // Remove getItemState - use actual cart data
 
   const Checkout = () => {
   const navigate = useNavigate();
@@ -28,6 +27,7 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [isRzpLoaded, setIsRzpLoaded] = useState(false);
   const [backendTotal, setBackendTotal] = useState(0); // Backend-calculated total
+  const [personalizationText, setPersonalizationText] = useState("");
 
   // Frontend summary (no tax)
   const frontendSubtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -113,8 +113,9 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
         productId: item.productId,
         quantity: item.quantity
       }));
+      const personalizationTextFinal = personalizationText.trim() || null;
 
-      const result = await orderService.createPaymentOrder(cartItems, selectedAddress._id);
+      const result = await orderService.createPaymentOrder(cartItems, selectedAddress._id, personalizationTextFinal);
       
       if (result.success) {
         console.log('✅ Backend validated amount:', result.data.expectedAmount);
@@ -146,8 +147,9 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
         productId: item.productId,
         quantity: item.quantity
       }));
+      const personalizationTextFinal = personalizationText.trim() || null;
 
-      const result = await orderService.createOrderCOD(cartItems, selectedAddress._id);
+      const result = await orderService.createOrderCOD(cartItems, selectedAddress._id, personalizationTextFinal);
       
       if (result.success) {
         setOrderSuccess(result.data);
@@ -328,16 +330,15 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
               <h2 className="text-xl font-bold text-gray-900 mb-6">Order Items ({cart.length})</h2>
               <div className="space-y-4">
                 {cart.map((item) => {
-                  const state = getItemState ? getItemState(item.cartItemId || item.productId) : {};
                   const isCustomized = item.customizationType === 'customized' && item.customName;
                   return (
-                    <div key={item.productId} className="flex gap-4 py-4 border-b border-gray-100 last:border-0">
+                    <div key={item.cartItemId || item.productId} className="flex gap-4 py-4 border-b border-gray-100 last:border-0">
                       <div className="w-20 h-20 flex-shrink-0">
                         <img src={item.img} alt={item.name} className="w-full h-full object-cover rounded-lg" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold line-clamp-2 pr-2">{item.name}</h3>
-                        <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                        <p className="text-sm text-gray-500">Qty: {item.quantity} × ₹{item.price.toLocaleString()}</p>
                         {isCustomized && (
                           <div className="mt-1 p-2 bg-blue-50 border border-blue-200 rounded-lg">
                             <p className="text-xs font-medium text-blue-800">✅ Customized</p>
@@ -345,7 +346,7 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
                           </div>
                         )}
                         <div className="mt-2">
-                          <p className="font-bold">₹{(item.price * item.quantity).toLocaleString()}</p>
+                          <p className="font-bold text-lg">₹{(item.price * item.quantity).toLocaleString()}</p>
                           {item.oldPrice > item.price && (
                             <p className="text-xs text-gray-400 line-through">₹{item.oldPrice.toLocaleString()}</p>
                           )}
@@ -372,6 +373,20 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
                   <span>Shipping</span>
                   <span className="text-green-600">Free</span>
                 </div>
+                
+                <div className="pt-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Personalization Notes (optional)</label>
+                  <textarea
+                    value={personalizationText}
+                    onChange={(e) => setPersonalizationText(e.target.value.slice(0, 200))}
+                    placeholder="Special instructions, gift message, wrapping notes, etc..."
+                    className="w-full p-3 border border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                    rows={3}
+                    maxLength={200}
+                  />
+                  <p className="text-xs text-gray-500 mt-1 text-right">{personalizationText.length}/200</p>
+                </div>
+                
                 <div className="border-t pt-3 flex justify-between text-xl font-bold text-gray-900">
                   <span>Total (finalized by backend)</span>
                   <span>₹{backendTotal > 0 ? backendTotal.toFixed(2) : frontendTotal.toFixed(2)}</span>
