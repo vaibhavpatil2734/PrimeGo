@@ -42,7 +42,6 @@ const AdminOrders = () => {
     filterOrders();
   }, [orders, searchTerm, statusFilter, paymentStatusFilter]);
 
-  // Reset displayed count when filters or search change
   useEffect(() => {
     setDisplayedCount(ITEMS_PER_PAGE);
   }, [searchTerm, statusFilter, paymentStatusFilter]);
@@ -51,7 +50,6 @@ const AdminOrders = () => {
     setDisplayedCount(prev => prev + ITEMS_PER_PAGE);
   };
 
-  // Get paginated orders
   const displayedOrders = filteredOrders.slice(0, displayedCount);
   const hasMoreOrders = displayedCount < filteredOrders.length;
 
@@ -60,7 +58,16 @@ const AdminOrders = () => {
       setLoading(true);
       const result = await orderService.getAllOrders();
       if (result.success) {
-        setOrders(result.data || []);
+        // Clean username data
+        const cleanedOrders = result.data.map(order => ({
+          ...order,
+          userId: {
+            ...order.userId,
+            username: order.userId?.username?.replace(/^\\s*\\n*/, '').trim() || order.userId?.name?.replace(/^\\s*\\n*/, '').trim(),
+            name: order.userId?.name?.replace(/^\\s*\\n*/, '').trim()
+          }
+        }));
+        setOrders(cleanedOrders);
       } else {
         setError(result.error || "Failed to load orders");
       }
@@ -74,33 +81,28 @@ const AdminOrders = () => {
   const filterOrders = () => {
     let filtered = [...orders];
 
-    // Filter by order status
     if (statusFilter !== "ALL") {
       filtered = filtered.filter(
         (order) => order.status?.toUpperCase() === statusFilter
       );
     }
 
-    // Filter by payment status
     if (paymentStatusFilter !== "ALL") {
       filtered = filtered.filter(
         (order) => order.paymentStatus?.toUpperCase() === paymentStatusFilter
       );
     }
 
-    // Filter by search term
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (order) =>
           order.orderNumber?.toLowerCase().includes(term) ||
           order._id?.toLowerCase().includes(term) ||
-          order.userId?.name?.toLowerCase().includes(term) ||
-          order.userId?.email?.toLowerCase().includes(term)
+          (order.userId?.username || order.userId?.name || order.userId?.email || "").toLowerCase().includes(term)
       );
     }
 
-    // Sort by date (newest first)
     filtered.sort(
       (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
     );
@@ -180,6 +182,11 @@ const AdminOrders = () => {
     return labels[paymentStatus?.toUpperCase()] || "Unknown";
   };
 
+  const getUserName = (userId) => {
+    const name = userId?.username || userId?.name || userId?.email || "Unknown";
+    return name.replace(/^\\s*\\n*/, '').trim();
+  };
+
   // Mobile Card View Component
   const MobileOrderCard = ({ order }) => (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 space-y-3">
@@ -206,8 +213,8 @@ const AdminOrders = () => {
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
             Customer
           </p>
-          <p className="text-sm text-gray-900 truncate" title={order.userId?.name || order.userId?.email || "Unknown"}>
-            {order.userId?.name || order.userId?.email || "Unknown"}
+          <p className="text-sm text-gray-900 truncate" title={getUserName(order.userId)}>
+            {getUserName(order.userId)}
           </p>
         </div>
         <div className="min-w-0">
@@ -251,20 +258,20 @@ const AdminOrders = () => {
           onClick={() =>
             setSelectedOrder(selectedOrder?._id === order._id ? null : order)
           }
-          className="flex-1 flex items-center justify-center gap-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          className="flex-1 flex items-center justify-center gap-1 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
         >
-          <Eye size={14} />
-          {selectedOrder?._id === order._id ? "Hide" : "View"} Details
+          <Eye size={12} />
+          {selectedOrder?._id === order._id ? "Hide" : "View"}
         </button>
         <button
           onClick={() => {
             setEditingStatus(order._id);
             setNewStatus(order.status || "PLACED");
           }}
-          className="flex-1 flex items-center justify-center gap-2 py-2 text-xs font-medium text-white bg-black rounded-lg hover:bg-gray-800 transition-colors"
+          className="flex-1 flex items-center justify-center gap-1 py-1.5 text-xs font-medium text-white bg-black rounded-lg hover:bg-gray-800 transition-colors"
         >
-          <Edit3 size={14} />
-          Update Status
+          <Edit3 size={12} />
+          Status
         </button>
       </div>
 
@@ -324,11 +331,28 @@ const AdminOrders = () => {
                 Customer Details
               </p>
               <p className="text-sm text-gray-900">
-                {order.userId?.name || "N/A"}
+                {getUserName(order.userId)}
               </p>
               <p className="text-sm text-gray-600">
                 {order.userId?.email || "N/A"}
               </p>
+            </div>
+
+            {/* Shipping Address */}
+            <div>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+                Shipping Address
+              </p>
+              {order.shippingAddressId ? (
+                <div className="text-sm space-y-1">
+                  <p className="font-medium">{order.shippingAddressId.name}</p>
+                  <p>{order.shippingAddressId.line1}</p>
+                  <p>{order.shippingAddressId.city}, {order.shippingAddressId.state} - {order.shippingAddressId.postalCode}</p>
+                  <p className="text-gray-600">Phone: {order.shippingAddressId.phone}</p>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 italic">Address not available</p>
+              )}
             </div>
 
             <div>
@@ -377,7 +401,7 @@ const AdminOrders = () => {
                   Payment Details
                 </p>
                 <p className="text-sm text-gray-600">
-                  Provider: {order.payment.provider}
+                  Provider Ascending
                 </p>
                 {order.payment.transactionId && (
                   <p className="text-sm text-gray-600">
@@ -397,42 +421,62 @@ const AdminOrders = () => {
             )}
 
             {/* Customization & Personalization */}
-            {(order.personalizationText || order.items?.some(item => item.customizationType === 'customized' && item.customName)) && (
-              <div className="mt-3 bg-gradient-to-r from-indigo-50 to-purple-50 p-3 rounded-xl border-2 border-indigo-200">
-                <p className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-3">
-                  🎨 Customization & Personalization
-                </p>
-                <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {order.items.map((item, index) => (
-                    (item.customizationType === 'customized' && item.customName) ? (
-                      <div key={index} className="flex items-start gap-2 p-2 bg-white/80 rounded-lg border border-green-200 hover:bg-green-50 transition-colors">
-                        <div className="w-5 h-5 mt-0.5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-bold text-green-600">✓</span>
-                        </div>
-                        <div className="text-xs space-y-1">
-                          <p className="font-medium text-gray-900 line-clamp-1">
-                            {item.title || item.productId?.title || 'Item'}
-                          </p>
-                          <p className="text-green-700 font-semibold bg-green-50 px-2 py-1 rounded-md">
-                            {item.customName}
-                          </p>
-                        </div>
-                      </div>
-                    ) : null
-                  ))}
-                  {order.items?.every(item => !(item.customizationType === 'customized' && item.customName)) && order.personalizationText && (
-                    <p className="text-xs text-gray-500 italic text-center py-2">
-                      {order.personalizationText}
-                    </p>
-                  )}
-                  {order.items?.every(item => !(item.customizationType === 'customized' && item.customName)) && !order.personalizationText && (
-                    <p className="text-xs text-gray-500 italic text-center py-2">
-                      No customizations applied
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
+{(order.personalizationText || order.items?.some(item => item.customizationType === 'customized' && item.customName)) && (
+  <div className="mt-3 bg-gradient-to-r from-indigo-50 to-purple-50 p-3 rounded-xl border-2 border-indigo-200 overflow-hidden">
+    
+    <p className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-3">
+      🎨 Customization & Personalization
+    </p>
+
+    <div className="space-y-2">
+
+      {order.items.map((item, index) => (
+        (item.customizationType === 'customized' && item.customName) ? (
+          
+          <div
+            key={index}
+            className="flex items-start gap-2 p-2 bg-white/80 rounded-lg border border-green-200 hover:bg-green-50 transition-colors min-w-0"
+          >
+            
+            {/* Icon */}
+            <div className="w-5 h-5 mt-0.5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-bold text-green-600">✓</span>
+            </div>
+
+            {/* Text Content */}
+            <div className="text-xs space-y-1 w-full min-w-0">
+              
+              <p className="font-medium text-gray-900 break-all">
+                {item.title || item.productId?.title || 'Item'}
+              </p>
+
+              <p className="text-green-700 font-semibold bg-green-50 px-2 py-1 rounded-md break-all">
+                {item.customName}
+              </p>
+
+            </div>
+          </div>
+
+        ) : null
+      ))}
+
+      {/* Fallback: Only personalization text */}
+      {order.items?.every(item => !(item.customizationType === 'customized' && item.customName)) && order.personalizationText && (
+        <p className="text-xs text-gray-500 italic text-center py-2 break-all">
+          {order.personalizationText}
+        </p>
+      )}
+
+      {/* No customization */}
+      {order.items?.every(item => !(item.customizationType === 'customized' && item.customName)) && !order.personalizationText && (
+        <p className="text-xs text-gray-500 italic text-center py-2">
+          No customizations applied
+        </p>
+      )}
+
+    </div>
+  </div>
+)}
 
           </motion.div>
         )}
@@ -567,8 +611,7 @@ const AdminOrders = () => {
                 <tr>
                   <td
                     colSpan={8}
-                    className="px-6 py-12 text-center text-gray-500"
-                  >
+                    className="px-6 py-12 text-center text-gray-500">
                     No orders found
                   </td>
                 </tr>
@@ -578,8 +621,7 @@ const AdminOrders = () => {
                     key={order._id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
+                    className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <p className="text-sm font-semibold text-gray-900">
                         {order.orderNumber ||
@@ -588,7 +630,7 @@ const AdminOrders = () => {
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm text-gray-900">
-                        {order.userId?.name || "N/A"}
+                        {getUserName(order.userId)}
                       </p>
                       <p className="text-xs text-gray-500">
                         {order.userId?.email || "N/A"}
@@ -617,8 +659,7 @@ const AdminOrders = () => {
                           <select
                             value={newStatus}
                             onChange={(e) => setNewStatus(e.target.value)}
-                            className="px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                          >
+                            className="px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent">
                             {STATUS_OPTIONS.slice(1).map((option) => (
                               <option key={option.value} value={option.value}>
                                 {option.label}
@@ -628,8 +669,7 @@ const AdminOrders = () => {
                           <button
                             onClick={() => handleStatusUpdate(order._id)}
                             disabled={updating}
-                            className="px-2 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50"
-                          >
+                            className="px-2 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50">
                             {updating ? "..." : "Save"}
                           </button>
                           <button
@@ -637,8 +677,7 @@ const AdminOrders = () => {
                               setEditingStatus(null);
                               setNewStatus("");
                             }}
-                            className="p-1 text-gray-400 hover:text-gray-600"
-                          >
+                            className="p-1 text-gray-400 hover:text-gray-600">
                             <X size={14} />
                           </button>
                         </div>
@@ -646,8 +685,7 @@ const AdminOrders = () => {
                         <span
                           className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase border ${getStatusColor(
                             order.status
-                          )}`}
-                        >
+                          )}`}>
                           {order.status || "PLACED"}
                         </span>
                       )}
@@ -656,8 +694,7 @@ const AdminOrders = () => {
                       <span
                         className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase border ${getPaymentStatusColor(
                           order.paymentStatus
-                        )}`}
-                      >
+                        )}`}>
                         {getPaymentStatusLabel(order.paymentStatus)}
                       </span>
                     </td>
@@ -678,8 +715,7 @@ const AdminOrders = () => {
                             )
                           }
                           className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                          title="View Details"
-                        >
+                          title="View Details">
                           {selectedOrder?._id === order._id ? (
                             <ChevronUp size={16} />
                           ) : (
@@ -692,8 +728,7 @@ const AdminOrders = () => {
                             setNewStatus(order.status || "PLACED");
                           }}
                           className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                          title="Update Status"
-                        >
+                          title="Update Status">
                           <Edit3 size={16} />
                         </button>
                       </div>
@@ -712,8 +747,7 @@ const AdminOrders = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="border-t border-gray-200 bg-gray-50"
-            >
+              className="border-t border-gray-200 bg-gray-50">
               <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Customer Info */}
                 <div className="bg-white p-4 rounded-xl border border-gray-200">
@@ -721,7 +755,7 @@ const AdminOrders = () => {
                     Customer Details
                   </h4>
                   <p className="text-sm font-medium text-gray-900">
-                    {selectedOrder.userId?.name || "N/A"}
+                    {getUserName(selectedOrder.userId)}
                   </p>
                   <p className="text-sm text-gray-600">
                     {selectedOrder.userId?.email || "N/A"}
@@ -730,6 +764,23 @@ const AdminOrders = () => {
                     <p className="text-sm text-gray-600">
                       {selectedOrder.userId.phone}
                     </p>
+                  )}
+                </div>
+
+                {/* Shipping Address */}
+                <div className="bg-white p-4 rounded-xl border border-gray-200">
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                    Shipping Address
+                  </h4>
+                  {selectedOrder.shippingAddressId ? (
+                    <div className="text-sm space-y-1">
+                      <p className="font-medium">{selectedOrder.shippingAddressId.name}</p>
+                      <p>{selectedOrder.shippingAddressId.line1}</p>
+                      <p>{selectedOrder.shippingAddressId.city}, {selectedOrder.shippingAddressId.state} - {selectedOrder.shippingAddressId.postalCode}</p>
+                      <p className="text-gray-600">Phone: {selectedOrder.shippingAddressId.phone}</p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic">Address not available</p>
                   )}
                 </div>
 
@@ -742,8 +793,7 @@ const AdminOrders = () => {
                     {selectedOrder.items?.map((item, idx) => (
                       <div
                         key={idx}
-                        className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0"
-                      >
+                        className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-xs font-medium text-gray-500">
                             Qty: {item.quantity}
@@ -784,15 +834,14 @@ const AdminOrders = () => {
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-bold uppercase border ${getPaymentStatusColor(
                           selectedOrder.paymentStatus
-                        )}`}
-                      >
+                        )}`}>
                         {getPaymentStatusLabel(selectedOrder.paymentStatus)}
                       </span>
                     </div>
                     {selectedOrder.payment && (
                       <>
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Provider</span>
+                          <span className="text-sm text-gray-600">Provider Ascending</span>
                           <span className="text-sm font-medium text-gray-900 uppercase">
                             {selectedOrder.payment.provider}
                           </span>
@@ -815,8 +864,7 @@ const AdminOrders = () => {
                               selectedOrder.payment.status === "PAID"
                                 ? "bg-green-100 text-green-800"
                                 : "bg-yellow-100 text-yellow-800"
-                            }`}
-                          >
+                            }`}>
                             {selectedOrder.payment.status}
                           </span>
                         </div>
@@ -860,7 +908,7 @@ const AdminOrders = () => {
                     <p className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-3">
                       🎨 Customization & Personalization
                     </p>
-                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                    <div className="space-y-2">
                       {selectedOrder.items.map((item, index) => (
                         (item.customizationType === 'customized' && item.customName) ? (
                           <div key={index} className="flex items-start gap-2 p-2 bg-white/80 rounded-lg border border-green-200 hover:bg-green-50 transition-colors">
@@ -910,93 +958,14 @@ const AdminOrders = () => {
         )}
       </div>
 
-      {/* Tablet View - Simplified Table */}
-      <div className="hidden md:block lg:hidden">
-        {displayedOrders.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                      Order #
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                      Customer
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                      Total
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                      Payment
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {displayedOrders.map((order) => (
-                    <tr key={order._id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                        {order.orderNumber ||
-                          `#${order._id?.slice(-8).toUpperCase()}`}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
-                        {order.userId?.name || order.userId?.email || "N/A"}
-                      </td>
-                      <td className="px-4 py-3 text-sm font-bold text-gray-900">
-                        ₹{order.totalAmount?.toFixed(2)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${getStatusColor(
-                            order.status
-                          )}`}
-                        >
-                          {order.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${getPaymentStatusColor(
-                            order.paymentStatus
-                          )}`}
-                        >
-                          {getPaymentStatusLabel(order.paymentStatus)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <button
-                          onClick={() =>
-                            setSelectedOrder(
-                              selectedOrder?._id === order._id ? null : order
-                            )
-                          }
-                          className="text-gray-600 hover:text-gray-900"
-                        >
-                          <Eye size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-      </div>
+
 
       {/* Show More Button */}
       {hasMoreOrders && (
         <div className="flex justify-center py-4 border-t border-gray-200">
           <button
             onClick={handleShowMore}
-            className="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
-          >
+            className="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
             Show More ({filteredOrders.length - displayedCount} remaining)
           </button>
         </div>

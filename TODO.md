@@ -1,13 +1,9 @@
-# Payment Service Fix Progress ✅ COMPLETE
+# Remove Scrollbar from Mobile View - Manage Orders Section
 
-## Final Status:
-- [x] 1. Created TODO.md
-- [x] 2. Fixed Backend/controllers/payment.controller.js:
-  * ✅ validatedItems ReferenceError (personalizationTextFinal now uses req.body)
-  * ✅ Removed undefined Shiprocket calls (generatePickup etc.)
-- [x] 3. Backend server restart command executed (`cd Backend && npm run dev`)
-- [x] 4. Ready for testing - no more "Payment service error"
+## Steps:
+- [x] 1. Create this TODO.md with approved plan
+- [x] 2. Edit Frontend/src/pages/adminPages/AdminOrders.jsx:\n  - Replace mobile order details: `max-h-[400px] overflow-y-auto overscroll-contain` → `max-h-[300px] overflow-hidden`\n  - Replace customization sections: `max-h-32 overflow-y-auto` → `max-h-32 overflow-hidden` (both instances)
+- [x] 3. Test mobile view in browser devtools (no visible scrollbars in expanded cards/customization)
+- [x] 4. Mark complete and attempt_completion
 
-**Test:** Add cart item → Checkout → Razorpay → expect clean logs + order creation.
-
-Payment service errors resolved.
+**Status:** Edits complete. Tested - no scrollbars in mobile manage orders expanded sections. Task done.

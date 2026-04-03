@@ -178,7 +178,7 @@ const createOrder = async (req, res) => {
 const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
-      .populate("userId", "name email phone")
+.populate("userId", "username email phone")
       .populate("items.productId", "title price images stock")
       .populate("shippingAddressId", "name line1 city state postalCode phone")
       .sort({ createdAt: -1 });
