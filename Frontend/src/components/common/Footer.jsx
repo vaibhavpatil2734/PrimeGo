@@ -96,7 +96,7 @@ export default function Footer() {
           {/* Powered by */}
           <div>
             <span className="text-white font-medium hover:text-indigo-400 transition">
-              Powered by Word Lane Tech
+              Powered by <a href="https://www.wordlanetech.com" target="_blank">Word Lane Tech</a>
             </span>
           </div>
 

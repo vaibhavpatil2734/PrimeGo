@@ -395,6 +395,45 @@ const AdminOrders = () => {
                 </span>
               </div>
             )}
+
+            {/* Customization & Personalization */}
+            {(order.personalizationText || order.items?.some(item => item.customizationType === 'customized' && item.customName)) && (
+              <div className="mt-3 bg-gradient-to-r from-indigo-50 to-purple-50 p-3 rounded-xl border-2 border-indigo-200">
+                <p className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-3">
+                  🎨 Customization & Personalization
+                </p>
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {order.items.map((item, index) => (
+                    (item.customizationType === 'customized' && item.customName) ? (
+                      <div key={index} className="flex items-start gap-2 p-2 bg-white/80 rounded-lg border border-green-200 hover:bg-green-50 transition-colors">
+                        <div className="w-5 h-5 mt-0.5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-bold text-green-600">✓</span>
+                        </div>
+                        <div className="text-xs space-y-1">
+                          <p className="font-medium text-gray-900 line-clamp-1">
+                            {item.title || item.productId?.title || 'Item'}
+                          </p>
+                          <p className="text-green-700 font-semibold bg-green-50 px-2 py-1 rounded-md">
+                            {item.customName}
+                          </p>
+                        </div>
+                      </div>
+                    ) : null
+                  ))}
+                  {order.items?.every(item => !(item.customizationType === 'customized' && item.customName)) && order.personalizationText && (
+                    <p className="text-xs text-gray-500 italic text-center py-2">
+                      {order.personalizationText}
+                    </p>
+                  )}
+                  {order.items?.every(item => !(item.customizationType === 'customized' && item.customName)) && !order.personalizationText && (
+                    <p className="text-xs text-gray-500 italic text-center py-2">
+                      No customizations applied
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
           </motion.div>
         )}
       </AnimatePresence>
@@ -814,6 +853,44 @@ const AdminOrders = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Customization & Personalization */}
+                {(selectedOrder.personalizationText || selectedOrder.items?.some(item => item.customizationType === 'customized' && item.customName)) && (
+                  <div className="md:col-span-3 bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-xl border-2 border-indigo-200">
+                    <p className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-3">
+                      🎨 Customization & Personalization
+                    </p>
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {selectedOrder.items.map((item, index) => (
+                        (item.customizationType === 'customized' && item.customName) ? (
+                          <div key={index} className="flex items-start gap-2 p-2 bg-white/80 rounded-lg border border-green-200 hover:bg-green-50 transition-colors">
+                            <div className="w-5 h-5 mt-0.5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                              <span className="text-xs font-bold text-green-600">✓</span>
+                            </div>
+                            <div className="text-xs space-y-1">
+                              <p className="font-medium text-gray-900 line-clamp-1">
+                                {item.title || item.productId?.title || 'Item'}
+                              </p>
+                              <p className="text-green-700 font-semibold bg-green-50 px-2 py-1 rounded-md">
+                                {item.customName}
+                              </p>
+                            </div>
+                          </div>
+                        ) : null
+                      ))}
+                      {selectedOrder.items?.every(item => !(item.customizationType === 'customized' && item.customName)) && selectedOrder.personalizationText && (
+                        <p className="text-xs text-gray-500 italic text-center py-2">
+                          {selectedOrder.personalizationText}
+                        </p>
+                      )}
+                      {selectedOrder.items?.every(item => !(item.customizationType === 'customized' && item.customName)) && !selectedOrder.personalizationText && (
+                        <p className="text-xs text-gray-500 italic text-center py-2">
+                          No customizations applied
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
