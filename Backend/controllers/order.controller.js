@@ -14,6 +14,7 @@ const logActivity = require("../utils/logActivity");
 const createOrder = async (req, res) => {
   try {
     console.log('📦 [ORDER CREATE] Request body:', JSON.stringify(req.body, null, 2));
+    console.log('🎯 personalizationText:', req.body.personalizationText);
     console.log('👤 User ID:', req.user._id);
     const { items, shippingAddressId, payment, idempotencyKey } = req.body;
     const userId = req.user._id; // From auth middleware
@@ -94,6 +95,14 @@ const createOrder = async (req, res) => {
     // 3. Determine payment status (COD only for now)
     const paymentStatus = payment?.provider === 'cash_on_delivery' ? 'CASH_ON_DELIVERY' : 'UNPAID';
 
+    const personalizationText =
+      req.body.personalizationText !== undefined && req.body.personalizationText !== null
+        ? req.body.personalizationText
+        : validatedItems
+            .filter(i => i.customName)
+            .map(i => i.customName)
+            .join(", ") || null;
+
     const orderData = {
       orderNumber,
       userId,
@@ -102,7 +111,7 @@ const createOrder = async (req, res) => {
       tax,
       totalAmount,
       shippingAddressId,
-      personalizationText: req.body.personalizationText || null,
+      personalizationText,
       payment: {
         provider: payment?.provider || 'cod',
         status: paymentStatus === 'CASH_ON_DELIVERY' ? 'PENDING' : 'UNPAID'
@@ -110,7 +119,7 @@ const createOrder = async (req, res) => {
       paymentStatus,
       status: 'PLACED',
       idempotencyKey // Store for future checks
-    };
+    }; 
 
     const order = await Order.create(orderData);
     console.log('✅ [ORDER CREATE] Created order:', JSON.stringify(order.toObject(), null, 2));

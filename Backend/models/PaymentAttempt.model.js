@@ -8,7 +8,7 @@ const paymentAttemptSchema = new mongoose.Schema({
     required: true,
     index: true
   },
-razorpayOrderId: {
+  razorpayOrderId: {
     type: String,
     unique: true, // Remove required - set after Razorpay
     sparse: true  // Allow null values for unique index
@@ -32,6 +32,12 @@ razorpayOrderId: {
     ref: 'Address',
     required: true
   },
+  personalizationText: {
+    type: String,
+    maxlength: 200,
+    trim: true,
+    default: null
+  },
   status: {
     type: String,
     enum: ['PENDING', 'VERIFIED', 'FAILED', 'EXPIRED'],
@@ -50,7 +56,6 @@ razorpayOrderId: {
 // Auto-expire old attempts (cleanup)
 paymentAttemptSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 paymentAttemptSchema.index({ userId: 1, status: 1 });
-
 
 module.exports = mongoose.model('PaymentAttempt', paymentAttemptSchema);
 

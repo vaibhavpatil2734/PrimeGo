@@ -23,12 +23,18 @@ const orderService = {
   },
 
   // ✅ UPDATED: Create Razorpay order - Send ITEMS only (no total/amount)
-  async createPaymentOrder(items, shippingAddressId) {
+  async createPaymentOrder(items, shippingAddressId, personalizationText = null) {
     try {
-      const response = await httpClient.post('/payment/create-order', { 
+      const payload = { 
         items, 
         shippingAddressId 
-      });
+      };
+      if (personalizationText !== undefined) {
+        payload.personalizationText = personalizationText;
+      }
+      console.log("🚀 Sending PaymentOrder Payload:", payload);
+      
+      const response = await httpClient.post('/payment/create-order', payload);
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -61,7 +67,10 @@ const orderService = {
         payment: { provider: 'cash_on_delivery' },
         idempotencyKey
       };
-      if (personalizationText) payload.personalizationText = personalizationText;
+      if (personalizationText !== undefined) {
+        payload.personalizationText = personalizationText;
+      }
+      console.log("🚀 Sending COD Payload:", payload);
       
       const response = await httpClient.post(ORDER_ENDPOINTS.createOrder, payload);
       return { success: true, data: response.data };

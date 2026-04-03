@@ -23,10 +23,14 @@ const createRazorpayOrder = async (req, res) => {
     }
     console.log('✅ Razorpay keys OK');
     
-    const { items, shippingAddressId } = req.body;
+    const { items, shippingAddressId, personalizationText: incomingPersonalizationText } = req.body;
     const userId = req.user._id;
+    
+    console.log('🎯 payment create personalizationText:', incomingPersonalizationText);
+    const personalizationTextFinal = incomingPersonalizationText?.trim() || null;
 
     console.log(`🟢 [PAYMENT] create-order: user=${userId}, items=${items.length}`);
+
 
     // 1. Input validation
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -93,6 +97,7 @@ const createRazorpayOrder = async (req, res) => {
       tax,
       expectedAmount,
       shippingAddressId,
+      personalizationText: personalizationTextFinal,
       idempotencyKey
     });
 
@@ -228,16 +233,46 @@ const verifyPayment = async (req, res) => {
       });
     }
 
+    // Copy customization from cart (consistency with COD flow)
+    const Cart = require('../models/cart.model');
+    const userCart = await Cart.findOne({ userId: paymentAttempt.userId }).populate('items.productId');
+    const cartItemsMap = new Map();
+    if (userCart?.items) {
+      userCart.items.forEach(cartItem => {
+        const key = cartItem.productId._id.toString();
+        if (!cartItemsMap.has(key)) cartItemsMap.set(key, []);
+        cartItemsMap.get(key).push({
+          customizationType: cartItem.customizationType,
+          customName: cartItem.customName
+        });
+      });
+    }
+
+    // Enhance items with customization
+    const finalItems = paymentAttempt.items.map(item => {
+      const productCartCustoms = cartItemsMap.get(item.productId.toString()) || [];
+      const customization = productCartCustoms.find(c => c.customizationType === 'customized' && c.customName)
+        ? productCartCustoms.find(c => c.customizationType === 'customized')
+        : productCartCustoms[0] || { customizationType: 'plain', customName: null };
+      
+      return {
+        ...item,
+        customizationType: customization.customizationType,
+        customName: customization.customName
+      };
+    });
+
     // Create final order
     const orderNumber = `ORD${Date.now()}`;
     const order = await Order.create({
       orderNumber,
       userId: paymentAttempt.userId,
-      items: paymentAttempt.items,
+      items: finalItems,
       subtotal: paymentAttempt.subtotal,
       tax: paymentAttempt.tax,
       totalAmount: paymentAttempt.expectedAmount,
       shippingAddressId: paymentAttempt.shippingAddressId,
+      personalizationText: paymentAttempt.personalizationText,
       payment: {
         provider: 'razorpay',
         razorpayOrderId: razorpay_order_id,
@@ -248,60 +283,35 @@ const verifyPayment = async (req, res) => {
       status: 'PLACED'
     });
 
-    // Full Shiprocket integration
+    // 🚀 Shiprocket: Basic setup only (manual admin pickup/label)
     try {
       const populatedOrder = await Order.findById(order._id).populate(['shippingAddressId', 'userId']);
-      console.log(`🚀 [PAYMENT-SR] Starting Shiprocket flow for order: ${orderNumber}, pincode: ${populatedOrder.shippingAddressId.postalCode}, weight: ${populatedOrder.packageDimensions?.weight || 0.5}, isCod: false`);
+      console.log(`🚀 [PAYMENT-SR] Basic setup for ${orderNumber}`);
       
-      console.log(`🚀 [PAYMENT-SR] STEP1: Calling checkServiceability...`);
       const { checkServiceability, createShipment, assignAWB } = require("../services/shiprocket.service");
-      const couriers = await checkServiceability(populatedOrder.shippingAddressId.postalCode, populatedOrder.packageDimensions.weight || 0.5, false);
-      console.log(`✅ [PAYMENT-SR] STEP1: Found ${couriers.length} couriers`);
       
-      const selectedCourier = couriers.sort((a, b) => a.rate - b.rate)[0];
-      console.log("Selected:", selectedCourier);
-      
-      console.log(`🚀 [PAYMENT-SR] STEP2: Calling createShipment...`);
-      const shipment = await createShipment(populatedOrder);
-      console.log(`✅ [PAYMENT-SR] STEP2: Shipment created:`, shipment);
-      
-      populatedOrder.deliveryProvider = "shiprocket";
-      populatedOrder.shipmentId = shipment.shipment_id;
-      populatedOrder.shipment_id = shipment.shipment_id;
-      
-      console.log(`🚀 [PAYMENT-SR] STEP3: Calling assignAWB with courier ${selectedCourier.courier_company_id}...`);
-      const awbRes = await assignAWB(shipment.shipment_id, selectedCourier.courier_company_id);
-      console.log(`✅ [PAYMENT-SR] STEP3: AWB assigned:`, awbRes);
-      
-      populatedOrder.awbCode = awbRes.awb_code || shipment.awb_code;
-      populatedOrder.trackingId = populatedOrder.awbCode;
-      
-      console.log(`🚀 [PAYMENT-SR] STEP4: Calling generatePickup...`);
-      const pickupResult = await generatePickup(shipment.shipment_id);
-      if (!pickupResult) {
-        console.log(`⚠️ [PAYMENT-SR] Pickup failed - skipping label`);
-      } else {
-        populatedOrder.pickupBooked = true;
-        console.log(`✅ [PAYMENT-SR] STEP4: Pickup booked`);
-        
-        // Label with AWB if available
-        const labelData = await generateLabel(shipment.shipment_id, populatedOrder.awbCode);
-        populatedOrder.labelPdf = labelData.pdf || labelData.label_pdf_url || 'pickup-failed-no-label';
+      const couriers = await checkServiceability(populatedOrder.shippingAddressId.postalCode, 0.5, false);
+      if (couriers.length === 0) {
+        console.log(`⚠️ No SR couriers for ${populatedOrder.shippingAddressId.postalCode}`);
+        return res.status(201).json(populatedOrder);
       }
       
-      populatedOrder.shiprocketOrderId = shipment.order_id;
-      const invoiceData = await printInvoice(shipment.order_id);
-      populatedOrder.invoicePdf = invoiceData.pdf;
+      const selectedCourier = couriers.sort((a, b) => a.rate - b.rate)[0];
+      const shipment = await createShipment(populatedOrder);
+      populatedOrder.shipmentId = shipment.shipment_id;
       
-      populatedOrder.status = "SHIPPED";
+      const awbRes = await assignAWB(shipment.shipment_id, selectedCourier.courier_company_id);
+      populatedOrder.awbCode = awbRes.awb_code || shipment.awb_code;
+      populatedOrder.trackingId = populatedOrder.awbCode;
+      populatedOrder.deliveryProvider = "shiprocket";
       
       await populatedOrder.save();
       
-      console.log(`✅ [PAYMENT FULL SHIPROCKET] ${orderNumber}: shipment=${shipment.shipment_id}, AWB=${shipment.awb_code}`);
+      console.log(`✅ [PAYMENT BASIC SR] ${orderNumber} ready for manual pickup/label`);
       res.status(201).json(populatedOrder);
     } catch (shiprocketError) {
-      console.log("Shiprocket error:", shiprocketError.message);
-      console.log(`✅ [PAYMENT Fallback] Created: ${orderNumber}`);
+      console.log("⚠️ Shiprocket partial fail:", shiprocketError.message);
+      console.log(`✅ [PAYMENT] Order ${orderNumber} created`);
       res.status(201).json(order);
     }
   } catch (error) {
@@ -309,6 +319,7 @@ const verifyPayment = async (req, res) => {
     res.status(500).json({ success: false, error: 'Payment verification failed' });
   }
 };
+
 
 module.exports = {
   createRazorpayOrder,

@@ -116,6 +116,7 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
       const personalizationTextFinal = personalizationText.trim() || null;
 
       const result = await orderService.createPaymentOrder(cartItems, selectedAddress._id, personalizationTextFinal);
+      console.log('🚀 Checkout calling createPaymentOrder with text:', personalizationTextFinal);
       
       if (result.success) {
         console.log('✅ Backend validated amount:', result.data.expectedAmount);
@@ -150,6 +151,7 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
       const personalizationTextFinal = personalizationText.trim() || null;
 
       const result = await orderService.createOrderCOD(cartItems, selectedAddress._id, personalizationTextFinal);
+      console.log('🚀 Checkout calling createOrderCOD with text:', personalizationTextFinal);
       
       if (result.success) {
         setOrderSuccess(result.data);
