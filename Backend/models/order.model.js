@@ -153,6 +153,11 @@ const orderSchema = new mongoose.Schema({
     maxlength: 200,
     trim: true,
     default: null
+  },
+
+  hasReviewed: {
+    type: Boolean,
+    default: false
   }
 });
 

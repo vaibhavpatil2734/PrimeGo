@@ -18,6 +18,8 @@ import AdminRouteGuard from "../components/admin/AdminRouteGuard";
 import Privacy from "../pages/Privacy";
 import Terms from "../pages/Terms";
 import RefundPolicy from "../pages/RefundPolicy";
+import ReviewOrder from "../pages/ReviewOrder";
+import ShippingPolicy from "../pages/shippingPolicy";
 
 // ADMIN
 import AdminLayout from "../pages/adminPages/AdminLayout";
@@ -120,6 +122,9 @@ const AppRoutes = createBrowserRouter([
       { path: "privacy", element: <Privacy /> },
       { path: "terms", element: <Terms /> },
       { path: "refund-policy", element: <RefundPolicy /> },
+      { path: "review-order/:orderId", element: <ReviewOrder /> },
+      { path: "shipping-policy", element: <ShippingPolicy /> },
+
 
 
 

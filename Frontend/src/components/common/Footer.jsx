@@ -34,7 +34,8 @@ export default function Footer() {
               { name: "Terms of Service", href: "/terms" },
               { name: "Contact Us", href: "/contact" },
               { name: "About Us", href: "/about-us" },
-              { name: "Refund Policy", href: "/refund-policy" }
+              { name: "Refund Policy", href: "/refund-policy" },
+              { name: "Shipping Policy", href: "/shipping-policy" }
             ].map((link) => (
               <li key={link.name} className="relative group">
                 <Link

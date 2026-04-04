@@ -179,6 +179,19 @@ const orderService = {
       };
     }
   },
+
+  // Submit order reviews
+  async submitOrderReview(orderId, reviews) {
+    try {
+      const response = await httpClient.post(`/review/order/${orderId}`, reviews);
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Failed to submit reviews',
+      };
+    }
+  },
 };
 
 export default orderService;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { X } from "lucide-react";
+import { X, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import OrderTracking from "../components/common/OrderTracking";
@@ -479,6 +479,18 @@ const MyOrders = () => {
                               </motion.div>
                             )}
                           </AnimatePresence>
+
+{order.status?.toUpperCase() === "DELIVERED" && (
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => navigate(`/review-order/${order._id}`)}
+                              className="w-full mt-3 sm:mt-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold tracking-widest uppercase text-xs sm:text-sm py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg transition-all flex items-center justify-center gap-2"
+                            >
+                              ⭐ Give Review
+                            </motion.button>
+                          )}
+
                         </>
                       ) : null}
 
