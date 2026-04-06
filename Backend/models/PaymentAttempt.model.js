@@ -45,11 +45,17 @@ const paymentAttemptSchema = new mongoose.Schema({
   },
   razorpayPaymentId: { type: String }, // Set after payment
   idempotencyKey: { type: String }, // Prevent duplicates
+  selectedCourier: {
+    courier_company_id: { type: String },
+    courier_name: { type: String },
+    rate: { type: Number }
+  },
   expiresAt: {
     type: Date,
     default: () => new Date(Date.now() + 15 * 60 * 1000) // 15 min expiry
   }
 }, {
+
   timestamps: true
 });
 

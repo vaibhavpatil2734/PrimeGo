@@ -123,10 +123,16 @@ const orderSchema = new mongoose.Schema({
   courierName: {
     type: String
   },
+  selectedCourier: {
+    courier_company_id: { type: String },
+    courier_name: { type: String },
+    rate: { type: Number }
+  },
   pickupBooked: {
     type: Boolean,
     default: false
   },
+
   labelPdf: {
     type: String
   },

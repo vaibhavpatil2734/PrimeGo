@@ -18,9 +18,9 @@ const Profile = () => {
   
   // Form states
   const [formData, setFormData] = useState({
-    username: '',
-    email: ''
+    username: ''
   });
+
   
 
   useEffect(() => {
@@ -37,9 +37,9 @@ const Profile = () => {
       const userData = await getProfile();
       setUser(userData);
       setFormData({
-        username: userData.username || '',
-        email: userData.email || ''
+        username: userData.username || ''
       });
+
       // Fetch addresses after getting user profile
       if (userData._id) {
         fetchAddresses(userData._id);
@@ -83,11 +83,11 @@ const Profile = () => {
 
     try {
       const result = await updateProfile({
-        username: formData.username,
-        email: formData.email
+        username: formData.username
       });
+
       setSuccess(result.message || 'Profile updated successfully');
-      setUser({ ...user, username: formData.username, email: formData.email });
+      setUser({ ...user, username: formData.username });
       setIsEditModalOpen(false);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update profile');
@@ -424,19 +424,7 @@ const Profile = () => {
                     placeholder="Enter your username"
                   />
                 </div>
-                <div>
-                  <label className="block text-[10px] sm:text-xs font-bold tracking-widest uppercase text-gray-400 mb-1.5 sm:mb-2">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 sm:py-3 bg-gray-50 border-2 border-gray-200 focus:border-black outline-none transition-colors duration-300 text-gray-900 font-medium rounded-lg text-sm"
-                    placeholder="Enter your email"
-                  />
-                </div>
+
 
                 {/* Error message in modal */}
                 {error && activeTab === 'profile' && (

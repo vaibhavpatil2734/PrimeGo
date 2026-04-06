@@ -23,11 +23,12 @@ const createRazorpayOrder = async (req, res) => {
     }
     console.log('✅ Razorpay keys OK');
     
-    const { items, shippingAddressId, personalizationText: incomingPersonalizationText } = req.body;
+    const { items, shippingAddressId, personalizationText: incomingPersonalizationText, selectedCourier } = req.body;
     const userId = req.user._id;
     
     console.log('🎯 payment create personalizationText:', incomingPersonalizationText);
     const personalizationTextFinal = incomingPersonalizationText?.trim() || null;
+
 
     console.log(`🟢 [PAYMENT] create-order: user=${userId}, items=${items.length}`);
 
@@ -98,8 +99,10 @@ const createRazorpayOrder = async (req, res) => {
       expectedAmount,
       shippingAddressId,
       personalizationText: personalizationTextFinal,
+      selectedCourier, // Save for order creation
       idempotencyKey
     });
+
 
     // 5. Create Razorpay order
     const amountPaise = Math.round(expectedAmount * 100);
@@ -290,26 +293,38 @@ const verifyPayment = async (req, res) => {
       
       const { checkServiceability, createShipment, assignAWB } = require("../services/shiprocket.service");
       
-      const couriers = await checkServiceability(populatedOrder.shippingAddressId.postalCode, 0.5, false);
-      if (couriers.length === 0) {
-        console.log(`⚠️ No SR couriers for ${populatedOrder.shippingAddressId.postalCode}`);
-        return res.status(201).json(populatedOrder);
+      // Use selectedCourier from paymentAttempt or auto-select
+      let selectedCourier = paymentAttempt.selectedCourier;
+      if (!selectedCourier) {
+        const couriers = await checkServiceability(populatedOrder.shippingAddressId.postalCode, 0.5, false);
+        if (couriers.length === 0) {
+          console.log(`⚠️ No SR couriers for ${populatedOrder.shippingAddressId.postalCode}`);
+          return res.status(201).json(populatedOrder);
+        }
+        selectedCourier = couriers.sort((a, b) => a.rate - b.rate)[0];
+      } else {
+        console.log(`✅ Using user-selected courier: ${selectedCourier.courier_name} (₹${selectedCourier.rate})`);
       }
-      
-      const selectedCourier = couriers.sort((a, b) => a.rate - b.rate)[0];
       const shipment = await createShipment(populatedOrder);
       populatedOrder.shipmentId = shipment.shipment_id;
+
+
       
       const awbRes = await assignAWB(shipment.shipment_id, selectedCourier.courier_company_id);
       populatedOrder.awbCode = awbRes.awb_code || shipment.awb_code;
       populatedOrder.trackingId = populatedOrder.awbCode;
       populatedOrder.deliveryProvider = "shiprocket";
       
+      // Save selected courier info
+      populatedOrder.selectedCourier = selectedCourier;
+      populatedOrder.courierName = selectedCourier.courier_name;
+      
       await populatedOrder.save();
       
-      console.log(`✅ [PAYMENT BASIC SR] ${orderNumber} ready for manual pickup/label`);
+      console.log(`✅ [PAYMENT BASIC SR] ${orderNumber}: courier=${selectedCourier.courier_name}, ready for manual pickup/label`);
       res.status(201).json(populatedOrder);
     } catch (shiprocketError) {
+
       console.log("⚠️ Shiprocket partial fail:", shiprocketError.message);
       console.log(`✅ [PAYMENT] Order ${orderNumber} created`);
       res.status(201).json(order);

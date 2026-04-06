@@ -138,7 +138,14 @@ const createOrder = async (req, res) => {
         return res.status(201).json(order);
       }
       
-      const selectedCourier = couriers.sort((a, b) => a.rate - b.rate)[0];
+      // Use user-selected or auto-select cheapest
+      const userSelected = req.body.selectedCourier;
+      const selectedCourier = userSelected || couriers.sort((a, b) => a.rate - b.rate)[0];
+      if (userSelected) {
+        console.log(`✅ Using user-selected courier: ${selectedCourier.courier_name} (${selectedCourier.rate})`);
+      } else {
+        console.log(`🔄 Auto-selected cheapest: ${selectedCourier.courier_name} (${selectedCourier.rate})`);
+      }
       
       // Create shipment
       const shipment = await createShipment(populatedOrder);
@@ -151,11 +158,15 @@ const createOrder = async (req, res) => {
       populatedOrder.awbCode = awbRes.awb_code || shipment.awb_code;
       populatedOrder.trackingId = populatedOrder.awbCode;
       
+      // Save selected courier info
+      populatedOrder.selectedCourier = selectedCourier;
+      populatedOrder.courierName = selectedCourier.courier_name;
+      
       populatedOrder.shiprocketOrderId = shipment.order_id;
       
       await populatedOrder.save();
       
-      console.log(`✅ [ORDER BASIC SR] ${orderNumber}: shipment_id=${shipment.shipment_id}, ready for manual pickup`);
+      console.log(`✅ [ORDER BASIC SR] ${orderNumber}: shipment_id=${shipment.shipment_id}, courier=${selectedCourier.courier_name}, ready for manual pickup`);
       await logActivity(req, 'CREATE', 'Order', order._id, `Order ${orderNumber} placed ($${totalAmount.toFixed(2)})${req.body.personalizationText ? ' w/ personalization' : ''}`);
       res.status(201).json(populatedOrder);
     } catch (shiprocketError) {
@@ -164,6 +175,7 @@ const createOrder = async (req, res) => {
       await logActivity(req, 'CREATE', 'Order', order._id, `Order ${orderNumber} placed ($${totalAmount.toFixed(2)})${req.body.personalizationText ? ' w/ personalization' : ''}`);
       res.status(201).json(order);
     }
+
 
   } catch (error) {
 
@@ -354,9 +366,27 @@ const getOrderTracking = async (req, res) => {
 };
 
 // 🚀 Shiprocket Tracking Webhook - Real-time updates
+const getServiceability = async (req, res) => {
+  try {
+    const { pincode, weight = '0.5', cod = 'false' } = req.query;
+    if (!pincode) {
+      return res.status(400).json({ error: 'pincode required' });
+    }
+
+    const { checkServiceability } = require("../services/shiprocket.service");
+    const couriers = await checkServiceability(pincode, parseFloat(weight), cod === 'true');
+    
+    res.json({ success: true, couriers });
+  } catch (error) {
+    console.error('Serviceability error:', error.message);
+    res.status(500).json({ error: 'Failed to fetch couriers' });
+  }
+};
+
 const processTrackingWebhook = async (req, res) => {
   try {
     const payload = req.body;
+
     const awb = payload.awb;
     
     if (!awb) {
@@ -437,7 +467,11 @@ module.exports = {
   updateOrderStatus,
   cancelOrder,
   getOrderTracking,
-  processTrackingWebhook
+  processTrackingWebhook,
+  getServiceability
 };
+
+
+
 
 

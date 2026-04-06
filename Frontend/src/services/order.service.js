@@ -4,12 +4,14 @@ import { v4 as uuidv4 } from 'uuid';
 
 const ORDER_ENDPOINTS = {
   createOrder: '/orders',
+  serviceability: '/orders/serviceability',
   getOrderById: (id) => `/orders/${id}`,
   getUserOrders: (userId) => `/orders/user/${userId}`,
   cancelOrder: (id) => `/orders/${id}/cancel`,
   getAllOrders: '/orders/admin/all',
   updateOrderStatus: (id) => `/orders/admin/${id}/status`,
 };
+
 
 const orderService = {
   // Get current user ID
@@ -23,7 +25,7 @@ const orderService = {
   },
 
   // ✅ UPDATED: Create Razorpay order - Send ITEMS only (no total/amount)
-  async createPaymentOrder(items, shippingAddressId, personalizationText = null) {
+  async createPaymentOrder(items, shippingAddressId, personalizationText = null, selectedCourier = null) {
     try {
       const payload = { 
         items, 
@@ -31,6 +33,9 @@ const orderService = {
       };
       if (personalizationText !== undefined) {
         payload.personalizationText = personalizationText;
+      }
+      if (selectedCourier) {
+        payload.selectedCourier = selectedCourier;
       }
       console.log("🚀 Sending PaymentOrder Payload:", payload);
       
@@ -43,6 +48,7 @@ const orderService = {
       };
     }
   },
+
 
   // ✅ UPDATED: Verify Razorpay - Forward ALL razorpay response data
   async verifyPayment(razorpayResponse) {
@@ -58,7 +64,7 @@ const orderService = {
   },
 
   // ✅ UPDATED: COD Orders - Send items + personalizationText (backend recalculates)
-  async createOrderCOD(items, shippingAddressId, personalizationText = null) {
+  async createOrderCOD(items, shippingAddressId, personalizationText = null, selectedCourier = null) {
     try {
       const idempotencyKey = uuidv4(); // Prevent duplicates
       const payload = {
@@ -69,6 +75,9 @@ const orderService = {
       };
       if (personalizationText !== undefined) {
         payload.personalizationText = personalizationText;
+      }
+      if (selectedCourier) {
+        payload.selectedCourier = selectedCourier;
       }
       console.log("🚀 Sending COD Payload:", payload);
       
@@ -81,6 +90,22 @@ const orderService = {
       };
     }
   },
+
+  // Get available couriers for pincode
+  async getServiceability(pincode, isCod = false) {
+    try {
+      const response = await httpClient.get(ORDER_ENDPOINTS.serviceability, {
+        params: { pincode, cod: isCod }
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Failed to fetch couriers'
+      };
+    }
+  },
+
 
   // Get all orders for current user
   async getUserOrders(userId = null) {

@@ -29,6 +29,13 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
   const [backendTotal, setBackendTotal] = useState(0); // Backend-calculated total
   const [personalizationText, setPersonalizationText] = useState("");
 
+  // Courier states
+  const [availableCouriers, setAvailableCouriers] = useState([]);
+  const [selectedCourier, setSelectedCourier] = useState(null);
+  const [courierLoading, setCourierLoading] = useState(false);
+  const [courierError, setCourierError] = useState("");
+
+
   // Frontend summary (no tax)
   const frontendSubtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const frontendTotal = frontendSubtotal;
@@ -67,6 +74,39 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
     };
     fetchData();
   }, [navigate]);
+
+  // Fetch couriers when address changes
+  useEffect(() => {
+    if (!selectedAddress || !selectedAddress.postalCode) {
+      setAvailableCouriers([]);
+      setSelectedCourier(null);
+      setCourierError("");
+      return;
+    }
+
+    const fetchCouriers = async () => {
+      setCourierLoading(true);
+      setCourierError("");
+      const isCod = paymentMethod === "cash_on_delivery";
+      const result = await orderService.getServiceability(selectedAddress.postalCode, isCod);
+      if (result.success) {
+        setAvailableCouriers(result.data.couriers || []);
+        if (result.data.couriers && result.data.couriers.length > 0) {
+          // Auto-select cheapest by default
+          const cheapest = result.data.couriers.sort((a, b) => a.rate - b.rate)[0];
+          setSelectedCourier(cheapest);
+        }
+      } else {
+        setCourierError(result.error || "Shipping not available for this pincode");
+        setAvailableCouriers([]);
+        setSelectedCourier(null);
+      }
+      setCourierLoading(false);
+    };
+
+    fetchCouriers();
+  }, [selectedAddress, paymentMethod]);
+
 
   // Check Razorpay
   useEffect(() => {
@@ -115,8 +155,9 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
       }));
       const personalizationTextFinal = personalizationText.trim() || null;
 
-      const result = await orderService.createPaymentOrder(cartItems, selectedAddress._id, personalizationTextFinal);
-      console.log('🚀 Checkout calling createPaymentOrder with text:', personalizationTextFinal);
+      const result = await orderService.createPaymentOrder(cartItems, selectedAddress._id, personalizationTextFinal, selectedCourier);
+      console.log('🚀 Checkout calling createPaymentOrder with courier:', selectedCourier?.courier_name, 'text:', personalizationTextFinal);
+
       
       if (result.success) {
         console.log('✅ Backend validated amount:', result.data.expectedAmount);
@@ -150,8 +191,9 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
       }));
       const personalizationTextFinal = personalizationText.trim() || null;
 
-      const result = await orderService.createOrderCOD(cartItems, selectedAddress._id, personalizationTextFinal);
-      console.log('🚀 Checkout calling createOrderCOD with text:', personalizationTextFinal);
+      const result = await orderService.createOrderCOD(cartItems, selectedAddress._id, personalizationTextFinal, selectedCourier);
+      console.log('🚀 Checkout calling createOrderCOD with courier:', selectedCourier?.courier_name, 'text:', personalizationTextFinal);
+
       
       if (result.success) {
         setOrderSuccess(result.data);
@@ -375,6 +417,55 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
                   <span>Shipping</span>
                   <span className="text-green-600">Free</span>
                 </div>
+
+                {/* Courier Selection */}
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                  <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4l-8-4m-16 0l8 4M4 7l8 4m0 0l8-4m-8 4l-8-4m0 0l8 4m0 0l8 4" />
+                    </svg>
+                    Shipping Partner ({selectedAddress?.postalCode || 'PIN'})
+                  </h3>
+                  
+                  {courierLoading ? (
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-gray-400"></div>
+                      Fetching options...
+                    </div>
+                  ) : courierError ? (
+                    <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">
+                      ⚠️ {courierError}
+                    </div>
+                  ) : availableCouriers.length === 0 ? (
+                    <div className="text-sm text-gray-500">
+                      No shipping options available
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {availableCouriers.map((courier, index) => (
+                        <label key={courier.courier_company_id} className="flex items-center p-2 rounded-lg hover:bg-yellow-100 cursor-pointer transition-colors">
+                          <input
+                            type="radio"
+                            name="courier"
+                            checked={selectedCourier?.courier_company_id === courier.courier_company_id}
+                            onChange={() => setSelectedCourier(courier)}
+                            className="w-4 h-4 text-black border-gray-300 focus:ring-yellow-500 mr-3"
+                          />
+                          <div>
+                            <p className="font-medium text-sm">{courier.courier_name}</p>
+                            <p className="text-xs text-gray-600">₹{courier.rate.toFixed(0)}</p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {selectedCourier && (
+                    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-xs font-medium text-green-800">✅ Selected: {selectedCourier.courier_name} - ₹{selectedCourier.rate.toFixed(0)}</p>
+                    </div>
+                  )}
+                </div>
                 
                 <div className="pt-3">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Personalization Notes (optional)</label>
@@ -394,6 +485,7 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
                   <span>₹{backendTotal > 0 ? backendTotal.toFixed(2) : frontendTotal.toFixed(2)}</span>
                 </div>
               </div>
+
 
               {/* Payment Methods */}
               <div className="mb-6">
@@ -419,7 +511,7 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
               {/* Pay Button */}
               <button
                 onClick={paymentMethod === 'razorpay' ? handleRazorpayPayment : handleCODOrder}
-                disabled={processing || !selectedAddress || cart.length === 0 || (paymentMethod === 'razorpay' && !isRzpLoaded)}
+                disabled={processing || !selectedAddress || cart.length === 0 || !selectedCourier || courierLoading || (paymentMethod === 'razorpay' && !isRzpLoaded)}
                 className="w-full bg-gradient-to-r from-gray-900 to-gray-700 text-white py-4 rounded-xl font-bold text-lg hover:from-gray-800 hover:to-gray-600 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mb-6"
               >
                 {processing ? (
@@ -434,6 +526,7 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
                   `Pay ${paymentMethod === 'razorpay' ? 'Securely' : 'on Delivery'}`
                 )}
               </button>
+
 
               {/* Security badges */}
               <div className="text-xs text-gray-500 space-y-2 pt-6 border-t">
