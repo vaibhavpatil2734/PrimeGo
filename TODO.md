@@ -1,11 +1,10 @@
-# Shipping Policy Update Task
+# Task: Add Google button to register + Match login UI to register
 
-## Plan Steps
-- [x] Create TODO.md with steps
-- [ ] Edit Frontend/src/pages/ShippingPolicy.jsx with exact policy text and brand animations matching other policies
-- [ ] Test: Run `cd Frontend && npm run dev`, visit /shipping-policy
-- [ ] Complete task
+## Steps to complete:
+- [x] Step 1: Create TODO.md with plan breakdown
+- [x] Step 2: Edit Frontend/src/pages/register.jsx (Google button added)
+- [x] Step 3: Feedback - Match Frontend/src/pages/login.jsx UI to register
+- [x] Step 4: Test both pages
+- [x] Step 5: Complete
 
-## Status
-✅ File edited successfully. Ready for testing.
-
+Current progress: Implementing feedback ✓
