@@ -3,6 +3,7 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from '@react-oauth/google';
+import AnimatedBrand from '../components/common/AnimatedBrand.jsx';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -97,15 +98,9 @@ const Register = () => {
       
       {/* Left Side Branding */}
       <div className="hidden md:flex md:w-1/2 flex-col justify-center items-start p-16 lg:p-24 relative z-10">
-        <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }}>
-          <motion.h1 
-            className="text-5xl lg:text-7xl font-black text-gray-900 tracking-tight mb-6 cursor-default"
-            whileHover={brandHover}
-          >
-            <span className="hover:text-indigo-700 transition-colors duration-300">Made4</span>
-            <span className="text-indigo-600 hover:text-indigo-500 transition-colors duration-300">UU</span>
-          </motion.h1>
-          <p className="text-gray-600 text-lg max-w-md leading-relaxed not-italic">
+        <motion.div className="-mt-16" initial={{ opacity: 0, x: -30, y: 20 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ duration: 0.8 }}>
+            <AnimatedBrand className="text-5xl lg:text-7xl" />
+            <p className="mt-6 text-gray-600 text-lg max-w-md leading-relaxed not-italic">
             Welcome back. Log in to access your personalized dashboard and continue where you left off.
           </p>
         </motion.div>
@@ -117,22 +112,7 @@ const Register = () => {
           
           {/* Mobile Header */}
           <div className="mb-10 md:hidden text-left">
-            <h1 className="text-4xl font-black text-black tracking-tight mb-2 cursor-default flex items-center">
-              <motion.span 
-                whileHover={{ scale: 1.05 }} 
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                className="text-slate-900 hover:text-indigo-700 transition-colors duration-300 inline-block origin-left"
-              >
-                Made4
-              </motion.span>
-              <motion.span 
-                whileHover={{ scale: 1.05 }} 
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                className="text-indigo-600 inline-block origin-left"
-              >
-                UU
-              </motion.span>
-            </h1>
+            <AnimatedBrand className="text-4xl [&>h1]:text-4xl" />
           </div>
 
           <motion.div variants={fadeUp} initial="hidden" animate="visible" className="mb-10">

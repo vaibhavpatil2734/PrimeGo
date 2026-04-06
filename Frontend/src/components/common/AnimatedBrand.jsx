@@ -1,13 +1,13 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-const AnimatedBrand = () => {
+const AnimatedBrand = ({ className = "text-2xl lg:text-3xl scale-105" }) => {
   return (
-    <div className="relative inline-flex items-center justify-center select-none cursor-pointer">
+    <div className={`relative inline-flex items-center justify-center select-none cursor-pointer ${className}`}>
       
       {/* Brand Text */}
       <motion.h1
-        className="relative flex items-center text-2xl lg:text-3xl font-extrabold tracking-tight"
+        className="relative flex items-center font-extrabold tracking-tight"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}

@@ -1,13 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation, Link } from "react-router-dom";
 import { useCart } from "../CartContext";
 import { useWishlist } from "../WishlistContext";
 import AnimatedBrand from "./AnimatedBrand";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const currentPath = window.location.pathname;
+  const location = useLocation();
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
+
+  const currentPath = location.pathname;
 
   const navLinks = [
     {
@@ -15,7 +18,7 @@ export default function Navbar() {
       href: "/",
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9v9a2 2 0 0 1-2 2h-4V14H9v7H5a2 2 0 0 1-2-2z" />
+          <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9v9a2 2 0 01-2 2h-4V14H9v7H5a2 2 0 01-2-2z" />
         </svg>
       ),
     },
@@ -24,7 +27,7 @@ export default function Navbar() {
       href: "/products",
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M20 7H4m0 0v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7m-16 0l4-4h8l4 4" />
+          <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M20 7H4m0 0v10a2 2 0 002 2h12a2 2 0 002-2V7m-16 0l4-4h8l4 4" />
         </svg>
       ),
     },
@@ -37,7 +40,7 @@ export default function Navbar() {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            d="M21 15a4 4 0 0 1-4 4H7l-4 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"
+            d="M21 15a4 4 0 01-4 4H7l-4 3V7a4 4 0 014-4h10a4 4 0 014 4z"
           />
         </svg>
       ),
@@ -59,7 +62,7 @@ export default function Navbar() {
       href: "/cart",
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2 3h2l2.4 12.4a2 2 0 0 0 2 1.6h8.4a2 2 0 0 0 2-1.6L21 7H6" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2 3h2l2.4 12.4a2 2 0 002 1.6h8.4a2 2 0 002-1.6L21 7H6" />
           <circle cx="9" cy="21" r="1" />
           <circle cx="17" cy="21" r="1" />
         </svg>
@@ -70,13 +73,13 @@ export default function Navbar() {
       href: "/profile",
       icon: (
         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5z" />
+          <path d="M12 12a5 5 0 1 0-5-5 5 5 0 005 5zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5z" />
         </svg>
       ),
     },
   ];
 
-  const isActive = (href) => currentPath === href;
+  const isActive = (href) => currentPath === href || (href === '/' && currentPath === '');
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md shadow-md">
@@ -84,25 +87,25 @@ export default function Navbar() {
         <div className="flex h-16 items-center justify-between">
           
           {/* Logo */}
-          <a 
-            href="/" 
-className="flex items-center text-3xl font-extrabold transition-all duration-300 hover:scale-105"
+          <Link 
+            to="/" 
+            className="flex items-center text-3xl font-extrabold -translate-y-1 transition-all duration-300 hover:scale-105"
           >
             <AnimatedBrand />
-          </a>
+          </Link>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
-                href={link.href}
+                to={link.href}
                 className={`
                   relative flex items-center gap-2 px-3 py-2 rounded-lg
                   transition-all duration-300
                   ${
                     isActive(link.href)
-                      ? "text-indigo-600 bg-indigo-50"
+                      ? "text-indigo-600 bg-indigo-50 shadow-md"
                       : "text-gray-700 hover:text-indigo-600 hover:bg-indigo-50"
                   }
                 `}
@@ -113,21 +116,21 @@ className="flex items-center text-3xl font-extrabold transition-all duration-300
                 {isActive(link.href) && (
                   <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-indigo-600 rounded-full" />
                 )}
-              </a>
+              </Link>
             ))}
 
             {/* Icon-only buttons */}
             {iconOnlyLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
-                href={link.href}
+                to={link.href}
                 title={link.name}
                 className={`
                   relative p-2 rounded-lg
                   transition-all duration-300
                   ${
                     isActive(link.href)
-                      ? "text-indigo-600 bg-indigo-50"
+                      ? "text-indigo-600 bg-indigo-50 shadow-md"
                       : "text-gray-700 hover:text-indigo-600 hover:bg-indigo-50"
                   }
                 `}
@@ -135,7 +138,7 @@ className="flex items-center text-3xl font-extrabold transition-all duration-300
                 {link.name === "Cart" ? (
                   <div className="relative">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2 3h2l2.4 12.4a2 2 0 0 0 2 1.6h8.4a2 2 0 0 0 2-1.6L21 7H6" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2 3h2l2.4 12.4a2 2 0 002 1.6h8.4a2 2 0 002-1.6L21 7H6" />
                       <circle cx="9" cy="21" r="1" />
                       <circle cx="17" cy="21" r="1" />
                     </svg>
@@ -161,9 +164,9 @@ className="flex items-center text-3xl font-extrabold transition-all duration-300
                 )}
 
                 {isActive(link.href) && (
-                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-indigo-600 rounded-full" />
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-indigo-600 rounded-full shadow-sm" />
                 )}
-              </a>
+              </Link>
             ))}
           </div>
 
@@ -191,23 +194,23 @@ className="flex items-center text-3xl font-extrabold transition-all duration-300
       >
         <div className="px-6 py-4 space-y-2 bg-white border-t">
           {[...navLinks, ...iconOnlyLinks].map((link) => (
-            <a
+            <Link
               key={link.name}
-              href={link.href}
+              to={link.href}
               onClick={() => setIsMenuOpen(false)}
               className={`
                 flex items-center gap-3 px-4 py-2 rounded-lg
-                transition
+                transition-all duration-300
                 ${
                   isActive(link.href)
-                    ? "text-indigo-600 bg-indigo-50"
+                    ? "text-indigo-600 bg-indigo-50 font-bold shadow-md"
                     : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-600"
                 }
               `}
             >
               {link.icon}
               <span className="font-medium">{link.name}</span>
-            </a>
+            </Link>
           ))}
         </div>
       </div>

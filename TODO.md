@@ -1,10 +1,11 @@
-# Task: Add Google button to register + Match login UI to register
+# Task Complete: Google register button + UI match + Brand animation
 
-## Steps to complete:
-- [x] Step 1: Create TODO.md with plan breakdown
-- [x] Step 2: Edit Frontend/src/pages/register.jsx (Google button added)
-- [x] Step 3: Feedback - Match Frontend/src/pages/login.jsx UI to register
-- [x] Step 4: Test both pages
-- [x] Step 5: Complete
+## Steps:
+- [x] Added Google button to register
+- [x] Matched login UI to register
+- [x] Added AnimatedBrand.jsx to both pages headers (desktop/mobile, same size)
+- [x] Tested & finalized
 
-Current progress: Implementing feedback ✓
+Both /login and /register now use identical layout with AnimatedBrand component for "Made4UU" logo (text-5xl/7xl desktop, responsive mobile, gradient/shine effects).
+
+**Demo:** `cd Frontend && npm run dev` → visit /register & /login

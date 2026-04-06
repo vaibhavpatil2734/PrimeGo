@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import contactService from '../services/contact.service.js';
 import publicHttpClient from '../services/public.service.js';
 import adminService from '../services/admin.service.js';
@@ -65,23 +66,52 @@ export default function Contact() {
     }
   };
 
+  if (contactLoading) {
+    return (
+      <div className="min-h-screen bg-gray-100 grid place-items-center">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8 lg:gap-10">
+          {[...Array(16)].map((_, index) => (
+            <div key={index} className="bg-white rounded-2xl p-4 animate-pulse">
+              <div className="aspect-square bg-gray-200 rounded-xl mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-4xl md:text-5xl font-black text-gray-900 mb-4"
+          >
             Get In Touch
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-xl text-gray-600 max-w-2xl mx-auto"
+          >
             Have questions or need assistance? We'd love to hear from you. 
             Our team is here to help!
-          </p>
+          </motion.p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
           {/* Contact Information */}
-          <div className="bg-white rounded-3xl shadow-xl p-8">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="bg-white rounded-3xl shadow-xl p-8"
+          >
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Contact Information
             </h2>
@@ -97,7 +127,7 @@ export default function Contact() {
                 <div>
                   <h3 className="font-semibold text-gray-900">Address</h3>
                   <p className="text-gray-600 whitespace-pre-line">
-                    {contactInfo?.address || 'No address data'}
+                    {contactInfo?.address || 'Loading contact info...'}
                   </p>
                 </div>
               </div>
@@ -111,7 +141,7 @@ export default function Contact() {
                 <div>
                   <h3 className="font-semibold text-gray-900">Email</h3>
                   <p className="text-gray-600">
-                    {contactInfo ? contactInfo.email : 'Loading...'}
+                    {contactInfo?.email || 'Loading contact info...'}
                   </p>
                 </div>
               </div>
@@ -125,7 +155,7 @@ export default function Contact() {
                 <div>
                   <h3 className="font-semibold text-gray-900">Phone</h3>
                   <p className="text-gray-600">
-                    {contactInfo ? contactInfo.phone : 'Loading...'}
+                    {contactInfo?.phone || 'Loading contact info...'}
                   </p>
                 </div>
               </div>
@@ -139,15 +169,19 @@ export default function Contact() {
                 <div>
                   <h3 className="font-semibold text-gray-900">Business Hours</h3>
                   <p className="text-gray-600 whitespace-pre-line">
-                    {contactInfo ? contactInfo.hours : 'Loading...'}
+                    {contactInfo?.hours || 'Loading contact info...'}
                   </p>
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Contact Form */}
-          <div className="bg-white rounded-3xl shadow-xl p-8">
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="bg-white rounded-3xl shadow-xl p-8"
+          >
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Send Us a Message
             </h2>
@@ -229,22 +263,33 @@ export default function Contact() {
                 {loading ? 'Sending...' : 'Send Message'}
               </button>
 
-              {status === 'success' && (
-                <div className="mt-4 p-4 bg-green-100 border border-green-200 text-green-800 rounded-xl text-center font-medium">
-                  Thank you for your message! We'll get back to you soon.
-                </div>
-              )}
+              <AnimatePresence mode="wait">
+                {status === 'success' && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="mt-4 p-4 bg-green-100 border border-green-200 text-green-800 rounded-xl text-center font-medium shadow-lg"
+                  >
+                    Thank you for your message! We'll get back to you soon.
+                  </motion.div>
+                )}
 
-              {status === 'error' && (
-                <div className="mt-4 p-4 bg-red-100 border border-red-200 text-red-800 rounded-xl text-center font-medium">
-                  Failed to send message. Please try again.
-                </div>
-              )}
+                {status === 'error' && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="mt-4 p-4 bg-red-100 border border-red-200 text-red-800 rounded-xl text-center font-medium shadow-lg"
+                  >
+                    Failed to send message. Please try again.
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </form>
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>
   );
 }
-
