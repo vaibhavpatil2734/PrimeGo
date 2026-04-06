@@ -453,7 +453,6 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
                           />
                           <div>
                             <p className="font-medium text-sm">{courier.courier_name}</p>
-                            <p className="text-xs text-gray-600">₹{courier.rate.toFixed(0)}</p>
                           </div>
                         </label>
                       ))}
@@ -467,21 +466,8 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
                   )}
                 </div>
                 
-                <div className="pt-3">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Personalization Notes (optional)</label>
-                  <textarea
-                    value={personalizationText}
-                    onChange={(e) => setPersonalizationText(e.target.value.slice(0, 200))}
-                    placeholder="Special instructions, gift message, wrapping notes, etc..."
-                    className="w-full p-3 border border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                    rows={3}
-                    maxLength={200}
-                  />
-                  <p className="text-xs text-gray-500 mt-1 text-right">{personalizationText.length}/200</p>
-                </div>
-                
                 <div className="border-t pt-3 flex justify-between text-xl font-bold text-gray-900">
-                  <span>Total (finalized by backend)</span>
+                  <span>Total </span>
                   <span>₹{backendTotal > 0 ? backendTotal.toFixed(2) : frontendTotal.toFixed(2)}</span>
                 </div>
               </div>
@@ -495,7 +481,7 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
                     <input type="radio" name="payment" value="razorpay" checked={paymentMethod === "razorpay"} onChange={(e) => setPaymentMethod(e.target.value)} className="w-4 h-4 text-black" />
                     <div className="ml-3">
                       <p className="font-semibold">Pay with Razorpay</p>
-                      <p className="text-xs text-gray-500">Secure • Backend validated prices</p>
+                      <p className="text-xs text-gray-500">Secure</p>
                     </div>
                   </label>
                   <label className={`flex items-center p-3 border-2 rounded-xl cursor-pointer transition-all ${paymentMethod === "cash_on_delivery" ? "border-black bg-gray-50" : "border-gray-200 hover:border-gray-300"}`}>
@@ -534,7 +520,7 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_t
                   <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
-                  Backend price validation • No frontend tampering
+                 High Security Payment
                 </p>
               </div>
             </div>

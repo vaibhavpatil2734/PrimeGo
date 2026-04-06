@@ -5,6 +5,18 @@ const Product = require("../models/product.model");
 const PaymentAttempt = require("../models/PaymentAttempt.model");
 const logActivity = require("../utils/logActivity");
 
+const preferredCouriers = [
+  "Blue Dart",
+  "Delhivery",
+  "DTDC",
+  "Xpressbees",
+  "Ecom Express",
+  "Shadowfax",
+  "DHL",
+  "FedEx",
+  "India Post"
+];
+
 
 /**
  * ✅ UPDATED: COD Orders or Admin/Internal use only
@@ -133,14 +145,37 @@ const createOrder = async (req, res) => {
       
       // Check serviceability
       const couriers = await checkServiceability(populatedOrder.shippingAddressId.postalCode, 0.5, order.payment.provider === 'cash_on_delivery');
-      if (couriers.length === 0) {
+      
+      // ✅ Separate preferred & others
+      const preferred = [];
+      const others = [];
+
+      couriers.forEach(c => {
+        const isPreferred = preferredCouriers.some(name =>
+          c.courier_name.toLowerCase().includes(name.toLowerCase())
+        );
+
+        if (isPreferred) {
+          preferred.push(c);
+        } else {
+          others.push(c);
+        }
+      });
+
+      console.log("🚚 Preferred:", preferred.map(c => c.courier_name));
+      console.log("📦 Others:", others.map(c => c.courier_name));
+
+      // ✅ Final sorted list (preferred first)
+      const sortedCouriers = [...preferred, ...others];
+
+      if (sortedCouriers.length === 0) {
         console.log(`⚠️ No couriers available for pin ${populatedOrder.shippingAddressId.postalCode}`);
         return res.status(201).json(order);
       }
       
       // Use user-selected or auto-select cheapest
       const userSelected = req.body.selectedCourier;
-      const selectedCourier = userSelected || couriers.sort((a, b) => a.rate - b.rate)[0];
+      const selectedCourier = userSelected || sortedCouriers.sort((a, b) => a.rate - b.rate)[0];
       if (userSelected) {
         console.log(`✅ Using user-selected courier: ${selectedCourier.courier_name} (${selectedCourier.rate})`);
       } else {
@@ -376,7 +411,29 @@ const getServiceability = async (req, res) => {
     const { checkServiceability } = require("../services/shiprocket.service");
     const couriers = await checkServiceability(pincode, parseFloat(weight), cod === 'true');
     
-    res.json({ success: true, couriers });
+    // ✅ Separate preferred & others
+    const preferred = [];
+    const others = [];
+
+    couriers.forEach(c => {
+      const isPreferred = preferredCouriers.some(name =>
+        c.courier_name.toLowerCase().includes(name.toLowerCase())
+      );
+
+      if (isPreferred) {
+        preferred.push(c);
+      } else {
+        others.push(c);
+      }
+    });
+
+    console.log("🚚 Preferred:", preferred.map(c => c.courier_name));
+    console.log("📦 Others:", others.map(c => c.courier_name));
+
+    // ✅ Send preferred first
+    const sortedCouriers = [...preferred, ...others];
+    
+    res.json({ success: true, couriers: sortedCouriers });
   } catch (error) {
     console.error('Serviceability error:', error.message);
     res.status(500).json({ error: 'Failed to fetch couriers' });
