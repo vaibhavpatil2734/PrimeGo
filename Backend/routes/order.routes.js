@@ -9,7 +9,8 @@ const {
   cancelOrder,
   getOrderTracking,
   processTrackingWebhook,
-  getServiceability
+  getServiceability,
+  getPickupOrders
 } = require("../controllers/order.controller");
 
 const {
@@ -65,5 +66,8 @@ router.post("/admin/:id/shiprocket/pickup", adminAuth, generateOrderPickup);
 router.post("/admin/:id/shiprocket/manifest", adminAuth, generateOrderManifest);
 router.post("/admin/:id/shiprocket/manifest/print", adminAuth, printOrderManifest);
 router.post("/admin/:id/shiprocket/label", adminAuth, regenerateOrderLabel);
+
+// Pickup bookings
+router.get("/admin/pickups", adminAuth, getPickupOrders);
 
 module.exports = router;

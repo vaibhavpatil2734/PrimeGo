@@ -32,6 +32,8 @@ const AdminOrders = () => {
   const [editingStatus, setEditingStatus] = useState(null);
   const [newStatus, setNewStatus] = useState("");
   const [updating, setUpdating] = useState(false);
+  const [pickupLoading, setPickupLoading] = useState({});
+  const [pickupResults, setPickupResults] = useState({});
   const [displayedCount, setDisplayedCount] = useState(ITEMS_PER_PAGE);
 
   useEffect(() => {
@@ -133,6 +135,38 @@ const AdminOrders = () => {
       setUpdating(false);
     }
   };
+
+  const handleBookPickup = async (orderId) => {
+    if (pickupLoading[orderId]) return;
+
+    try {
+      setPickupLoading(prev => ({ ...prev, [orderId]: true }));
+      
+      const result = await orderService.bookPickup(orderId);
+      
+      if (result.success) {
+        // Optimistic update
+        setOrders(prev => prev.map(order => 
+          order._id === orderId 
+            ? { 
+                ...order, 
+                pickupBooked: true,
+                pickupData: result.data.data?.pickup_date || result.data.data
+              }
+            : order
+        ));
+        setPickupResults(prev => ({ ...prev, [orderId]: result.data }));
+        setError(''); // Clear any errors
+      } else {
+        setError(result.error || "Failed to book pickup");
+      }
+    } catch (err) {
+      setError(err.message || "Pickup booking failed");
+    } finally {
+      setPickupLoading(prev => ({ ...prev, [orderId]: false }));
+    }
+  };
+
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -273,6 +307,30 @@ const AdminOrders = () => {
           <Edit3 size={12} />
           Status
         </button>
+              {order.status === 'PLACED' && !order.pickupBooked && (
+                <div className="flex-1">
+                  <button
+                    onClick={() => handleBookPickup(order._id)}
+                    disabled={order.pickupBooked || pickupLoading[order._id]}
+                    className={`w-full py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center justify-center gap-1 ${
+                      order.pickupBooked
+                        ? 'bg-green-100 text-green-800 border-2 border-green-200'
+                        : pickupLoading[order._id]
+                        ? 'bg-gray-100 text-gray-500 border-2 border-gray-300 cursor-not-allowed'
+                        : 'bg-orange-500 hover:bg-orange-600 text-white border-2 border-orange-400'
+                    }`}
+                    title={order.pickupBooked ? "Pickup Booked ✅" : "Book Ship 📦"}
+                  >
+                    {pickupLoading[order._id] ? (
+                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : order.pickupBooked ? (
+                      '✅ Booked'
+                    ) : (
+                      '📦 Ship'
+                    )}
+                  </button>
+                </div>
+              )}
       </div>
 
       {/* Status Update Dropdown */}
@@ -731,6 +789,28 @@ const AdminOrders = () => {
                           title="Update Status">
                           <Edit3 size={16} />
                         </button>
+{order.status === 'PLACED' && !order.pickupBooked && (
+                          <button
+                            onClick={() => handleBookPickup(order._id)}
+                            disabled={order.pickupBooked || pickupLoading[order._id]}
+                            className={`p-2 rounded-lg transition-colors text-xs flex items-center gap-1 ${
+                              order.pickupBooked
+                                ? 'bg-green-100 text-green-800 border border-green-200 cursor-default'
+                                : pickupLoading[order._id]
+                                ? 'bg-gray-100 text-gray-500 border border-gray-200 cursor-not-allowed'
+                                : 'text-orange-600 hover:text-orange-700 hover:bg-orange-50 border border-orange-200 bg-orange-50'
+                            }`}
+                            title={order.pickupBooked ? "Pickup already booked ✅" : "Book Ship 📦"}
+                          >
+                            {pickupLoading[order._id] ? (
+                              <div className="w-3 h-3 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                            ) : order.pickupBooked ? (
+                              '✅'
+                            ) : (
+                              '📦 Ship'
+                            )}
+                          </button>
+                        )}
                       </div>
                     </td>
                   </motion.tr>

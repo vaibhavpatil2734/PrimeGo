@@ -9,7 +9,8 @@ import {
   Plus,
   MessageCircle,
   Activity,
-  Download
+  Download,
+  Truck
 } from "lucide-react";
 
 export default function AdminNav() {
@@ -20,8 +21,10 @@ export default function AdminNav() {
     { label: "Users", path: "/admin/users", icon: <Users size={16} /> },
     { label: "Create Product", path: "/admin/products/create", icon: <Plus size={16} /> },
     { label: "Manage Products", path: "/admin/products", icon: <Package size={16} /> },
+    { label: "Pickup Bookings", path: "/admin/pickups", icon: <Truck size={16} /> },
     { label: "Manage Contacts", path: "/admin/contacts", icon: <MessageCircle size={16} /> },
-    { label: "Manage Orders", path: "/admin/orders", icon: <ShoppingCart size={16} /> }]
+    { label: "Manage Orders", path: "/admin/orders", icon: <ShoppingCart size={16} /> }
+  ]
 
   const isProductsActive = location.pathname.startsWith("/admin/products");
   const isContactsActive = location.pathname === "/admin/contacts";
@@ -56,4 +59,3 @@ export default function AdminNav() {
     </div>
   );
 }
-

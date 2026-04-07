@@ -16,7 +16,18 @@ const generateOrderPickup = async (req, res) => {
     const order = await Order.findById(id).populate('shippingAddressId');
 
     if (!order) return res.status(404).json({ error: 'Order not found' });
-    if (!order.shipmentId) return res.status(400).json({ error: 'No shipment ID found' });
+    if (!order.shipmentId) {
+      console.log('⚠️ No shipment ID. Creating basic shipment first...');
+      const { createShipment } = require('../services/shiprocket.service');
+      const shipmentRes = await createShipment(order);
+      if (!shipmentRes || shipmentRes.Status === false) {
+        return res.status(400).json({ error: 'Failed to create shipment', details: shipmentRes });
+      }
+      order.shipmentId = shipmentRes.shipment_id;
+      order.shipment_id = shipmentRes.shipment_id;
+      await order.save();
+      console.log(`✅ Auto-created shipment_id: ${order.shipmentId}`);
+    }
     if (order.pickupBooked) return res.status(400).json({ error: 'Pickup already booked' });
 
     console.log("\n🚀 [ADMIN PICKUP] Starting pickup for:", order.shipmentId);

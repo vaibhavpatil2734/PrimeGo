@@ -32,6 +32,7 @@ import UpdateProduct from "../pages/adminPages/UpdateProduct";
 import ManageContacts from "../pages/adminPages/ManageContacts";
 import AdminActivityLogs from "../pages/adminPages/AdminActivityLogs";
 import LogExport from "../pages/adminPages/LogExport";
+import AdminPickups from "../pages/adminPages/AdminPickups";
 
 // Loader
 const PageLoader = () => (
@@ -125,9 +126,6 @@ const AppRoutes = createBrowserRouter([
       { path: "review-order/:orderId", element: <ReviewOrder /> },
       { path: "shipping-policy", element: <ShippingPolicy /> },
 
-
-
-
       // ADMIN ROUTES
       {
         path: "admin",
@@ -141,6 +139,7 @@ const AppRoutes = createBrowserRouter([
           { path: "dashboard", element: <AdminDashboard /> },
           { path: "orders", element: <AdminOrders /> },
           { path: "users", element: <AdminUsers /> },
+          { path: "pickups", element: <AdminPickups /> },
 
           // PRODUCT MANAGEMENT
           { path: "products", element: <ManageProduct /> },
@@ -150,13 +149,11 @@ const AppRoutes = createBrowserRouter([
           { path: "activity-logs", element: <AdminActivityLogs /> },
           { path: "export-logs", element: <LogExport /> },
         ],
-
       },
     ],
   },
 
   { path: "*", element: <PageNotFound /> },
 ]);
-
 
 export default AppRoutes;

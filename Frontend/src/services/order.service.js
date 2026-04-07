@@ -10,6 +10,7 @@ const ORDER_ENDPOINTS = {
   cancelOrder: (id) => `/orders/${id}/cancel`,
   getAllOrders: '/orders/admin/all',
   updateOrderStatus: (id) => `/orders/admin/${id}/status`,
+  bookPickup: (id) => `/orders/admin/${id}/shiprocket/pickup`,
 };
 
 
@@ -176,6 +177,19 @@ const orderService = {
       return {
         success: false,
         error: error.response?.data?.error || 'Failed to update order status',
+      };
+    }
+  },
+
+  // Book Shiprocket pickup (admin)
+  async bookPickup(orderId) {
+    try {
+      const response = await httpClient.post(ORDER_ENDPOINTS.bookPickup(orderId));
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Failed to book pickup',
       };
     }
   },

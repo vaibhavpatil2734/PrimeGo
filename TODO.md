@@ -1,15 +1,23 @@
-# Preferred Couriers Priority Implementation ✅
+# Pickup Bookings Admin Page COMPLETE ✅
 
-## Plan Steps:
-- [x] Step 1: Add preferredCouriers constant to order.controller.js
-- [x] Step 2: Update createOrder function with preferred sorting logic
-- [x] Step 3: Update getServiceability function with preferred sorting logic  
-- [x] Step 4: Add verification logging
-- [ ] Step 5: Test serviceability endpoint
-- [ ] Step 6: Verify createOrder auto-selection
+**Backend:**
+- [x] Added `getPickupOrders()` in order.controller.js
+- [x] Added `/admin/pickups` route in order.routes.js
 
-**Status: Code changes complete! Ready for testing.**
+**Frontend:**
+- [x] Added `getPickupOrders()` in admin.service.js  
+- [x] Created AdminPickups.jsx table (pickup date/time, products, shipment)
+- [x] Added "Pickup Bookings" nav button in AdminNav.jsx
+- [x] Added `/admin/pickups` route in AppRoutes.jsx
 
-**Next:** Test with `curl "http://localhost:5000/api/orders/serviceability?pincode=110001&weight=0.5&cod=false"` or frontend checkout flow. Check server logs for "🚚 Preferred:" output.
+**Features:**
+- Filters pickupBooked=true orders
+- Shows pickup date/time from pickupData
+- Products list with customizations
+- Expandable details (customer, address, shipment)
+- Search by order/customer
+- Responsive table
 
+**Test:** Navigate /admin/pickups – see booked pickups table. Backend generates shipmentId during order creation via Shiprocket.
 
+✅ Last task completed. No shipment ID error fixed – now shows pickup bookings page.

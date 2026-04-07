@@ -153,6 +153,19 @@ const adminService = {
         error: error.response?.data?.message || 'Failed to update contact info',
       };
     }
+  },
+
+  // Get pickup bookings
+  async getPickupOrders() {
+    try {
+      const response = await httpClient.get('/orders/admin/pickups');
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Failed to fetch pickup orders',
+      };
+    }
   }
 };
 

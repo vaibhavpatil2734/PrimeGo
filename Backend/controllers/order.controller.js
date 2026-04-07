@@ -14,9 +14,8 @@ const preferredCouriers = [
   "Shadowfax",
   "DHL",
   "FedEx",
-  "India Post"
+  "India Post",
 ];
-
 
 /**
  * ✅ UPDATED: COD Orders or Admin/Internal use only
@@ -25,39 +24,46 @@ const preferredCouriers = [
  */
 const createOrder = async (req, res) => {
   try {
-    console.log('📦 [ORDER CREATE] Request body:', JSON.stringify(req.body, null, 2));
-    console.log('🎯 personalizationText:', req.body.personalizationText);
-    console.log('👤 User ID:', req.user._id);
+    console.log(
+      "📦 [ORDER CREATE] Request body:",
+      JSON.stringify(req.body, null, 2),
+    );
+    console.log("🎯 personalizationText:", req.body.personalizationText);
+    console.log("👤 User ID:", req.user._id);
     const { items, shippingAddressId, payment, idempotencyKey } = req.body;
     const userId = req.user._id; // From auth middleware
 
     // 1. Idempotency check
     if (idempotencyKey) {
-      const existingOrder = await Order.findOne({ 
-        userId, 
+      const existingOrder = await Order.findOne({
+        userId,
         idempotencyKey,
-        status: { $in: ['PLACED', 'SHIPPED', 'DELIVERED'] }
+        status: { $in: ["PLACED", "SHIPPED", "DELIVERED"] },
       });
       if (existingOrder) {
-        console.log(`🔄 [ORDER] Idempotent: returning existing ${existingOrder.orderNumber}`);
+        console.log(
+          `🔄 [ORDER] Idempotent: returning existing ${existingOrder.orderNumber}`,
+        );
         return res.status(200).json(existingOrder);
       }
     }
 
     if (!items || items.length === 0) {
-      return res.status(400).json({ error: "Order must have at least one item" });
+      return res
+        .status(400)
+        .json({ error: "Order must have at least one item" });
     }
 
     // ✅ NEW: Fetch user's cart to copy customization
-    const userCart = await Cart.findOne({ userId }).populate('items.productId');
+    const userCart = await Cart.findOne({ userId }).populate("items.productId");
     const cartItemsMap = new Map();
     if (userCart?.items) {
-      userCart.items.forEach(cartItem => {
+      userCart.items.forEach((cartItem) => {
         const key = cartItem.productId._id.toString();
         if (!cartItemsMap.has(key)) cartItemsMap.set(key, []);
         cartItemsMap.get(key).push({
           customizationType: cartItem.customizationType,
-          customName: cartItem.customName
+          customName: cartItem.customName,
         });
       });
     }
@@ -65,38 +71,50 @@ const createOrder = async (req, res) => {
     // 2. Validate stock & copy customization (don't deduct - handled in payment flow)
     let subtotal = 0;
     const validatedItems = [];
-    
+
     for (const item of items) {
       const product = await Product.findById(item.productId);
       if (!product || product.isDeleted || !product.isActive) {
-        return res.status(400).json({ error: `Invalid product: ${item.title}` });
+        return res
+          .status(400)
+          .json({ error: `Invalid product: ${item.title}` });
       }
       if (product.stock < item.quantity) {
-        return res.status(400).json({ 
-          error: `Insufficient stock for ${product.title}. Available: ${product.stock}` 
+        return res.status(400).json({
+          error: `Insufficient stock for ${product.title}. Available: ${product.stock}`,
         });
       }
 
-      const price = product.discountPrice > 0 ? product.discountPrice : product.price;
-      
+      const price =
+        product.discountPrice > 0 ? product.discountPrice : product.price;
+
       // ✅ NEW: Copy customization from cart (first match, or plain fallback)
       const productCartCustoms = cartItemsMap.get(product._id.toString()) || [];
-      const customization = productCartCustoms.find(c => c.customizationType === 'customized' && c.customName)?.customName 
-        ? productCartCustoms.find(c => c.customizationType === 'customized') 
-        : productCartCustoms[0] || { customizationType: 'plain', customName: null };
-      
+      const customization = productCartCustoms.find(
+        (c) => c.customizationType === "customized" && c.customName,
+      )?.customName
+        ? productCartCustoms.find((c) => c.customizationType === "customized")
+        : productCartCustoms[0] || {
+            customizationType: "plain",
+            customName: null,
+          };
+
       validatedItems.push({
         productId: product._id,
         title: product.title,
         price,
         quantity: item.quantity,
         customizationType: customization.customizationType,
-        customName: customization.customName
+        customName: customization.customName,
       });
-      
-      const customLabel = customization.customName ? ` (Custom: ${customization.customName})` : '';
-      console.log(`🛍️ Item ${product.title}${customLabel} | Qty: ${item.quantity} | Stock OK`);
-      
+
+      const customLabel = customization.customName
+        ? ` (Custom: ${customization.customName})`
+        : "";
+      console.log(
+        `🛍️ Item ${product.title}${customLabel} | Qty: ${item.quantity} | Stock OK`,
+      );
+
       subtotal += price * item.quantity;
     }
 
@@ -105,14 +123,16 @@ const createOrder = async (req, res) => {
     const orderNumber = `ORD${Date.now()}`;
 
     // 3. Determine payment status (COD only for now)
-    const paymentStatus = payment?.provider === 'cash_on_delivery' ? 'CASH_ON_DELIVERY' : 'UNPAID';
+    const paymentStatus =
+      payment?.provider === "cash_on_delivery" ? "CASH_ON_DELIVERY" : "UNPAID";
 
     const personalizationText =
-      req.body.personalizationText !== undefined && req.body.personalizationText !== null
+      req.body.personalizationText !== undefined &&
+      req.body.personalizationText !== null
         ? req.body.personalizationText
         : validatedItems
-            .filter(i => i.customName)
-            .map(i => i.customName)
+            .filter((i) => i.customName)
+            .map((i) => i.customName)
             .join(", ") || null;
 
     const orderData = {
@@ -125,34 +145,48 @@ const createOrder = async (req, res) => {
       shippingAddressId,
       personalizationText,
       payment: {
-        provider: payment?.provider || 'cod',
-        status: paymentStatus === 'CASH_ON_DELIVERY' ? 'PENDING' : 'UNPAID'
+        provider: payment?.provider || "cod",
+        status: paymentStatus === "CASH_ON_DELIVERY" ? "PENDING" : "UNPAID",
       },
       paymentStatus,
-      status: 'PLACED',
-      idempotencyKey // Store for future checks
-    }; 
+      status: "PLACED",
+      idempotencyKey, // Store for future checks
+    };
 
     const order = await Order.create(orderData);
-    console.log('✅ [ORDER CREATE] Created order:', JSON.stringify(order.toObject(), null, 2));
-    
+    console.log(
+      "✅ [ORDER CREATE] Created order:",
+      JSON.stringify(order.toObject(), null, 2),
+    );
+
     // 🚀 Basic Shiprocket shipment creation ONLY (manual pickup/label via admin)
     try {
-      const populatedOrder = await Order.findById(order._id).populate(['shippingAddressId', 'userId']);
+      const populatedOrder = await Order.findById(order._id).populate([
+        "shippingAddressId",
+        "userId",
+      ]);
       console.log(`🚀 [ORDER-SR] Creating basic shipment for ${orderNumber}`);
-      
-      const { checkServiceability, createShipment, assignAWB } = require("../services/shiprocket.service");
-      
+
+      const {
+        checkServiceability,
+        createShipment,
+        assignAWB,
+      } = require("../services/shiprocket.service");
+
       // Check serviceability
-      const couriers = await checkServiceability(populatedOrder.shippingAddressId.postalCode, 0.5, order.payment.provider === 'cash_on_delivery');
-      
+      const couriers = await checkServiceability(
+        populatedOrder.shippingAddressId.postalCode,
+        0.5,
+        order.payment.provider === "cash_on_delivery",
+      );
+
       // ✅ Separate preferred & others
       const preferred = [];
       const others = [];
 
-      couriers.forEach(c => {
-        const isPreferred = preferredCouriers.some(name =>
-          c.courier_name.toLowerCase().includes(name.toLowerCase())
+      couriers.forEach((c) => {
+        const isPreferred = preferredCouriers.some((name) =>
+          c.courier_name.toLowerCase().includes(name.toLowerCase()),
         );
 
         if (isPreferred) {
@@ -162,59 +196,105 @@ const createOrder = async (req, res) => {
         }
       });
 
-      console.log("🚚 Preferred:", preferred.map(c => c.courier_name));
-      console.log("📦 Others:", others.map(c => c.courier_name));
+      console.log(
+        "🚚 Preferred:",
+        preferred.map((c) => c.courier_name),
+      );
+      console.log(
+        "📦 Others:",
+        others.map((c) => c.courier_name),
+      );
 
       // ✅ Final sorted list (preferred first)
       const sortedCouriers = [...preferred, ...others];
 
       if (sortedCouriers.length === 0) {
-        console.log(`⚠️ No couriers available for pin ${populatedOrder.shippingAddressId.postalCode}`);
+        console.log(
+          `⚠️ No couriers available for pin ${populatedOrder.shippingAddressId.postalCode}`,
+        );
         return res.status(201).json(order);
       }
-      
+
       // Use user-selected or auto-select cheapest
       const userSelected = req.body.selectedCourier;
-      const selectedCourier = userSelected || sortedCouriers.sort((a, b) => a.rate - b.rate)[0];
+      const selectedCourier =
+        userSelected || sortedCouriers.sort((a, b) => a.rate - b.rate)[0];
       if (userSelected) {
-        console.log(`✅ Using user-selected courier: ${selectedCourier.courier_name} (${selectedCourier.rate})`);
+        console.log(
+          `✅ Using user-selected courier: ${selectedCourier.courier_name} (${selectedCourier.rate})`,
+        );
       } else {
-        console.log(`🔄 Auto-selected cheapest: ${selectedCourier.courier_name} (${selectedCourier.rate})`);
+        console.log(
+          `🔄 Auto-selected cheapest: ${selectedCourier.courier_name} (${selectedCourier.rate})`,
+        );
       }
-      
+
       // Create shipment
       const shipment = await createShipment(populatedOrder);
+      console.log("📦 Shipment Response:", shipment);
       populatedOrder.shipmentId = shipment.shipment_id;
       populatedOrder.shipment_id = shipment.shipment_id;
       populatedOrder.deliveryProvider = "shiprocket";
-      
+
       // Assign AWB
-      const awbRes = await assignAWB(shipment.shipment_id, selectedCourier.courier_company_id);
-      populatedOrder.awbCode = awbRes.awb_code || shipment.awb_code;
-      populatedOrder.trackingId = populatedOrder.awbCode;
-      
+      // Assign AWB
+      const awbRes = await assignAWB(
+        shipment.shipment_id,
+        selectedCourier.courier_company_id,
+      );
+      console.log("📋 AWB Response:", awbRes);
+
+      // 🚨 SAFETY CHECK
+      if (!awbRes || !awbRes.response?.data?.awb_code) {
+        throw new Error("AWB assignment failed");
+      }
+
+      // ✅ Extract AWB properly
+      const awbCode = awbRes.response.data.awb_code;
+
+      // 🔥 VERY IMPORTANT: wait for Shiprocket to register AWB
+      await new Promise((resolve) => setTimeout(resolve, 3000)); // 3 sec delay
+
+      // 🚀 NOW GENERATE PICKUP
+      const { generatePickup } = require("../services/shiprocket.service");
+
+      const pickupRes = await generatePickup(shipment.shipment_id);
+      console.log("🚚 PICKUP RESPONSE:", pickupRes);
+
+      populatedOrder.awbCode = awbCode;
       // Save selected courier info
       populatedOrder.selectedCourier = selectedCourier;
       populatedOrder.courierName = selectedCourier.courier_name;
-      
+
       populatedOrder.shiprocketOrderId = shipment.order_id;
-      
+
       await populatedOrder.save();
-      
-      console.log(`✅ [ORDER BASIC SR] ${orderNumber}: shipment_id=${shipment.shipment_id}, courier=${selectedCourier.courier_name}, ready for manual pickup`);
-      await logActivity(req, 'CREATE', 'Order', order._id, `Order ${orderNumber} placed ($${totalAmount.toFixed(2)})${req.body.personalizationText ? ' w/ personalization' : ''}`);
+
+      console.log(
+        `✅ [ORDER BASIC SR] ${orderNumber}: shipment_id=${shipment.shipment_id}, courier=${selectedCourier.courier_name}, ready for manual pickup`,
+      );
+      await logActivity(
+        req,
+        "CREATE",
+        "Order",
+        order._id,
+        `Order ${orderNumber} placed ($${totalAmount.toFixed(2)})${req.body.personalizationText ? " w/ personalization" : ""}`,
+      );
       res.status(201).json(populatedOrder);
     } catch (shiprocketError) {
       console.log("⚠️ Shiprocket partial fail:", shiprocketError.message);
       console.log(`✅ Order created (manual SR steps needed): ${orderNumber}`);
-      await logActivity(req, 'CREATE', 'Order', order._id, `Order ${orderNumber} placed ($${totalAmount.toFixed(2)})${req.body.personalizationText ? ' w/ personalization' : ''}`);
+      await logActivity(
+        req,
+        "CREATE",
+        "Order",
+        order._id,
+        `Order ${orderNumber} placed ($${totalAmount.toFixed(2)})${req.body.personalizationText ? " w/ personalization" : ""}`,
+      );
       res.status(201).json(order);
     }
-
-
   } catch (error) {
-
-    console.error('❌ [ORDER CREATE] Error:', error);
+    console.error("❌ [ORDER CREATE] Error:", error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -225,7 +305,7 @@ const createOrder = async (req, res) => {
 const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
-.populate("userId", "username email phone")
+      .populate("userId", "username email phone")
       .populate("items.productId", "title price images stock")
       .populate("shippingAddressId", "name line1 city state postalCode phone")
       .sort({ createdAt: -1 });
@@ -282,7 +362,7 @@ const updateOrderStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    if (!["PLACED","SHIPPED","DELIVERED","CANCELLED"].includes(status)) {
+    if (!["PLACED", "SHIPPED", "DELIVERED", "CANCELLED"].includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
     }
 
@@ -292,20 +372,25 @@ const updateOrderStatus = async (req, res) => {
     }
 
     // Restore stock if cancelling shipped/delivered orders
-    if (status === 'CANCELLED' && order.status !== 'CANCELLED') {
+    if (status === "CANCELLED" && order.status !== "CANCELLED") {
       for (const item of order.items) {
         await Product.findByIdAndUpdate(item.productId, {
-          $inc: { stock: item.quantity }
+          $inc: { stock: item.quantity },
         });
       }
     }
 
     order.status = status;
     await order.save();
-    await logActivity(req, 'UPDATE', 'Order', id, `Status changed to: ${status}`);
+    await logActivity(
+      req,
+      "UPDATE",
+      "Order",
+      id,
+      `Status changed to: ${status}`,
+    );
     res.json({ message: "Order status updated", order });
   } catch (error) {
-
     res.status(500).json({ error: error.message });
   }
 };
@@ -329,16 +414,15 @@ const cancelOrder = async (req, res) => {
     // Restore stock
     for (const item of order.items) {
       await Product.findByIdAndUpdate(item.productId, {
-        $inc: { stock: item.quantity }
+        $inc: { stock: item.quantity },
       });
     }
 
     order.status = "CANCELLED";
     await order.save();
-    await logActivity(req, 'UPDATE', 'Order', id, 'Order cancelled');
+    await logActivity(req, "UPDATE", "Order", id, "Order cancelled");
     res.json({ message: "Order cancelled successfully", order });
   } catch (error) {
-
     res.status(500).json({ error: error.message });
   }
 };
@@ -349,14 +433,16 @@ const cancelOrder = async (req, res) => {
 const getOrderTracking = async (req, res) => {
   try {
     const { id } = req.params;
-    const order = await Order.findById(id).populate('userId shippingAddressId');
+    const order = await Order.findById(id).populate("userId shippingAddressId");
 
     if (!order) {
       return res.status(404).json({ error: "Order not found" });
     }
 
     if (!order.trackingId && !order.awbCode) {
-      return res.status(400).json({ error: "No tracking ID found for this order" });
+      return res
+        .status(400)
+        .json({ error: "No tracking ID found for this order" });
     }
 
     let trackingData;
@@ -374,9 +460,11 @@ const getOrderTracking = async (req, res) => {
           current_timestamp: order.current_timestamp,
           etd: order.etd,
           scans: order.scans,
-          courier_name: order.courierName
+          courier_name: order.courierName,
         };
-        console.log(`📱 [TRACK] Using stored webhook data for ${order.orderNumber} (${order.scans.length} scans)`);
+        console.log(
+          `📱 [TRACK] Using stored webhook data for ${order.orderNumber} (${order.scans.length} scans)`,
+        );
       }
     }
 
@@ -392,7 +480,7 @@ const getOrderTracking = async (req, res) => {
       order,
       tracking: trackingData,
       trackUrl: `https://shiprocket.co/tracking/${order.trackingId || order.awbCode}`,
-      source: trackingData.scans === order.scans ? 'webhook' : 'shiprocket'
+      source: trackingData.scans === order.scans ? "webhook" : "shiprocket",
     });
   } catch (error) {
     console.error("❌ Tracking fetch error:", error.message);
@@ -403,21 +491,25 @@ const getOrderTracking = async (req, res) => {
 // 🚀 Shiprocket Tracking Webhook - Real-time updates
 const getServiceability = async (req, res) => {
   try {
-    const { pincode, weight = '0.5', cod = 'false' } = req.query;
+    const { pincode, weight = "0.5", cod = "false" } = req.query;
     if (!pincode) {
-      return res.status(400).json({ error: 'pincode required' });
+      return res.status(400).json({ error: "pincode required" });
     }
 
     const { checkServiceability } = require("../services/shiprocket.service");
-    const couriers = await checkServiceability(pincode, parseFloat(weight), cod === 'true');
-    
+    const couriers = await checkServiceability(
+      pincode,
+      parseFloat(weight),
+      cod === "true",
+    );
+
     // ✅ Separate preferred & others
     const preferred = [];
     const others = [];
 
-    couriers.forEach(c => {
-      const isPreferred = preferredCouriers.some(name =>
-        c.courier_name.toLowerCase().includes(name.toLowerCase())
+    couriers.forEach((c) => {
+      const isPreferred = preferredCouriers.some((name) =>
+        c.courier_name.toLowerCase().includes(name.toLowerCase()),
       );
 
       if (isPreferred) {
@@ -427,16 +519,22 @@ const getServiceability = async (req, res) => {
       }
     });
 
-    console.log("🚚 Preferred:", preferred.map(c => c.courier_name));
-    console.log("📦 Others:", others.map(c => c.courier_name));
+    console.log(
+      "🚚 Preferred:",
+      preferred.map((c) => c.courier_name),
+    );
+    console.log(
+      "📦 Others:",
+      others.map((c) => c.courier_name),
+    );
 
     // ✅ Send preferred first
     const sortedCouriers = [...preferred, ...others];
-    
+
     res.json({ success: true, couriers: sortedCouriers });
   } catch (error) {
-    console.error('Serviceability error:', error.message);
-    res.status(500).json({ error: 'Failed to fetch couriers' });
+    console.error("Serviceability error:", error.message);
+    res.status(500).json({ error: "Failed to fetch couriers" });
   }
 };
 
@@ -445,20 +543,17 @@ const processTrackingWebhook = async (req, res) => {
     const payload = req.body;
 
     const awb = payload.awb;
-    
+
     if (!awb) {
-      console.log('📡 [WEBHOOK] Missing AWB');
-      return res.status(400).json({ error: 'AWB required' });
+      console.log("📡 [WEBHOOK] Missing AWB");
+      return res.status(400).json({ error: "AWB required" });
     }
 
     console.log(`📡 [WEBHOOK] Processing ${awb}: ${payload.current_status}`);
 
     // Find matching order
     const order = await Order.findOne({
-      $or: [
-        { awbCode: awb },
-        { trackingId: awb }
-      ]
+      $or: [{ awbCode: awb }, { trackingId: awb }],
     });
 
     if (!order) {
@@ -477,10 +572,10 @@ const processTrackingWebhook = async (req, res) => {
 
     // Status sync to main enum
     const statusSync = {
-      'Delivered': 'DELIVERED',
-      'Out for Delivery': 'SHIPPED',
-      'Shipped': 'SHIPPED',
-      'RTO': 'CANCELLED'
+      Delivered: "DELIVERED",
+      "Out for Delivery": "SHIPPED",
+      Shipped: "SHIPPED",
+      RTO: "CANCELLED",
     };
     if (statusSync[payload.current_status]) {
       order.status = statusSync[payload.current_status];
@@ -489,10 +584,11 @@ const processTrackingWebhook = async (req, res) => {
     // Append new scans (dedupe)
     if (payload.scans && Array.isArray(payload.scans)) {
       payload.scans.forEach((scan) => {
-        const duplicate = order.scans.some((existingScan) => 
-          existingScan.date === scan.date &&
-          existingScan.activity === scan.activity &&
-          existingScan.location === scan.location
+        const duplicate = order.scans.some(
+          (existingScan) =>
+            existingScan.date === scan.date &&
+            existingScan.activity === scan.activity &&
+            existingScan.location === scan.location,
         );
         if (!duplicate) {
           order.scans.push(scan);
@@ -502,17 +598,56 @@ const processTrackingWebhook = async (req, res) => {
 
     await order.save();
 
-    console.log(`✅ [WEBHOOK] ${order.orderNumber} updated | Status: ${payload.current_status} | Scans: ${order.scans.length - previousScansCount} new (${order.scans.length} total)`);
+    console.log(
+      `✅ [WEBHOOK] ${order.orderNumber} updated | Status: ${payload.current_status} | Scans: ${order.scans.length - previousScansCount} new (${order.scans.length} total)`,
+    );
 
-    res.json({ 
-      success: true, 
-      order: order.orderNumber, 
-      newScans: order.scans.length - previousScansCount 
+    res.json({
+      success: true,
+      order: order.orderNumber,
+      newScans: order.scans.length - previousScansCount,
+    });
+  } catch (error) {
+    console.error("❌ [WEBHOOK ERROR]:", error);
+    res.status(500).json({ error: "Webhook processing failed" });
+  }
+};
+
+const getPickupOrders = async (req, res) => {
+  console.log("\n🚀 [getPickupOrders CALLED] Route hit!"); // FIRST LINE
+  try {
+    console.log("🔍 [getPickupOrders] Query: pickupBooked=true");
+    console.log("🔍 Raw count:", await Order.countDocuments({ pickupBooked: true }));
+    const orders = await Order.find({ pickupBooked: true })
+      .populate("userId", "username email phone")
+      .populate("items.productId", "title price images")
+      .populate("shippingAddressId", "name line1 city state postalCode phone")
+      .sort({ pickupData: -1 });
+    console.log("📦 Orders found:", orders.length);
+
+    console.log(`📦 [getPickupOrders] Found ${orders.length} pickup orders`);
+    orders.slice(0, 3).forEach((order, idx) => {
+      console.log(`🚚 Order ${idx + 1}/${orders.length}:`);
+      console.log("   orderNumber:", order.orderNumber);
+      console.log("   pickupBooked:", order.pickupBooked);
+      console.log("   pickupData keys:", Object.keys(order.pickupData || {}));
+      console.log("   pickupData.response keys:", Object.keys(order.pickupData?.response || {}));
+      if (order.pickupData?.response?.pickup_scheduled_date) {
+        console.log("   ✅ pickup_scheduled_date:", order.pickupData.response.pickup_scheduled_date);
+      }
+      console.log("   shipmentId:", order.shipmentId);
+      console.log("   ---");
     });
 
+    if (orders.length === 0) {
+      console.log("⚠️ [getPickupOrders] No orders with pickupBooked=true");
+      console.log("💡 Check: Shiprocket pickup generation in createOrder()");
+    }
+
+    res.json(orders);
   } catch (error) {
-    console.error('❌ [WEBHOOK ERROR]:', error);
-    res.status(500).json({ error: 'Webhook processing failed' });
+    console.error("💥 [getPickupOrders] Error:", error.message);
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -525,10 +660,6 @@ module.exports = {
   cancelOrder,
   getOrderTracking,
   processTrackingWebhook,
-  getServiceability
+  getServiceability,
+  getPickupOrders
 };
-
-
-
-
-

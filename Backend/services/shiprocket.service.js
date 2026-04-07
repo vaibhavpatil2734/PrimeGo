@@ -4,75 +4,114 @@ let shiprocketToken = null;
 
 // 🔐 Generate Token
 const generateToken = async () => {
-  if (shiprocketToken) return shiprocketToken;
+  console.log("🔒 DEBUG: generateToken called");
+
+  if (shiprocketToken) {
+    console.log("🔒 DEBUG: Using cached token");
+    return shiprocketToken;
+  }
 
   if (!process.env.SHIPROCKET_EMAIL || !process.env.SHIPROCKET_PASSWORD) {
     throw new Error("Shiprocket credentials missing in .env");
   }
 
+  console.log("🔒 DEBUG: Fetching new token...");
   const res = await axios.post(
     "https://apiv2.shiprocket.in/v1/external/auth/login",
     {
       email: process.env.SHIPROCKET_EMAIL,
       password: process.env.SHIPROCKET_PASSWORD,
-    }
+    },
   );
 
   shiprocketToken = res.data.token;
-  console.log("✅ [SR-TOKEN GENERATED]");
+  console.log(`✅ [SR-TOKEN GENERATED] length: ${shiprocketToken.length}`);
   return shiprocketToken;
 };
 
-// 📅 MAIN PICKUP DATE FUNCTION (used everywhere)
-const getPickupDate = (daysAhead = 3) => {
-  const d = new Date();
-  d.setDate(d.getDate() + daysAhead);
+// 📅 FIXED PICKUP DATE - Today only + smart cutoffs
+const getPickupDate = (daysAhead = 0) => {  // ✅ TODAY ONLY by default
+  console.log(`🔍 DEBUG: getPickupDate called with daysAhead=${daysAhead}`);
   
-  // Skip weekends
+  let d = new Date();
+  const now = new Date();
+  const hour = now.getHours();
+  const day = now.getDay();
+  
+  console.log(`🔍 DEBUG: Current: ${now.toISOString()} | Hour:${hour} | Day:${day}`);
+
+  // 🚨 FRIDAY 4PM+ → Skip to Monday (+3 days)
+  if (day === 5 && hour >= 16) {  // Friday after 4PM
+    console.log("🚨 FRIDAY 4PM+ → Skipping to Monday");
+    d.setDate(d.getDate() + 3);  // Fri → Mon
+  } 
+  // SAT/SUN → Monday (+1 or +2)
+  else if (day === 6) {  // Saturday
+    console.log("🚨 Saturday → Monday (+2)");
+    d.setDate(d.getDate() + 2);
+  } 
+  else if (day === 0) {  // Sunday
+    console.log("🚨 Sunday → Monday (+1)");
+    d.setDate(d.getDate() + 1);
+  }
+  // Weekdays: Today only (daysAhead=0 already)
+
+  // Skip any remaining weekends (backup)
   while (d.getDay() === 0 || d.getDay() === 6) {
     d.setDate(d.getDate() + 1);
   }
+
+  // ✅ Timezone-safe YYYY-MM-DD
+  const dateStr = new Date(d.getTime() - (d.getTimezoneOffset() * 60000))
+    .toISOString()
+    .split('T')[0];
   
-  // Cap at +7 days
-  const maxDate = new Date();
-  maxDate.setDate(maxDate.getDate() + 7);
-  if (d > maxDate) d = new Date();
-  
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  
-  const dateStr = `${yyyy}-${mm}-${dd}`;
-  console.log(`📅 Pickup date (+${daysAhead}d): ${dateStr}`);
-  
+  // 🛑 Holiday blacklist (major ones)
+  const holidays = ['2024-12-25', '2025-01-26', '2025-03-31']; // Christmas, Republic, Holi
+  if (holidays.includes(dateStr)) {
+    console.log(`🚨 Holiday detected: ${dateStr} → Next day`);
+    d.setDate(d.getDate() + 1);
+    const fallbackStr = new Date(d.getTime() - (d.getTimezoneOffset() * 60000))
+      .toISOString().split('T')[0];
+    return fallbackStr;
+  }
+
+  console.log(`📅 FINAL Pickup: ${dateStr} (Day:${d.getDay()} | Weekday:${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]})`);
   return dateStr;
 };
-
 // 🚀 Common API Caller
 const apiCall = async (method, url, data = {}) => {
   const token = await generateToken();
 
   console.log(`\n🚀 [SR-API] ${method.toUpperCase()} ${url}`);
   console.log("📦 Payload:", JSON.stringify(data, null, 2));
-
+  console.log("the token :", token);
   try {
     const res = await axios({
       method,
       url,
-      data,
+      data: method.toLowerCase() === "get" ? undefined : data,
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     });
 
-    console.log("✅ [SR SUCCESS]:", res.data);
+    console.log(
+      `🔍 DEBUG API: HTTP ${res.status} | SR Status: ${res.data.Status}`,
+    );
+
+    if (res.data.Status === false) {
+      console.log("⚠️ [SR BUSINESS ERROR]:", JSON.stringify(res.data, null, 2));
+    } else {
+      console.log("✅ [SR SUCCESS]:", res.data);
+    }
     return res.data;
   } catch (error) {
     console.log("❌ [SR ERROR STATUS]:", error.response?.status);
     console.log(
       "❌ [SR ERROR DATA]:",
-      JSON.stringify(error.response?.data || error.message, null, 2)
+      JSON.stringify(error.response?.data || error.message, null, 2),
     );
     throw error;
   }
@@ -82,7 +121,7 @@ const apiCall = async (method, url, data = {}) => {
 const getTracking = async (awbCode) => {
   return apiCall(
     "get",
-    `https://apiv2.shiprocket.in/v1/external/courier/track/awb/${awbCode}`
+    `https://apiv2.shiprocket.in/v1/external/courier/track/awb/${awbCode}`,
   );
 };
 
@@ -101,7 +140,7 @@ const checkServiceability = async (pincode, weight = 0.5, isCod = false) => {
 
   console.log(
     "✅ Available Couriers:",
-    res.data.data.available_courier_companies.length
+    res.data.data.available_courier_companies.length,
   );
 
   return res.data.data.available_courier_companies;
@@ -144,9 +183,7 @@ const createShipment = async (order) => {
     })),
 
     payment_method:
-      order.payment?.provider === "cash_on_delivery"
-        ? "COD"
-        : "Prepaid",
+      order.payment?.provider === "cash_on_delivery" ? "COD" : "Prepaid",
 
     sub_total: parseFloat(order.totalAmount),
 
@@ -159,7 +196,7 @@ const createShipment = async (order) => {
   return apiCall(
     "post",
     "https://apiv2.shiprocket.in/v1/external/orders/create/adhoc",
-    payload
+    payload,
   );
 };
 
@@ -171,34 +208,46 @@ const assignAWB = async (shipment_id, courier_id) => {
     {
       shipment_id,
       courier_id,
-    }
+    },
   );
 };
 
 // 🚚 Generate Pickup (FINAL FIXED)
 const generatePickup = async (shipment_id) => {
-  const pickup_date = getPickupDate(3);
-  
-  const payload = {
-    pickup_date,
-    shipment_id,
-    pickup_location: "warehouse",
-  };
+  console.log(
+    `🔍 DEBUG: generatePickup called - shipment_id="${shipment_id}" (type: ${typeof shipment_id})`,
+  );
 
+  const pickup_date = getPickupDate();
+  const num_shipment_id = Number(shipment_id);
+  console.log(
+    `🔍 DEBUG: Number(shipment_id)=${num_shipment_id} (isNaN=${isNaN(num_shipment_id)})`,
+  );
+
+  const payload = {
+    shipment_id: [num_shipment_id]
+  };
+// Removed pickup_date logging
+  console.log(`🔍 DEBUG: JSON.stringify(payload)=${JSON.stringify(payload)}`);
   console.log("\n🚀 [PICKUP REQUEST]");
   console.log("📦 Shipment:", payload.shipment_id);
-  console.log("📅 Date:", payload.pickup_date);
+// Removed pickup_date logging
 
   const res = await apiCall(
     "post",
     "https://apiv2.shiprocket.in/v1/external/courier/generate/pickup",
-    payload
+    payload,
+  );
+
+  console.log("🔍 DEBUG: Full SR response:", JSON.stringify(res, null, 2));
+  console.log(
+    `🔍 DEBUG: res.Status="${res.Status}" | res.Message="${res.Message}"`,
   );
 
   // ❌ DO NOT mark success blindly
   if (!res || res.Status === false) {
     console.log("❌ [PICKUP FAILED]:", res);
-    return null;
+    return res;
   }
 
   console.log("✅ [PICKUP SUCCESS]");
@@ -211,7 +260,7 @@ const generateLabel = async (shipment_id) => {
 
   return apiCall(
     "get",
-    `https://apiv2.shiprocket.in/v1/external/courier/generate/label/${shipment_id}`
+    `https://apiv2.shiprocket.in/v1/external/courier/generate/label/${shipment_id}`,
   );
 };
 
@@ -221,10 +270,8 @@ const generateManifest = async (shipment_ids) => {
     "post",
     "https://apiv2.shiprocket.in/v1/external/manifests/generate",
     {
-      shipment_ids: Array.isArray(shipment_ids)
-        ? shipment_ids
-        : [shipment_ids],
-    }
+      shipment_ids: Array.isArray(shipment_ids) ? shipment_ids : [shipment_ids],
+    },
   );
 };
 
@@ -233,10 +280,8 @@ const printManifest = async (shipment_ids) => {
     "post",
     "https://apiv2.shiprocket.in/v1/external/manifests/print",
     {
-      shipment_ids: Array.isArray(shipment_ids)
-        ? shipment_ids
-        : [shipment_ids],
-    }
+      shipment_ids: Array.isArray(shipment_ids) ? shipment_ids : [shipment_ids],
+    },
   );
 };
 
@@ -245,7 +290,7 @@ const printInvoice = async (shiprocket_order_id) => {
   console.log("🧾 Invoice for Shiprocket order:", shiprocket_order_id);
   return apiCall(
     "get",
-    `https://apiv2.shiprocket.in/v1/external/orders/print/invoice/${shiprocket_order_id}`
+    `https://apiv2.shiprocket.in/v1/external/orders/print/invoice/${shiprocket_order_id}`,
   );
 };
 
