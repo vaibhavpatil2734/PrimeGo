@@ -323,57 +323,21 @@ const MyOrders = () => {
                         )}
                       </div>
 
-                      {order.status?.toUpperCase() === "PLACED" && (
-                        <div className="w-full mt-4 pt-2 flex justify-center">
-                          <motion.button
-                            onClick={async () => {
-                              const result = await orderService.cancelOrder(
-                                order._id,
-                                "Cancelled from MyOrders page",
-                              );
-                              if (result.success) {
-                                setRefreshKey((prev) => prev + 1);
-                              } else {
-                                setError(
-                                  result.error || "Failed to cancel order",
-                                );
-                              }
-                            }}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="w-full mt-3 sm:mt-4 bg-red-500 hover:bg-red-600 text-white font-bold tracking-widest uppercase text-xs sm:text-sm py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg transition-all flex items-center justify-center gap-2"
-                          >
-                            <svg
-                              className="w-4 h-4 flex-shrink-0"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
-                            Cancel Order
-                          </motion.button>
-                        </div>
-                      )}
+
                       {order.status?.toUpperCase() !== "CANCELLED" ? (
                         <>
                           <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={async () => {
-                              const isVisible = trackingOrders[order._id];
+                            const isVisible = trackingOrders[order._id];
                               setTrackingOrders((prev) => ({
                                 ...prev,
                                 [order._id]: !isVisible,
                               }));
 
-                              // Fetch tracking if not loaded and has trackingId
-                              if (!isVisible && !trackingData[order._id] && order.trackingId) {
+                              // Fetch tracking if not loaded and has tracking ID/AWB/shipment
+                              if (!isVisible && !trackingData[order._id] && (order.awbCode || order.trackingId || order.shipmentId)) {
                                 setTrackingData((prev) => ({ ...prev, [order._id]: { loading: true } }));
                                 const result = await orderService.getOrderTracking(order._id);
                                 setTrackingData((prev) => ({ 
@@ -411,20 +375,30 @@ const MyOrders = () => {
                               trackingOrders[order._id] ? "Hide Tracking" : "Track Order"}
                           </motion.button>
 
-                          {(order.trackingId || order.awbCode) && (
+                          {(order.awbCode || order.trackingId || order.shipmentId) && (
                             <motion.a
-                              href={`https://shiprocket.co/tracking/${order.trackingId || order.awbCode}`}
+                              href={`https://shiprocket.co/tracking/${order.awbCode || order.trackingId || order.shipmentId}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
-                              className="w-full mt-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold tracking-widest uppercase text-xs sm:text-sm py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg transition-all flex items-center justify-center gap-2 block text-center"
+                              className="w-full mt-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold tracking-wider uppercase text-xs sm:text-sm py-2 px-3 sm:py-2.5 sm:px-4 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                               </svg>
-                              Track on Shiprocket ({order.awbCode || order.trackingId})
+                              Track on Shiprocket
                             </motion.a>
+                          )}
+                          {(order.courierName || order.awbCode || order.trackingId || order.shipmentId) && (
+                            <div className="mt-3 text-xs text-center space-y-1">
+                              {order.courierName && <div className="text-emerald-700 font-medium">🚚 {order.courierName}</div>}
+                              {(order.awbCode || order.trackingId || order.shipmentId) && (
+                                <div className="text-gray-600 font-mono text-xs bg-gray-100 px-2 py-1 rounded">
+                                  AWB: {order.awbCode || order.trackingId || order.shipmentId}
+                                </div>
+                              )}
+                            </div>
                           )}
                           {order.labelPdf && (
                             <motion.a

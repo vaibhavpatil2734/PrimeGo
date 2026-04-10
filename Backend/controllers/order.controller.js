@@ -261,6 +261,19 @@ const createOrder = async (req, res) => {
       const pickupRes = await generatePickup(shipment.shipment_id);
       console.log("🚚 PICKUP RESPONSE:", pickupRes);
 
+      // 🔥 Robust pickup data saving (handles response/Response case)
+      const responseData = pickupRes?.response || pickupRes?.Response;
+      if (responseData) {
+        populatedOrder.pickupData = {
+          ...pickupRes,
+          response: responseData,  // normalize casing
+        };
+        populatedOrder.pickupBooked = true;
+        console.log("✅ Pickup data saved to order");
+      } else {
+        console.log("❌ Pickup response missing response field");
+      }
+
       populatedOrder.awbCode = awbCode;
       // Save selected courier info
       populatedOrder.selectedCourier = selectedCourier;
@@ -563,22 +576,69 @@ const processTrackingWebhook = async (req, res) => {
 
     // Update core fields
     const previousScansCount = order.scans ? order.scans.length : 0;
-    order.current_status = payload.current_status;
+    // 🔥 Use consistent status (per Shiprocket webhook spec)
+    const status = payload.current_status || payload.shipment_status;
+    order.current_status = status;
     order.shipment_status = payload.shipment_status;
     order.shipment_status_id = payload.shipment_status_id;
     order.current_timestamp = new Date(payload.current_timestamp || Date.now());
-    if (payload.etd) order.etd = new Date(payload.etd);
+    
+    // ✅ Save shipped date
+    if (!order.shippedAt && ["PICKED UP", "IN TRANSIT"].includes(status)) {
+      order.shippedAt = new Date();
+    }
+    
+    // ✅ Save delivered date  
+    if (status === "DELIVERED") {
+      order.deliveredAt = new Date();
+    }
+    
+    // 🔥 Extract ETD from others JSON (primary) or payload.etd (fallback)
+    let etdStr = null;
+    try {
+      const others = JSON.parse(payload.others || "{}");
+      etdStr = others.etd;
+    } catch (e) {
+      console.log("⚠️ others parse failed:", e.message);
+    }
+    if (etdStr && !order.expectedDelivery) {
+      order.expectedDelivery = etdStr;
+    }
+    if (payload.etd && !order.etd) {
+      order.etd = new Date(payload.etd);
+    }
     if (payload.courier_name) order.courierName = payload.courier_name;
+    
+    order.trackingStatus = status;
 
-    // Status sync to main enum
+    // 🔥 Auto-sync Shiprocket → order.status (real stages)
     const statusSync = {
+      // PLACED (default)
+      
+      // 🚚 SHIPPED stages
+      "PICKED UP": "SHIPPED",
+      "IN TRANSIT": "SHIPPED", 
+      "OUT FOR DELIVERY": "SHIPPED",
+      "RTO IN TRANSIT": "SHIPPED",
+      Shipped: "SHIPPED",
+      
+      // ✅ DELIVERED
       Delivered: "DELIVERED",
       "Out for Delivery": "SHIPPED",
-      Shipped: "SHIPPED",
+      
+      // ❌ CANCELLED/FAILED
       RTO: "CANCELLED",
+      "RTO Delivered": "CANCELLED",
+      Cancelled: "CANCELLED",
+      Failed: "CANCELLED",
     };
-    if (statusSync[payload.current_status]) {
-      order.status = statusSync[payload.current_status];
+    
+    if (statusSync[status]) {
+      const newStatus = statusSync[status];
+      if (order.status !== newStatus) {
+        console.log(`🔄 Auto-status: ${order.status} → ${newStatus}`);
+        order.status = newStatus;
+      }
     }
 
     // Append new scans (dedupe)
@@ -597,6 +657,15 @@ const processTrackingWebhook = async (req, res) => {
     }
 
     await order.save();
+
+    // 🔥 Debug: Log all tracking dates
+    console.log(`📅 [TRACK DATES] ${order.orderNumber}:`);
+    console.log(`   createdAt: ${order.createdAt}`);
+    console.log(`   shippedAt: ${order.shippedAt || '❌ Pending'}`);
+    console.log(`   expectedDelivery: ${order.expectedDelivery || '❌ Pending'}`);
+    console.log(`   deliveredAt: ${order.deliveredAt || '❌ Pending'}`);
+    console.log(`   etd: ${order.etd || '❌ Pending'}`);
+    console.log(`   current_status: ${order.current_status}`);
 
     console.log(
       `✅ [WEBHOOK] ${order.orderNumber} updated | Status: ${payload.current_status} | Scans: ${order.scans.length - previousScansCount} new (${order.scans.length} total)`,

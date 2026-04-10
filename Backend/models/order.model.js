@@ -123,6 +123,16 @@ const orderSchema = new mongoose.Schema({
   courierName: {
     type: String
   },
+  // 🔥 Real tracking dates (webhook updates)
+  shippedAt: {
+    type: Date
+  },
+  deliveredAt: {
+    type: Date
+  },
+  expectedDelivery: {
+    type: String  // Store ETD string like "2021-12-15"
+  },
   selectedCourier: {
     courier_company_id: { type: String },
     courier_name: { type: String },

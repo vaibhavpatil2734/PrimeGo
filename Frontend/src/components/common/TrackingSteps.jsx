@@ -5,50 +5,65 @@ const TrackingSteps = ({ scene, orderData, trackingId = '' }) => {
   // Dynamic dates from order data or fallback mocks
   const getFormattedDate = (timestamp, fallback, isExpected = false) => {
     if (!timestamp) return fallback;
-    try {
-      const date = new Date(timestamp);
-      const now = new Date();
-      const options = {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        hour12: true,
-      };
-      const formatted = date.toLocaleDateString('en-US', options).replace(',', '');
-      if (isExpected && date > now) return `Expected by ${formatted}`;
-      return formatted;
-    } catch {
-      return fallback;
+    
+    let date;
+    if (typeof timestamp === 'string') {
+      // Handle YYYY-MM-DD or custom formats
+      date = new Date(timestamp);
+      if (isNaN(date.getTime())) {
+        // If invalid Date, display raw string for ETD (e.g. "2024-12-25")
+        const formatted = timestamp.replace(/-/g, '/'); 
+        return isExpected ? `Expected ${formatted}` : formatted;
+      }
+    } else {
+      date = new Date(timestamp);
     }
+    
+    if (isNaN(date.getTime())) return fallback;
+    
+    const now = new Date();
+    const options = {
+      month: 'short',
+      day: 'numeric', 
+      year: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true,
+    };
+    const formatted = date.toLocaleDateString('en-US', options).replace(',', '');
+    if (isExpected && date > now) return `Expected by ${formatted}`;
+    return formatted;
   };
 
-  const mockData = {
-    placed: "25 Mar 2026, 10:30 AM",
-    shipped: "26 Mar 2026, 02:15 PM",
-    expected: "28 Mar 2026, 05:00 PM",
-    delivered: "28 Mar 2026, 03:45 PM",
+  // 🔥 Real dates from order data
+  const getStatusLabel = () => {
+    const status = orderData?.current_status || orderData?.trackingStatus || orderData?.status;
+    if (orderData?.deliveredAt) return "Delivered";
+    if (orderData?.shippedAt) return `Shipped (${status})`;
+    return "Expected";
   };
 
   const steps = [
     {
-      label: "Placed",
+      label: "Order Placed",
       icon: "📦",
-      date: getFormattedDate(orderData?.createdAt, mockData.placed),
+      date: getFormattedDate(orderData?.createdAt, "Pending"),
     },
     {
       label: "Shipped",
       icon: "🚚",
-      date: getFormattedDate(orderData?.updatedAt, mockData.shipped),
+      date: getFormattedDate(orderData?.shippedAt, "Pending") + 
+            (orderData?.current_status ? ` • ${orderData.current_status}` : ""),
     },
     {
-      label: "Delivered",
-      icon: "📍",
+      label: getStatusLabel(),
+      icon: orderData?.deliveredAt ? "✅" : "📍",
       date: getFormattedDate(
-        scene === 2 ? orderData?.updatedAt : null,
-        scene === 2 ? mockData.delivered : mockData.expected,
-        !orderData?.updatedAt
+        orderData?.deliveredAt || 
+        orderData?.expectedDelivery || 
+        orderData?.etd, 
+        "Pending",
+        true  // isExpected flag
       ),
     },
   ];

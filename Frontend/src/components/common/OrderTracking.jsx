@@ -4,16 +4,27 @@ import TrackingSteps from "./TrackingSteps";
 import { Truck } from "lucide-react";
 
 const OrderTracking = ({ order, status = "PLACED", trackingData }) => {
-  const upperStatus = status?.toUpperCase() || "PLACED";
+  // 🔥 Use real tracking status from order
+  const trackingStatus = order?.current_status || order?.trackingStatus || status || "PLACED";
+  const upperStatus = trackingStatus.toUpperCase();
 
   const [scene, setScene] = useState(0);
   const [playKey, setPlayKey] = useState(0);
 
-  // Set scene based on status
+  // Set scene based on real Shiprocket status
   useEffect(() => {
     const statusToScene = {
+      // Scene 0: Order placed
       PLACED: 0,
+      "ORDER PLACED": 0,
+      
+      // Scene 1: Shipped/In Transit  
       SHIPPED: 1,
+      "PICKED UP": 1,
+      "IN TRANSIT": 1,
+      "OUT FOR DELIVERY": 1,
+      
+      // Scene 2: Delivered
       DELIVERED: 2,
     };
 
@@ -23,7 +34,7 @@ const OrderTracking = ({ order, status = "PLACED", trackingData }) => {
     // initial trigger
     setPlayKey(prev => prev + 1);
 
-  }, [upperStatus]);
+  }, [upperStatus, order?.current_status]);
 
   // ✅ REPLAY LOGIC (after animation ends + 5 sec delay)
   useEffect(() => {
@@ -57,7 +68,12 @@ const OrderTracking = ({ order, status = "PLACED", trackingData }) => {
 
   return (
     <div className="w-full p-2 sm:p-4 md:p-6">
-      <TrackingSteps scene={scene} orderData={order} trackingId={order?.trackingId || ''} />
+      <TrackingSteps 
+        scene={scene} 
+        orderData={order} 
+        trackingId={order?.trackingId || order?.awbCode || ''} 
+        current_status={trackingStatus}
+      />
 
       {/* 🎬 SCENE */}
       <div className="relative h-40 sm:h-48 md:h-60 bg-gradient-to-r from-emerald-50 to-green-100 rounded-xl overflow-hidden">
