@@ -50,8 +50,8 @@ const addOrUpdateCartItem = async (req, res) => {
     if (type !== 'plain' && type !== 'customized') {
       return res.status(400).json({ message: "Invalid customizationType" });
     }
-    if (type === 'customized' && (!customName || customName.trim().length === 0 || customName.trim().length > 50)) {
-      return res.status(400).json({ message: "customName required and max 50 chars for customized" });
+    if (type === 'customized' && (!customName || customName.trim().length === 0 || customName.trim().length > 100)) {
+      return res.status(400).json({ message: "customName required and max 100 chars for customized" });
     }
 
     let cart = await Cart.findOne({ userId });
@@ -188,8 +188,8 @@ const updateCartItem = async (req, res) => {
       }
       item.customizationType = customizationType;
       item.customName = customizationType === 'customized' ? (customName || item.customName || '').trim() : null;
-      if (item.customizationType === 'customized' && (!item.customName || item.customName.length === 0 || item.customName.length > 50)) {
-        return res.status(400).json({ message: "customName required and max 50 chars for customized" });
+      if (item.customizationType === 'customized' && (!item.customName || item.customName.length === 0 || item.customName.length > 100)) {
+        return res.status(400).json({ message: "customName required and max 100 chars for customized" });
       }
     }
 

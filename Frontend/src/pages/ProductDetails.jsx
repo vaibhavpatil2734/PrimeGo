@@ -404,7 +404,7 @@ const fetchProduct = async () => {
                   />
                   <div className="ml-4 flex-1">
                     <div className="font-medium text-gray-900">Customized (Add Name)</div>
-                    <div className="text-sm text-gray-600 mt-1">Add personalized name (max 50 characters)</div>
+                    <div className="text-sm text-gray-600 mt-1">Add personalized name (max 100 characters)</div>
                   </div>
                 </label>
               </div>
@@ -416,18 +416,18 @@ const fetchProduct = async () => {
                       type="text"
                       value={customName}
                       onChange={(e) => {
-                        const value = e.target.value.slice(0, 50);
+                        const value = e.target.value.slice(0, 100);
                         setCustomName(value);
                         if (nameError && value.trim()) setNameError('');
                       }}
-                      placeholder="Enter text to be printed (max 50 chars)"
+                      placeholder="Enter text to be printed (max 100 chars)"
                       className={`flex-1 p-3 border-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/30 transition-all ${
                         nameError ? 'border-red-300 bg-red-50' : 'border-gray-200 focus:border-black/50'
                       }`}
-                      maxLength={50}
+                      maxLength={100}
                     />
                     <span className="text-sm text-gray-500 font-medium self-end sm:self-center min-w-[4rem] text-center">
-                      {customName.length}/50
+                      {customName.length}/100
                     </span>
                   </div>
                   {nameError && (

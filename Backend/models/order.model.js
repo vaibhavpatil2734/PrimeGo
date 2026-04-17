@@ -31,7 +31,7 @@ const orderSchema = new mongoose.Schema({
       },
       customName: {
         type: String,
-        maxlength: 50,
+        maxlength: 100,
         trim: true
       }
     }

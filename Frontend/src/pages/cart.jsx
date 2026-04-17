@@ -126,7 +126,7 @@ const Cart = () => {
 
   const updateCustomName = (itemId, name) => {
     const state = getItemState(itemId);
-    const newName = name.slice(0, 50);
+  const newName = name.slice(0, 100);
     const isDirty =
       state.localType !== state.originalType ||
       newName.trim() !== (state.originalName || "");
@@ -390,7 +390,7 @@ const Cart = () => {
                                     Customized (Add Name)
                                   </div>
                                   <div className="text-xs text-gray-600">
-                                    Personalized name (max 50 chars)
+                                    Personalized name (max 100 chars)
                                   </div>
                                 </div>
                               </label>
@@ -413,7 +413,7 @@ const Cart = () => {
                                     }
                                     placeholder="Enter name..."
                                     className={`flex-1 p-1.5 border rounded text-xs focus:outline-none focus:ring-1 focus:ring-black/30 border-gray-300 ${getItemState(item.cartItemId || item._id).isDirty ? "ring-2 ring-yellow-300 border-yellow-400 bg-yellow-50" : ""}`}
-                                    maxLength={50}
+                                    maxLength={100}
                                   />
                                   <span className="text-xs text-gray-500 min-w-[3rem] text-center px-1">
                                     {
@@ -423,7 +423,7 @@ const Cart = () => {
                                         ).localName || ""
                                       ).length
                                     }
-                                    /50
+                                    /100
                                   </span>
                                 </div>
                               </div>
