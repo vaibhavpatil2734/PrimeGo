@@ -19,7 +19,7 @@ import Privacy from "../pages/Privacy";
 import Terms from "../pages/Terms";
 import RefundPolicy from "../pages/RefundPolicy";
 import ReviewOrder from "../pages/ReviewOrder";
-import ShippingPolicy from "../pages/shippingPolicy";
+import ShippingPolicy from "../pages/ShippingPolicy";
 
 // ADMIN
 import AdminLayout from "../pages/adminPages/AdminLayout";
