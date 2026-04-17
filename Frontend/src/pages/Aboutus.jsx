@@ -11,25 +11,25 @@ const aboutData = {
   tagline: "Shopping made personal, just for U.",
   team: [
     {
-      name: "John Doe",
-      role: "Founder & CEO",
+      name: "Jay Patel",
+      role: "Founder",
       image:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face",
-      bio: "15+ years in e-commerce innovation",
+        "./public/images/Founder.jpeg",
+      bio: "Founder of Made4uu, leading with vision and dedication to create impactful customer experiences.",
     },
     {
-      name: "Jane Smith",
-      role: "CTO & Lead Developer",
+      name: "Deepa Sharma",
+      role: "Co-founder",
       image:
-        "https://media.istockphoto.com/id/2165425195/photo/portrait-of-a-man-in-an-office.jpg?s=1024x1024&w=is&k=20&c=tl5FUJDIyFjdvygEKHDPXKhvPq-_PSjfK35SRtdTq7I=",
-      bio: "Full-stack expert specializing in MERN",
+        "./public/images/Co-Founder.jpeg",
+      bio: "Co-founder of Made4uu, shaping the brand’s vision with strong leadership, creativity, and a customer-first mindset.",
     },
     {
-      name: "Mike Johnson",
+      name: "Inesh Dhandhe",
       role: "Head of Operations",
       image:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=face",
-      bio: "Logistics & supply chain specialist",
+        "./public/images/HeadofOperations.jpeg",
+      bio: "Head of Operations at Made4uu, ensuring smooth workflows, efficient processes, and seamless daily business operations.",
     },
   ],
 };
