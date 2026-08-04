@@ -21,7 +21,7 @@ However, if your product arrives damaged, defective, or incorrect, please contac
   {
     title: "Damages and Issues",
     content: `
-Please inspect your order upon delivery. If you receive a damaged, defective, or wrong item, contact us right away at made4uu.store@gmail.com with photos or videos. We will review the issue and provide a suitable resolution.
+Please inspect your order upon delivery. If you receive a damaged, defective, or wrong item, contact us right away at PrimeGo.store@gmail.com with photos or videos. We will review the issue and provide a suitable resolution.
     `
   },
   {
@@ -41,7 +41,7 @@ We do not accept returns for the following:<br><br>
     content: `
 For any concerns or questions, feel free to reach us at:<br><br>
 
-📧 made4uu.store@gmail.com<br><br>
+📧 PrimeGo.store@gmail.com<br><br>
 
 We're here to help with any order-related queries.
     `

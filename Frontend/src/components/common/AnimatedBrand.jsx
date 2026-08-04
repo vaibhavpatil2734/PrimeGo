@@ -14,7 +14,7 @@ const AnimatedBrand = ({ className = "text-2xl lg:text-3xl scale-105" }) => {
       >
         {/* Made4 */}
         <span className="text-[#0f172a] drop-shadow-md">
-          Made4
+          Prime
         </span>
 
         {/* UU Gradient */}
@@ -30,7 +30,7 @@ const AnimatedBrand = ({ className = "text-2xl lg:text-3xl scale-105" }) => {
             ease: "linear",
           }}
         >
-          UU
+          Go
         </motion.span>
 
         {/* Thick RGB Underline */}

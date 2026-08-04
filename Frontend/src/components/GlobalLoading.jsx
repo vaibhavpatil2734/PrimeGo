@@ -51,7 +51,7 @@ const Loader = () => {
     return () => window.removeEventListener("resize", checkScreen);
   }, []);
 
-  const letters = "Made4UU".split("");
+  const letters = "PrimeGo".split("");
 
   const wrapperStyle = {
     position: "fixed",
@@ -152,7 +152,7 @@ const Loader = () => {
                 dominantBaseline="middle"
                 style={mobileTextStyle}
               >
-                Made4UU
+                PrimeGo
               </text>
             </svg>
           </div>

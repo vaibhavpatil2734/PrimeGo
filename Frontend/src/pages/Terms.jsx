@@ -13,7 +13,7 @@ const sections = [
 <strong>Last updated: ${termsData.lastUpdated}</strong><br><br>
 
 <strong>OVERVIEW</strong><br>
-Welcome to MADE4UU! The terms “we”, “us” and “our” refer to MADE4UU. MADE4UU operates this store and website, including all related information, content, features, tools, products and services in order to provide you, the customer, with a curated shopping experience (the “Services”). MADE4UU is powered by Shopify, which enables us to provide the Services to you.<br>
+Welcome to PrimeGo! The terms “we”, “us” and “our” refer to PrimeGo. PrimeGo operates this store and website, including all related information, content, features, tools, products and services in order to provide you, the customer, with a curated shopping experience (the “Services”). PrimeGo is powered by Shopify, which enables us to provide the Services to you.<br>
 The below terms and conditions, together with any policies referenced herein (these “Terms of Service” or “Terms”) describe your rights and responsibilities when you use the Services.<br>
 Please read these Terms of Service carefully, as they include important information about your legal rights and cover areas such as warranty disclaimers and limitations of liability.<br>
 By visiting, interacting with or using our Services, you agree to be bound by these Terms of Service and our Privacy Policy [LINK]. If you do not agree to these Terms of Service or Privacy Policy, you should not use or access our Services.
@@ -38,7 +38,7 @@ All descriptions of products are subject to change at any time without notice at
   {
     title: "SECTION 3 - ORDERS",
     content: `
-When you place an order, you are making an offer to purchase. MADE4UU reserves the right to accept or decline your order for any reason at its discretion. Your order is not accepted until MADE4UU confirms acceptance. We must receive and process your payment before your order is accepted. Please review your order carefully before submitting, as MADE4UU may be unable to accommodate cancellation requests after an order is accepted. In the event that we do not accept, make a change to, or cancel an order, we will attempt to notify you by contacting the e‑mail, billing address, and/or phone number provided at the time the order was made.<br>
+When you place an order, you are making an offer to purchase. PrimeGo reserves the right to accept or decline your order for any reason at its discretion. Your order is not accepted until PrimeGo confirms acceptance. We must receive and process your payment before your order is accepted. Please review your order carefully before submitting, as PrimeGo may be unable to accommodate cancellation requests after an order is accepted. In the event that we do not accept, make a change to, or cancel an order, we will attempt to notify you by contacting the e‑mail, billing address, and/or phone number provided at the time the order was made.<br>
 Your purchases are subject to return or exchange solely in accordance with our Refund Policy [LINK].<br>
 You represent and warrant that your purchases are for your own personal or household use and not for commercial resale or export.
     `
@@ -61,9 +61,9 @@ We are not liable for shipping and delivery delays. All delivery times are estim
   {
     title: "SECTION 6 - INTELLECTUAL PROPERTY",
     content: `
-Our Services, including but not limited to all trademarks, brands, text, displays, images, graphics, product reviews, video, and audio, and the design, selection, and arrangement thereof, are owned by MADE4UU, its affiliates or licensors and are protected by U.S. and foreign patent, copyright and other intellectual property laws.<br>
-These Terms permit you to use the Services for your personal, non-commercial use only. You must not reproduce, distribute, modify, create derivative works of, publicly display, publicly perform, republish, download, store, or transmit any of the material on the Services without our prior written consent. Except as expressly provided herein, nothing in these Terms grants or shall be construed as granting a license or other rights to you under any patent, trademark, copyright, or other intellectual property of MADE4UU, Shopify or any third party. Unauthorized use of the Services may be a violation of federal and state intellectual property laws. All rights not expressly granted herein are reserved by MADE4UU.<br>
-MADE4UU's names, logos, product and service names, designs, and slogans are trademarks of MADE4UU or its affiliates or licensors. You must not use such trademarks without the prior written permission of MADE4UU. Shopify's name, logo, product and service names, designs and slogans are trademarks of Shopify. All other names, logos, product and service names, designs, and slogans on the Services are the trademarks of their respective owners.
+Our Services, including but not limited to all trademarks, brands, text, displays, images, graphics, product reviews, video, and audio, and the design, selection, and arrangement thereof, are owned by PrimeGo, its affiliates or licensors and are protected by U.S. and foreign patent, copyright and other intellectual property laws.<br>
+These Terms permit you to use the Services for your personal, non-commercial use only. You must not reproduce, distribute, modify, create derivative works of, publicly display, publicly perform, republish, download, store, or transmit any of the material on the Services without our prior written consent. Except as expressly provided herein, nothing in these Terms grants or shall be construed as granting a license or other rights to you under any patent, trademark, copyright, or other intellectual property of PrimeGo, Shopify or any third party. Unauthorized use of the Services may be a violation of federal and state intellectual property laws. All rights not expressly granted herein are reserved by PrimeGo.<br>
+PrimeGo's names, logos, product and service names, designs, and slogans are trademarks of PrimeGo or its affiliates or licensors. You must not use such trademarks without the prior written permission of PrimeGo. Shopify's name, logo, product and service names, designs and slogans are trademarks of Shopify. All other names, logos, product and service names, designs, and slogans on the Services are the trademarks of their respective owners.
     `
   },
   {
@@ -86,7 +86,7 @@ We are not liable for any harm or damages related to your access of any third-pa
     title: "SECTION 9 - RELATIONSHIP WITH SHOPIFY",
     content: `
 [NOTE TO MERCHANT: This section accurately characterizes Shopify's relationship with your store and should not be removed or modified.]<br>
-MADE4UU is powered by Shopify, which enables us to provide the Services to you. However, any sales and purchases you make in our Store are made directly with MADE4UU. By using the Services, you acknowledge and agree that Shopify is not responsible for any aspect of any sales between you and MADE4UU, including any injury, damage, or loss resulting from purchased products and services. You hereby expressly release Shopify and its affiliates from all claims, damages, and liabilities arising from or related to your purchases and transactions with MADE4UU.
+PrimeGo is powered by Shopify, which enables us to provide the Services to you. However, any sales and purchases you make in our Store are made directly with PrimeGo. By using the Services, you acknowledge and agree that Shopify is not responsible for any aspect of any sales between you and PrimeGo, including any injury, damage, or loss resulting from purchased products and services. You hereby expressly release Shopify and its affiliates from all claims, damages, and liabilities arising from or related to your purchases and transactions with PrimeGo.
     `
   },
   {
@@ -114,7 +114,7 @@ Occasionally there may be information on or in the Services that contain typogra
   {
     title: "SECTION 13 - PROHIBITED USES",
     content: `
-You may access and use the Services for lawful purposes only. You may not access or use the Services, directly or indirectly: (a) for any unlawful or malicious purpose; (b) to violate any international, federal, provincial or state regulations, rules, laws, or local ordinances; (c) to infringe upon or violate our intellectual property rights or the intellectual property rights of others; (d) to harass, abuse, insult, harm, defame, slander, disparage, intimidate, or harm any of our employees or any other person; (e) to transmit false or misleading information; (f) to send, knowingly receive, upload, download, use, or re-use any material that does not comply with the these Terms; (g) to transmit, or procure the sending of, any advertising or promotional material, including any “junk mail,” “chain letter,” “spam,” or any other similar solicitation; (h) to impersonate or attempt to impersonate any other person or entity; or (i) to engage in any other conduct that restricts or inhibits anyone's use or enjoyment of the Services, or which, as determined by us, may harm MADE4UU, Shopify or users of the Services, or expose them to liability.<br>
+You may access and use the Services for lawful purposes only. You may not access or use the Services, directly or indirectly: (a) for any unlawful or malicious purpose; (b) to violate any international, federal, provincial or state regulations, rules, laws, or local ordinances; (c) to infringe upon or violate our intellectual property rights or the intellectual property rights of others; (d) to harass, abuse, insult, harm, defame, slander, disparage, intimidate, or harm any of our employees or any other person; (e) to transmit false or misleading information; (f) to send, knowingly receive, upload, download, use, or re-use any material that does not comply with the these Terms; (g) to transmit, or procure the sending of, any advertising or promotional material, including any “junk mail,” “chain letter,” “spam,” or any other similar solicitation; (h) to impersonate or attempt to impersonate any other person or entity; or (i) to engage in any other conduct that restricts or inhibits anyone's use or enjoyment of the Services, or which, as determined by us, may harm PrimeGo, Shopify or users of the Services, or expose them to liability.<br>
 In addition, you agree not to: (a) upload or transmit viruses or any other type of malicious code that will or may be used in any way that will affect the functionality or operation of the Services; (b) reproduce, duplicate, copy, sell, resell or exploit any portion of the Services; (c) collect or track the personal information of others; (d) spam, phish, pharm, pretext, spider, crawl, or scrape; or (e) interfere with or circumvent the security features of the Services or any related website, other websites, or the Internet. We reserve the right to suspend, disable, or terminate your account at any time, without notice, if we determine that you have violated any part of these Terms.
     `
   },
@@ -129,19 +129,19 @@ The following sections will continue to apply following any termination: Intelle
     title: "SECTION 15 - DISCLAIMER OF WARRANTIES",
     content: `
 The information presented on or through the Services is made available solely for general information purposes. We do not warrant the accuracy, completeness, or usefulness of this information. Any reliance you place on such information is strictly at your own risk. We disclaim all liability and responsibility arising from any reliance placed on such materials by you or any other visitor to the Services, or by anyone who may be informed of any of its contents.<br>
-EXCEPT AS EXPRESSLY STATED BY MADE4UU, THE SERVICES AND ALL PRODUCTS OFFERED THROUGH THE SERVICES ARE PROVIDED 'AS IS' AND 'AS AVAILABLE' FOR YOUR USE, WITHOUT ANY REPRESENTATION, WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ALL IMPLIED WARRANTIES OR CONDITIONS OF MERCHANTABILITY, MERCHANTABLE QUALITY, FITNESS FOR A PARTICULAR PURPOSE, DURABILITY, TITLE, AND NON-INFRINGEMENT. WE DO NOT GUARANTEE, REPRESENT OR WARRANT THAT YOUR USE OF THE SERVICES WILL BE UNINTERRUPTED, TIMELY, SECURE OR ERROR-FREE. SOME JURISDICTIONS LIMIT OR DO NOT ALLOW THE DISCLAIMER OF IMPLIED OR OTHER WARRANTIES SO THE ABOVE DISCLAIMER MAY NOT APPLY TO YOU.
+EXCEPT AS EXPRESSLY STATED BY PrimeGo, THE SERVICES AND ALL PRODUCTS OFFERED THROUGH THE SERVICES ARE PROVIDED 'AS IS' AND 'AS AVAILABLE' FOR YOUR USE, WITHOUT ANY REPRESENTATION, WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ALL IMPLIED WARRANTIES OR CONDITIONS OF MERCHANTABILITY, MERCHANTABLE QUALITY, FITNESS FOR A PARTICULAR PURPOSE, DURABILITY, TITLE, AND NON-INFRINGEMENT. WE DO NOT GUARANTEE, REPRESENT OR WARRANT THAT YOUR USE OF THE SERVICES WILL BE UNINTERRUPTED, TIMELY, SECURE OR ERROR-FREE. SOME JURISDICTIONS LIMIT OR DO NOT ALLOW THE DISCLAIMER OF IMPLIED OR OTHER WARRANTIES SO THE ABOVE DISCLAIMER MAY NOT APPLY TO YOU.
     `
   },
   {
     title: "SECTION 16 - LIMITATION OF LIABILITY",
     content: `
-TO THE FULLEST EXTENT PROVIDED BY LAW, IN NO CASE SHALL MADE4UU, OUR PARTNERS, DIRECTORS, OFFICERS, EMPLOYEES, AFFILIATES, AGENTS, CONTRACTORS, SERVICE PROVIDERS OR LICENSORS, OR THOSE OF SHOPIFY AND ITS AFFILIATES, BE LIABLE FOR ANY INJURY, LOSS, CLAIM, OR ANY DIRECT, INDIRECT, INCIDENTAL, PUNITIVE, SPECIAL, OR CONSEQUENTIAL DAMAGES OF ANY KIND, INCLUDING, WITHOUT LIMITATION, LOST PROFITS, LOST REVENUE, LOST SAVINGS, LOSS OF DATA, REPLACEMENT COSTS, OR ANY SIMILAR DAMAGES, WHETHER BASED IN CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY OR OTHERWISE, ARISING FROM YOUR USE OF ANY OF THE SERVICES OR ANY PRODUCTS PROCURED USING THE SERVICES, OR FOR ANY OTHER CLAIM RELATED IN ANY WAY TO YOUR USE OF THE SERVICES OR ANY PRODUCT, INCLUDING, BUT NOT LIMITED TO, ANY ERRORS OR OMISSIONS IN ANY CONTENT, OR ANY LOSS OR DAMAGE OF ANY KIND INCURRED AS A RESULT OF THE USE OF THE SERVICES OR ANY CONTENT (OR PRODUCT) POSTED, TRANSMITTED, OR OTHERWISE MADE AVAILABLE VIA THE SERVICES, EVEN IF ADVISED OF THEIR POSSIBILITY.
+TO THE FULLEST EXTENT PROVIDED BY LAW, IN NO CASE SHALL PrimeGo, OUR PARTNERS, DIRECTORS, OFFICERS, EMPLOYEES, AFFILIATES, AGENTS, CONTRACTORS, SERVICE PROVIDERS OR LICENSORS, OR THOSE OF SHOPIFY AND ITS AFFILIATES, BE LIABLE FOR ANY INJURY, LOSS, CLAIM, OR ANY DIRECT, INDIRECT, INCIDENTAL, PUNITIVE, SPECIAL, OR CONSEQUENTIAL DAMAGES OF ANY KIND, INCLUDING, WITHOUT LIMITATION, LOST PROFITS, LOST REVENUE, LOST SAVINGS, LOSS OF DATA, REPLACEMENT COSTS, OR ANY SIMILAR DAMAGES, WHETHER BASED IN CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY OR OTHERWISE, ARISING FROM YOUR USE OF ANY OF THE SERVICES OR ANY PRODUCTS PROCURED USING THE SERVICES, OR FOR ANY OTHER CLAIM RELATED IN ANY WAY TO YOUR USE OF THE SERVICES OR ANY PRODUCT, INCLUDING, BUT NOT LIMITED TO, ANY ERRORS OR OMISSIONS IN ANY CONTENT, OR ANY LOSS OR DAMAGE OF ANY KIND INCURRED AS A RESULT OF THE USE OF THE SERVICES OR ANY CONTENT (OR PRODUCT) POSTED, TRANSMITTED, OR OTHERWISE MADE AVAILABLE VIA THE SERVICES, EVEN IF ADVISED OF THEIR POSSIBILITY.
     `
   },
   {
     title: "SECTION 17 - INDEMNIFICATION",
     content: `
-You agree to indemnify, defend and hold harmless MADE4UU, Shopify, and our affiliates, partners, officers, directors, employees, agents, contractors, licensors, and service providers from any losses, damages, liabilities or claims, including reasonable attorneys' fees, payable to any third party due to or arising out of (1) your breach of these Terms of Service or the documents they incorporate by reference, (2) your violation of any law or the rights of a third party, or (3) your access to and use of the Services.<br>
+You agree to indemnify, defend and hold harmless PrimeGo, Shopify, and our affiliates, partners, officers, directors, employees, agents, contractors, licensors, and service providers from any losses, damages, liabilities or claims, including reasonable attorneys' fees, payable to any third party due to or arising out of (1) your breach of these Terms of Service or the documents they incorporate by reference, (2) your violation of any law or the rights of a third party, or (3) your access to and use of the Services.<br>
 We will notify you of any indemnifiable claim, provided that a failure to promptly notify will not relieve you of your obligations unless you are materially prejudiced. We may control the defense and settlement of such claim at your expense, including choice of counsel, but will not settle any claim requiring non-monetary obligations from you without your consent (not to be unreasonably withheld). You will cooperate in the defense of indemnified claims, including by providing relevant documents.
     `
   },
@@ -168,7 +168,7 @@ You may not delegate, transfer or assign this Agreement or any of your rights or
   {
     title: "SECTION 21 - GOVERNING LAW",
     content: `
-These Terms of Service and any separate agreements whereby we provide you Services shall be governed by and construed in accordance with the federal and state or territorial courts in the jurisdiction where MADE4UU is headquartered. You and MADE4UU consent to venue and personal jurisdiction in such courts.
+These Terms of Service and any separate agreements whereby we provide you Services shall be governed by and construed in accordance with the federal and state or territorial courts in the jurisdiction where PrimeGo is headquartered. You and PrimeGo consent to venue and personal jurisdiction in such courts.
     `
   },
   {
@@ -187,10 +187,10 @@ We reserve the right, in our sole discretion, to update, change, or replace any 
   {
     title: "SECTION 24 - CONTACT INFORMATION",
     content: `
-Questions about the Terms of Service should be sent to us at made4uu.store@gmail.com.<br>
+Questions about the Terms of Service should be sent to us at PrimeGo.store@gmail.com.<br>
 Our contact information is posted below:<br>
-MADE4UU<br>
-made4uu.store@gmail.com<br>
+PrimeGo<br>
+PrimeGo.store@gmail.com<br>
 Market Yard, Pune <br>
 +918552062200
     `

@@ -6,31 +6,28 @@ const aboutData = {
   description:
     "Modern e-commerce platform for fashion, electronics & home essentials with secure checkout & fast delivery.",
   mission:
-    "Our mission is to make online shopping accessible, affordable, tailored just for you because every product is made4UU.",
+    "Our mission is to make online shopping accessible, affordable, tailored just for you because every product is PrimeGo.",
   founded: "2025",
   tagline: "Shopping made personal, just for U.",
   team: [
     {
-      name: "Jay Patel",
-      role: "Founder",
-      image:
-        "./public/images/Founder.jpeg",
-      bio: "Founder of Made4uu, leading with vision and dedication to create impactful customer experiences.",
-    },
-    {
-      name: "Deepa Sharma",
-      role: "Co-founder",
-      image:
-        "./public/images/Co-Founder.jpeg",
-      bio: "Co-founder of Made4uu, shaping the brand’s vision with strong leadership, creativity, and a customer-first mindset.",
-    },
-    {
-      name: "Inesh Dhandhe",
-      role: "Head of Operations",
-      image:
-        "./public/images/HeadofOperations.jpeg",
-      bio: "Head of Operations at Made4uu, ensuring smooth workflows, efficient processes, and seamless daily business operations.",
-    },
+  name: "Neo",
+  role: "The Chosen One",
+  image: "/images/neo.png",
+  bio: "A legendary hacker who awakened to the truth behind the Matrix, mastering impossible abilities and leading humanity's fight for freedom."
+},
+{
+  name: "Morpheus",
+  role: "Captain & Mentor",
+  image: "/images/morpheus.png",
+  bio: "A fearless leader who believes in hope and destiny, guiding new recruits through the Matrix and preparing them to challenge the system."
+},
+{
+  name: "Trinity",
+  role: "Elite Operative",
+  image: "/images/trinity.png",
+  bio: "An expert cyber operative known for exceptional hacking skills, precision in combat, and unwavering loyalty to the resistance."
+},
   ],
 };
 
@@ -164,7 +161,7 @@ export default function Aboutus() {
       >
         <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-xl p-12 md:p-16 border border-gray-100">
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">
-            Ready to experience Made4UU?
+            Ready to experience PrimeGo?
           </h2>
 
           <p className="text-lg md:text-xl mb-10 text-gray-600">

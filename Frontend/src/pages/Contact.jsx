@@ -206,7 +206,7 @@ export default function Contact() {
 
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address
+                  Email Address 
                 </label>
                 <input
                   type="email"

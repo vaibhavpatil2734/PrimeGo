@@ -12,7 +12,7 @@ const sections = [
     content: `
 <strong>Last updated: November 25, 2025</strong><br><br>
 
-MADE4UU operates this store and website, including all related information, content, features, tools, products and services, in order to provide you, the customer, with a curated shopping experience (the "Services"). MADE4UU is powered by Shopify, which enables us to provide the Services to you. This Privacy Policy describes how we collect, use, and disclose your personal information when you visit, use, or make a purchase or other transaction using the Services or otherwise communicate with us. If there is a conflict between our Terms of Service and this Privacy Policy, this Privacy Policy controls with respect to the collection, processing, and disclosure of your personal information.<br><br>
+PrimeGo operates this store and website, including all related information, content, features, tools, products and services, in order to provide you, the customer, with a curated shopping experience (the "Services"). PrimeGo is powered by Shopify, which enables us to provide the Services to you. This Privacy Policy describes how we collect, use, and disclose your personal information when you visit, use, or make a purchase or other transaction using the Services or otherwise communicate with us. If there is a conflict between our Terms of Service and this Privacy Policy, this Privacy Policy controls with respect to the collection, processing, and disclosure of your personal information.<br><br>
 
 Please read this Privacy Policy carefully. By using and accessing any of the Services, you acknowledge that you have read this Privacy Policy and understand the collection, use, and disclosure of your information as described in this Privacy Policy.
     `
@@ -135,7 +135,7 @@ We may update this Privacy Policy from time to time, including to reflect change
   {
     title: "Contact",
     content: `
-Should you have any questions about our privacy practices or this Privacy Policy, or if you would like to exercise any of the rights available to you, please call or email us at <strong>made4uu.store@gmail.com</strong> or contact us at <strong>Yash Car Accessories Taware Colony Parvati Paytha, Panchashil niwas villa no2, Pune, MH, 411009, IN</strong>
+Should you have any questions about our privacy practices or this Privacy Policy, or if you would like to exercise any of the rights available to you, please call or email us at <strong>PrimeGo.store@gmail.com</strong> or contact us at <strong>Yash Car Accessories Taware Colony Parvati Paytha, Panchashil niwas villa no2, Pune, MH, 411009, IN</strong>
     `
   }
 ];

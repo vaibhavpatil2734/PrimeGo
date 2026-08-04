@@ -19,7 +19,7 @@ export default function Footer() {
           {/* BRAND */}
           <div className="max-w-sm">
             <h2 className="text-2xl font-extrabold hover:text-indigo-400 transition">
-              Made4UU
+              PrimeGo
             </h2>
             <p className="mt-3 text-sm text-gray-300 leading-relaxed">
               Custom-designed products made just for you. Quality,
@@ -57,7 +57,7 @@ export default function Footer() {
           
           {/* FACEBOOK */}
           <a
-            href="https://www.facebook.com/Made4onlyyouu"
+            href="https://www.facebook.com/PrimeGo.official/"
             target="_blank"
             rel="noopener noreferrer"
             className="p-3 rounded-xl bg-white/10 hover:bg-blue-500/20 transition transform hover:scale-110"
@@ -73,7 +73,7 @@ export default function Footer() {
 
           {/* INSTAGRAM */}
           <a
-            href="https://www.instagram.com/made4uu.official/"
+            href="https://www.instagram.com/PrimeGo.official/"
             target="_blank"
             rel="noopener noreferrer"
             className="p-3 rounded-xl bg-white/10 hover:bg-pink-500/20 transition transform hover:scale-110"
@@ -97,7 +97,7 @@ export default function Footer() {
           {/* Powered by */}
           <div>
             <span className="text-white font-medium hover:text-indigo-400 transition">
-              Powered by <a href="https://www.wordlanetech.com" target="_blank">Word Lane Tech</a>
+              Powered by <a href="#" target="_blank">Neo</a>
             </span>
           </div>
 
@@ -105,7 +105,7 @@ export default function Footer() {
           <div>
             © 2026{" "}
             <span className="text-white font-medium hover:text-indigo-400 transition">
-              Made4UU
+              PrimeGo
             </span>{" "}
             All Rights Reserved
           </div>
